@@ -345,7 +345,7 @@ function talkFoot(c,s,ch){
   const chips=waitChips?'<div class="chips" aria-label="말 고르기를 준비하는 중"><span class="chip-wait"></span><span class="chip-wait"></span><span class="chip-wait"></span></div>':!confirm&&!pending&&ch.chips?.length?`<div class="chips" role="group" aria-label="이렇게 말해 볼까요">${ch.chips.map((x,i)=>`<button type="button" class="chip${x.path==='none'?'':' go'}" data-chip="${i}">${fmt(x.text)}${x.path==='none'?'':'<span aria-hidden="true">→</span>'}</button>`).join('')}</div>`:'';
   return `${confirm}${chips}<form id="say-form" class="say-box">
     <textarea id="say" rows="1" maxlength="500" placeholder="직접 써서 말해 보세요" ${pending?'disabled':''}></textarea>
-    <button type="button" class="icon" data-action="star" title="행동 표시(*) 넣기">*</button><button class="btn small" ${pending?'disabled':''}>보내기</button>
+    <button class="btn small" ${pending?'disabled':''}>보내기</button>
   </form>
   <p class="small-ask">${talked?`말을 고르거나 직접 써 보세요. ${esc(c.name)}(이)가 어떻게 할지 정하면 장면이 이어져요`:`말을 고르거나 직접 써서 주변 사람에게 말을 걸어 보세요`}</p>${stuck}`;
 }
@@ -565,7 +565,6 @@ document.addEventListener('click',async e=>{
   if(a==='ai-settings')openAiModal();
   if(a==='ai-skip')closeModal();
   if(a==='ai-off'){AI.clear();toast('AI 연결을 끊었어요.');closeModal();if(view==='chat')render();}
-  if(a==='star'){const box=document.querySelector('#say');const s=box.selectionStart,t=box.selectionEnd,v=box.value;box.value=v.slice(0,s)+'*'+v.slice(s,t)+'*'+v.slice(t);box.focus();box.setSelectionRange(s+1,t+1);}
   if(a==='next-scene'){
     if(state.run.choices[state.run.step]===null)return;
     
