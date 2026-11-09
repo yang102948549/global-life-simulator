@@ -63,9 +63,16 @@ function draw(except){
 const sourceList=c=>`<ul class="sources">${c.sources.map(s=>`<li><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title)} ↗</a><span>${esc(s.date)}</span></li>`).join('')}</ul>`;
 const facts=c=>`<ul class="facts">${c.facts.map(f=>`<li>${esc(f)}</li>`).join('')}</ul>`;
 // 캐릭터 그림. kind가 face면 얼굴 부분, 아니면 전신 그림. 그림을 못 읽으면 이름 첫 글자가 보인다.
+const artSrc=(id,kind)=>`assets/characters/${id}${kind==='face'?'-face':''}.webp`;
 function art(c,kind='card',extra=''){
-  const src=`assets/characters/${esc(c.id)}${kind==='face'?'-face':''}.webp`;
-  return `<div class="art art-${kind} ${extra}" style="--tone:${TONE[c.id]||DEFAULT_TONE}" aria-hidden="true"><span class="art-initial">${esc([...c.name][0])}</span><img src="${src}" alt="" loading="lazy" onerror="this.remove()"></div>`;
+  return `<div class="art art-${kind} ${extra}" style="--tone:${TONE[c.id]||DEFAULT_TONE}" aria-hidden="true"><span class="art-initial">${esc([...c.name][0])}</span><img src="${artSrc(esc(c.id),kind)}" alt="" decoding="async" onerror="this.remove()"></div>`;
+}
+// 서버가 멀어 그림 한 장마다 1초 가까이 걸리므로, 첫 화면 뒤에 모든 그림(약 1.2MB)을 미리 받아 둔다.
+// 이후 화면에서는 브라우저 저장본이 바로 쓰인다.
+function preloadArt(){
+  const keep=[];
+  for(const kind of ['face','card'])for(const c of cases){const img=new Image();img.src=artSrc(c.id,kind);keep.push(img);}
+  preloadArt.keep=keep;
 }
 function field(name,label,placeholder='',required=false,help=''){return `<label class="field"><span>${esc(label)}${required?' <em>필수</em>':''}</span>${help?`<small>${esc(help)}</small>`:''}<textarea data-field="${name}" name="${name}" maxlength="4000" ${required?'required':''} placeholder="${esc(placeholder)}">${esc(fields()[name]||'')}</textarea></label>`;}
 function tile(c){const i=cases.indexOf(c),done=state.completed.includes(c.id);return `<button class="tile" data-start="${c.id}" style="--tone:${TONE[c.id]}">${art(c,'card')}<span class="tile-body"><span class="tile-meta">No.${pad(i+1)} · ${esc(c.theme)}${done?' · 완료':''}</span><strong>${esc(c.name)}</strong><span class="tile-title">${esc(c.title)}</span><span class="tile-desc">${esc(c.summary)}</span></span></button>`;}
@@ -97,7 +104,7 @@ function guide(){return `<div class="page-head"><p class="label">수업 안내</
   <article class="cell"><p class="label">3차시 · 45분</p><h3>함께 바꿀 계획</h3><p>해결 계획 20분 → 모둠끼리 교차 검토 15분 → 고치기·기록 제출 10분.</p></article>
 </div>
 <div class="grid2">
-  <article class="cell"><h3>AI 대화 설정</h3><p>상단의 ‘AI 연결’에 Gemini API 키를 넣으면 학생이 자유롭게 말하고 AI가 주변 인물로 답합니다. 키는 이 탭의 메모리에만 있고 저장되지 않아 새로고침하면 다시 넣어야 합니다. 키는 Google에 직접 전송됩니다. 교사용 키를 쓰고, Google AI Studio에서 키 사용처를 이 사이트로 제한하는 것을 권장합니다. 키가 없으면 선택 버튼만으로 진행됩니다.</p></article>
+  <article class="cell"><h3>AI 대화 설정</h3><p>상단의 ‘AI 연결’에 Gemini API 키를 넣으면 학생이 자유롭게 말하고 AI가 주변 인물로 답합니다. 키는 이 탭의 메모리에만 있고 저장되지 않아 새로고침하면 다시 넣어야 합니다. 키는 Google에 직접 전송됩니다. 교사용 키를 쓰고, Google AI Studio에서 키 사용처를 이 사이트로 제한하는 것을 권장합니다. AI가 연결되면 선택지 버튼은 보이지 않고, 학생이 대화 속에서 말이나 행동으로 어떻게 할지 정하면 확인을 거쳐 장면이 이어집니다(세 번 이상 말한 뒤부터). 오래 정하지 못하면 두 가지 길을 볼 수 있습니다. 키가 없으면 선택 버튼으로 진행됩니다.</p></article>
   <article class="cell"><h3>AI 대화의 안전장치</h3><p>대화는 Google 쪽에 저장되지 않게 보냅니다. 괴롭힘·혐오·성적·위험 내용 필터를 켜 두었고, 잔인한 묘사·연애 묘사·개인정보 요청을 막는 지침을 넣었습니다. 그래도 AI는 실수할 수 있으니 수업 중 화면을 살펴 주세요. 학생에게 실명·학교·연락처를 쓰지 않도록 안내해 주세요.</p></article>
   <article class="cell"><h3>12명을 모두 다루려면</h3><p>12개 모둠, 또는 6개 모둠×2회로 운영하세요. 무작위 뽑기는 이 브라우저에서 마치지 않은 캐릭터를 먼저 고릅니다. 기기 사이의 중복은 자동으로 조정되지 않으니 ‘캐릭터’ 목록에서 직접 나눠 줄 수 있습니다.</p></article>
   <article class="cell"><h3>공감을 다루는 방법</h3><p>생존 점수, 빈곤 순위, 사망 결말은 없습니다. 모든 선택에는 얻는 것과 잃는 것이 있습니다. 불편한 장면은 다른 캐릭터로 바꾸거나 자료 읽기로 대신해도 됩니다.</p></article>
@@ -148,19 +155,121 @@ function intro(c){const i=cases.indexOf(c);return `<section class="profile">
     <div class="callout"><strong>상황</strong><p>${esc(c.summary)}</p></div>
     <blockquote>“${esc(c.wish)}”</blockquote>
     <details><summary>실제로 확인된 사실 보기</summary>${facts(c)}${sourceList(c)}<p class="muted small">인물과 장면은 이 자료를 바탕으로 꾸민 이야기입니다. 선택의 결과는 예측이 아니며 점수도 없습니다.</p></details>
-    <label class="field compact"><span>플레이어 이름 (선택)</span><input data-field="nickname" maxlength="40" value="${esc(fields().nickname||'')}" placeholder="모둠 이름이나 별명"></label>
-    <div class="actions"><button class="btn big" data-action="enter-chat">이 사람으로 시작</button><button class="link" data-action="redraw">다시 뽑기</button></div>
+    <div class="actions"><button class="btn big" data-action="join">이 사람으로 시작</button><button class="link" data-action="redraw">다시 뽑기</button></div>
   </div>
 </section>`;}
 
 /* ---------- 게임 화면: 장면 카드 ---------- */
 const chatOf=step=>state.run.chats[step];
-function prevChoices(c){return c.scenes.slice(0,state.run.step).map((s,i)=>s.options[state.run.choices[i]]?.text||'고르지 않음');}
-// 장면에 처음 들어오면 대본의 장면 설명을 카드 첫 문단으로 넣는다.
-function openScene(c){
-  const ch=chatOf(state.run.step),s=c.scenes[state.run.step];
-  if(!ch.log.length){ch.log.push({k:'story',text:s.story});save();}
+const playerTag=()=>fields().nickname?`<span class="player">플레이어 · ${esc(fields().nickname)}</span>`:'';
+// AI에게 넘길 앞 장면 요약: 고른 길, 대본 결과, 학생이 대화에서 한 말(최근 4개, 앞부분만).
+function pastScenes(c){
+  const r=state.run;
+  return c.scenes.slice(0,r.step).map((s,i)=>{
+    const o=s.options[r.choices[i]];
+    const said=chatOf(i).log.filter(e=>e.k==='me'&&e.text!==o?.text).slice(-4).map(e=>e.text.slice(0,160));
+    return {time:s.time,title:s.title,choice:o?.text||'고르지 않음',result:chatOf(i).brief?.mine?.story||o?.result||'',said};
+  });
 }
+// 장면 뒤 브리핑: 결정이 나면 AI가 '그 뒤의 삶'과 '다른 길을 간 삶'을 쓴다.
+// ch.brief가 undefined면 아직 만들지 않은 것, null이면 AI 없이 대본 결과만 쓴다.
+let briefing=false;
+function ensureBrief(c){
+  const r=state.run,step=r.step,ch=chatOf(step),n=r.choices[step];
+  if(n===null||ch.brief!==undefined||briefing)return;
+  if(!AI.ready){ch.brief=null;save();return;}
+  briefing=true;
+  AI.brief({c,step,past:pastScenes(c),n,log:ch.log})
+    .then(b=>{if(state.run===r)ch.brief=b;})
+    .catch(()=>{if(state.run===r)ch.brief=null;})
+    .finally(()=>{briefing=false;save();if(view==='chat'&&state.run===r)render();});
+}
+// 한 삶의 브리핑 카드. b가 없으면 대본 결과만 보여 준다.
+function lifeCard(c,b,text,result,kind){
+  const head=kind==='mine'?`그 뒤, ${esc(c.name)}의 삶`:`다른 길을 간 ${esc(c.name)}`;
+  return `<section class="life ${kind}">
+    <p class="life-tag">${head}</p>
+    <p class="life-path">${kind==='mine'?'내가 택한 길':'택하지 않은 길'} · ${esc(text)}</p>
+    ${b?`<h2>${esc(b.headline)}</h2>`:''}
+    <p class="life-story">${esc(b?.story||result)}</p>
+    ${b?`<dl class="gain-loss"><div><dt>얻은 것</dt><dd>${esc(b.gained)}</dd></div><div><dt>잃은 것</dt><dd>${esc(b.lost)}</dd></div></dl>`:''}
+  </section>`;
+}
+// 장면에 처음 들어오면 카드 첫 문단을 넣는다.
+// 첫 장면이거나 AI가 없으면 대본 글을, 둘째·셋째 장면은 AI가 앞 장면을 이어 받아 다시 쓴 글을 넣는다.
+let opening=false;
+function openScene(c){
+  const r=state.run,step=r.step,ch=chatOf(step),s=c.scenes[step];
+  if(ch.log.length||opening)return;
+  if(step===0||!AI.ready){
+    ch.log.push({k:'story',text:s.story});save();
+    if(AI.ready)AI.opening({c,step,past:[],fixed:true})
+      .then(o=>{if(state.run===r&&!ch.log.some(e=>e.k==='me')){ch.chips=o.chips;save();if(view==='chat'&&r.step===step)render();}})
+      .catch(()=>{});
+    return;
+  }
+  opening=pending=true;
+  AI.opening({c,step,past:pastScenes(c)})
+    .then(o=>{
+      if(state.run!==r||ch.log.length)return;
+      ch.opening=o.narration;ch.chips=o.chips;
+      ch.log.push({k:'story',text:o.narration});
+      if(o.dialogue)ch.log.push({k:'say',speaker:o.speaker||'주변 사람',text:o.dialogue});
+    })
+    .catch(()=>{if(state.run===r&&!ch.log.length)ch.log.push({k:'story',text:s.story});})
+    .finally(()=>{opening=pending=false;save();if(view==='chat'&&state.run===r)render();});
+}
+// 기다리는 동안: '답을 쓰는 중' 대신 캐릭터의 하루가 흘러가는 것처럼 보여 준다.
+// 대화 중에는 시계와 시간 문구, 장면이 바뀔 때는 해가 하늘을 건너간다.
+const PASSING={
+  아침:['해가 조금씩 떠오른다','하늘이 밝아 온다','시곗바늘이 조금 움직인다','아침 공기가 달라진다'],
+  낮:['햇볕이 머리 위로 올라온다','그림자가 짧아진다','시곗바늘이 조금 움직인다','한낮의 열기가 퍼진다'],
+  저녁:['해가 기울며 그림자가 길어진다','하늘이 붉게 물든다','바깥이 어둑해진다','시곗바늘이 조금 움직인다'],
+};
+function passing(c,step,sceneChange){
+  const s=c.scenes[step],lines=PASSING[s.time]||PASSING.낮;
+  if(sceneChange&&step>0)return `<div class="passing scene" role="status"><div class="sky" aria-hidden="true"><span class="arm"><i></i></span></div><p>${esc(c.scenes[step-1].time)}이 지나고 ${esc(s.time)}이 된다</p></div>`;
+  return `<p class="passing" role="status"><span class="clock" aria-hidden="true"><i></i></span><span class="pass-text" data-lines="${esc(lines.join('|'))}">${esc(lines[0])}</span></p>`;
+}
+// 장면 전환: 화면 전체에서 하늘빛이 바뀌고 해가 건너가며, 그사이 캐릭터의 일과가 한 줄씩 지나간다.
+// 학생에게는 하루가 흐르는 장면이고, 그동안 뒤에서 AI가 다음 장면 첫머리를 쓴다.
+// to가 3이면 마지막 장면 뒤, 밤으로 넘어간다.
+const PHASE={아침:'morning',낮:'noon',저녁:'evening',밤:'night'};
+const DAY_FALLBACK={
+  낮:[['오전','해가 높이 떠오르고, 하루가 이어진다'],['한낮','그림자가 짧아진다']],
+  저녁:[['오후','햇볕이 조금씩 누그러진다'],['해 질 무렵','하늘이 붉게 물든다']],
+  밤:[['저녁','하루를 정리한다'],['밤','불이 하나둘 꺼진다']],
+};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+async function dayPass(c,from,to){
+  const fromT=c.scenes[from].time,toT=to<3?c.scenes[to].time:'밤';
+  const got=chatOf(from).brief?.between;
+  const items=got?.length?got:(DAY_FALLBACK[toT]||[]).map(([when,text])=>({when,text}));
+  const step=1100,lead=500,dur=lead+items.length*step;
+  const el=document.createElement('div');
+  el.className=`daypass from-${PHASE[fromT]} to-${PHASE[toT]}`;
+  el.setAttribute('role','status');el.setAttribute('aria-live','polite');
+  el.style.setProperty('--dur',dur+'ms');
+  el.innerHTML=`<div class="dp-sky dp-from"></div><div class="dp-sky dp-to"></div><div class="dp-sun" aria-hidden="true"></div>
+    <div class="dp-card">
+      <p class="dp-phase"><span>${esc(fromT)}</span><span class="dp-bar" aria-hidden="true"><i></i></span><span>${esc(toT)}</span></p>
+      <ol class="dp-list">${items.map((x,i)=>`<li style="--i:${i}">${x.when?`<b>${esc(x.when)}</b>`:''}${esc(x.text)}</li>`).join('')}</ol>
+      <p class="dp-next" style="--i:${items.length}">${to<3?`${esc(toT)} · ${esc(c.scenes[to].title)}`:`${esc(c.name)}의 하루가 저문다`}</p>
+    </div>`;
+  document.body.appendChild(el);
+  window.scrollTo({top:0});
+  requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('go')));
+  await wait(reduceMotion?1500:dur+lead+900);
+  // 다음 장면 첫머리를 아직 쓰는 중이면 마지막 줄을 띄운 채 기다린다.
+  while(opening)await wait(200);
+  el.classList.add('out');await wait(450);el.remove();
+}
+// 시간 문구를 몇 초마다 바꾼다.
+setInterval(()=>{
+  const el=document.querySelector('.pass-text');if(!el)return;
+  const lines=el.dataset.lines.split('|'),i=(lines.indexOf(el.textContent)+1)%lines.length;
+  el.classList.add('fade');setTimeout(()=>{el.textContent=lines[i];el.classList.remove('fade');},250);
+},2200);
 // *행동* 표기를 기울임으로 보여 준다.
 const fmt=t=>esc(t).replace(/\*([^*\n]+)\*/g,'<i>$1</i>');
 function entry(e,c,s){
@@ -174,7 +283,7 @@ function entry(e,c,s){
 }
 // 장면 화면 왼쪽: 캐릭터 그림, 이름표, 아침·낮·저녁 진행
 function stageArt(c,step,decided){return `<aside class="stage-art">
-  <figure class="portrait">${art(c,'card')}<figcaption><strong>${esc(c.name)}</strong>${esc(c.country)} · ${esc(c.region)}</figcaption></figure>
+  <figure class="portrait">${art(c,'card')}<figcaption><strong>${esc(c.name)}</strong>${esc(c.country)} · ${esc(c.region)}${playerTag()}</figcaption></figure>
   <ol class="pips" aria-label="장면 진행">${c.scenes.map((x,i)=>`<li class="${i<step||(i===step&&decided)?'done':i===step?'now':''}">${esc(x.time)}</li>`).join('')}</ol>
   <p class="wish">“${esc(c.wish)}”</p>
 </aside>`;}
@@ -183,33 +292,48 @@ function chat(c){
   const under=`<div class="card-under">${step>0?'<button class="link" data-action="prev-scene">← 이전 장면</button>':'<span></span>'}<span>인물과 대화는 자료를 바탕으로 꾸민 이야기입니다</span></div>`;
   if(n!==null){
     const o=s.options[n],other=s.options[1-n],talked=ch.log.some(e=>e.k==='me'||e.k==='say');
+    const waiting=ch.brief===undefined,b=ch.brief;
     return `<div class="game">${stageArt(c,step,true)}<div class="stage-main">
     <article class="scene-card result" aria-live="polite">
-      <header class="card-head"><span class="tag-choice">선택 ${'AB'[n]}</span><p class="label">${esc(s.time)} · ${esc(s.title)}</p><h1>${esc(o.text)}</h1></header>
+      <header class="card-head"><p class="label">${esc(s.time)} · 장면 ${step+1}/3 브리핑</p><h1>${esc(s.title)}</h1></header>
       <div class="card-body">
-        <p class="story">${esc(o.result)}</p>
+        ${waiting?`<div class="passing scene" role="status"><div class="sky" aria-hidden="true"><span class="arm"><i></i></span></div><p>그 뒤로 시간이 흐른다</p></div>`:`
+        ${lifeCard(c,b?.mine,o.text,o.result,'mine')}
+        ${lifeCard(c,b?.other,other.text,other.result,'other')}
         <div class="beyond"><strong>선택을 넘어</strong><p>${esc(s.barrier)}</p></div>
-        <details><summary>다른 선택이었다면?</summary><p><b>${esc(other.text)}</b><br>${esc(other.result)}</p></details>
-        ${talked?`<details><summary>이 장면의 대화 다시 보기</summary><div class="replay">${ch.log.map(e=>entry(e,c,s)).join('')}</div></details>`:''}
-        ${field('note'+step,'나는 왜 이 선택을 했을까? (선택)','가장 마음에 걸린 점이나 바꾸고 싶었던 조건을 적어 보세요.')}
+        ${talked?`<details><summary>이 장면의 대화 다시 보기</summary><div class="replay">${ch.log.map(e=>entry(e,c,s)).join('')}</div></details>`:''}`}
       </div>
-      <footer class="card-foot"><button class="btn big" data-action="next-scene">${step===2?'하루 돌아보기':'다음 장면'} →</button></footer>
+      <footer class="card-foot"><button class="btn big" data-action="next-scene" ${waiting?'disabled':''}>${step===2?'하루 돌아보기':'다음 장면'} →</button></footer>
     </article>${under}</div></div>`;
   }
   return `<div class="game">${stageArt(c,step,false)}<div class="stage-main">
   <article class="scene-card">
     <header class="card-head"><p class="label">${esc(s.time)} · 장면 ${step+1}/3</p><h1>${esc(s.title)}</h1></header>
-    <div class="card-body" id="log" aria-live="polite">${ch.log.map(e=>entry(e,c,s)).join('')}${pending?'<p class="msg typing" aria-label="답을 쓰는 중"><i></i><i></i><i></i></p>':''}</div>
+    <div class="card-body" id="log" aria-live="polite">${ch.log.map(e=>entry(e,c,s)).join('')}${pending?passing(c,step,opening):''}</div>
     <footer class="card-foot${AI.ready?' talk':''}">
-      ${AI.ready?`<form id="say-form" class="say-box">
-        <textarea id="say" rows="1" maxlength="500" placeholder="${esc(c.name)}(이)가 되어 말해 보세요" ${pending?'disabled':''}></textarea>
-        <button type="button" class="icon" data-action="star" title="행동 표시(*) 넣기">*</button><button class="btn small" ${pending?'disabled':''}>보내기</button>
-      </form>
-      <p class="ask small-ask">결정할 준비가 되면 하나를 고르세요${ch.lean&&ch.lean!=='none'?` · 지금은 <b>${ch.lean}</b> 쪽으로 기운 것 같아요`:''}</p>`:`<p class="ask">${esc(c.name)}(이)라면, 어떻게 할까요?</p>`}
-      <div class="choice-row">${s.options.map((o,i)=>`<button class="choice${ch.lean==='AB'[i]?' leaning':''}" data-pick="${i}" ${pending?'disabled':''}><span class="key">${'AB'[i]}</span><span>${esc(o.text)}</span></button>`).join('')}</div>
-      ${AI.ready?'':`<p class="hint">오른쪽 위 <b>AI 연결</b>을 하면 고르기 전에 주변 사람과 자유롭게 대화할 수 있어요.</p>`}
+      ${AI.ready?talkFoot(c,s,ch):`<p class="ask">${esc(c.name)}(이)라면, 어떻게 할까요?</p>${choiceRow(s)}
+      <p class="hint">오른쪽 위 <b>AI 연결</b>을 하면 고르기 전에 주변 사람과 자유롭게 대화할 수 있어요.</p>`}
     </footer>
   </article>${under}</div></div>`;}
+const choiceRow=s=>`<div class="choice-row">${s.options.map((o,i)=>`<button class="choice" data-pick="${i}" ${pending?'disabled':''}><span class="key">${'AB'[i]}</span><span>${esc(o.text)}</span></button>`).join('')}</div>`;
+// 이만큼 말해도 정하지 못하면 두 길을 보여 주는 링크를 낸다.
+const STUCK_TALK=8;
+// AI와 대화할 때의 아래쪽: 선택지는 숨기고 대화로 정한다.
+// AI가 학생의 결정을 알아차리면(proposal) 확인 상자를 띄우고, 학생이 확인해야 장면이 끝난다.
+function talkFoot(c,s,ch){
+  const talked=ch.log.filter(e=>e.k==='me').length,p=ch.proposal;
+  const confirm=Number.isInteger(p)?`<div class="decide" role="group" aria-label="결정 확인">
+    <p><b>이렇게 하기로 할까요?</b>${esc(s.options[p].text)}</p>
+    <div><button class="btn small" data-action="confirm" ${pending?'disabled':''}>이렇게 정하기</button><button class="btn small ghost" data-action="keep-talking">더 이야기하기</button></div>
+  </div>`:'';
+  const stuck=!confirm&&talked>=STUCK_TALK?(ch.showOptions?`<p class="small-ask">두 가지 길 가운데 하나를 고를 수도 있어요</p>${choiceRow(s)}`:`<button class="link" data-action="show-options">정하기 어렵다면 두 가지 길 보기</button>`):'';
+  const chips=!confirm&&!pending&&ch.chips?.length?`<div class="chips" role="group" aria-label="이렇게 말해 볼까요">${ch.chips.map((x,i)=>`<button type="button" class="chip${x.path==='none'?'':' go'}" data-chip="${i}">${fmt(x.text)}${x.path==='none'?'':'<span aria-hidden="true">→</span>'}</button>`).join('')}</div>`:'';
+  return `${confirm}${chips}<form id="say-form" class="say-box">
+    <textarea id="say" rows="1" maxlength="500" placeholder="${esc(c.name)}(이)가 되어 말해 보세요" ${pending?'disabled':''}></textarea>
+    <button type="button" class="icon" data-action="star" title="행동 표시(*) 넣기">*</button><button class="btn small" ${pending?'disabled':''}>보내기</button>
+  </form>
+  <p class="small-ask">${talked?`말을 고르거나 직접 써 보세요. ${esc(c.name)}(이)가 어떻게 할지 정하면 장면이 이어져요`:`말을 고르거나 직접 써서 주변 사람에게 말을 걸어 보세요`}</p>${stuck}`;
+}
 function lock(c,n){
   state.run.choices[state.run.step]=n;
   save();render();
@@ -218,15 +342,16 @@ function lock(c,n){
 async function say(c,text){
   text=text.trim();if(!text||pending)return;
   const r=state.run,step=r.step,ch=chatOf(step);
-  ch.log.push({k:'me',text});pending=true;save();render();scrollLog();
+  ch.log.push({k:'me',text});ch.proposal=null;ch.chips=[];pending=true;save();render();scrollLog();
   try{
-    const {reply,history}=await AI.turn({c,step,prevChoices:prevChoices(c),history:ch.api,text});
+    const {reply,history}=await AI.turn({c,step,past:pastScenes(c),opening:ch.opening,history:ch.api,text});
     if(state.run!==r||r.step!==step)return;
     ch.api=history;
     if(reply.narration?.trim())ch.log.push({k:'narr',text:reply.narration.trim()});
     if(reply.dialogue?.trim())ch.log.push({k:'say',speaker:reply.speaker?.trim()||'주변 사람',text:reply.dialogue.trim().replace(/^["“]|["”]$/g,'')});
-    // AI는 결정하지 않는다. 학생의 말이 어느 쪽으로 기울었는지만 표시하고, 결정은 버튼으로.
-    ch.lean=reply.lean;
+    // 학생이 대화로 한 길을 정했으면 확인 상자를 띄운다. 확인은 학생이 한다.
+    ch.proposal=reply.decision==='none'?null:'AB'.indexOf(reply.decision);
+    ch.chips=reply.chips;
   }catch(err){
     ch.log.pop();
     ch.log.push({k:'error',text:err.message});
@@ -245,6 +370,7 @@ function scrollLog(){
 /* ---------- AI 연결 창 ---------- */
 function openAiModal(then){
   const m=document.querySelector('#modal');
+  m.setAttribute('aria-label','AI 대화 연결');
   if(AI.server){
     m.innerHTML=`<div class="modal-box"><h2>AI 대화 연결됨</h2><p class="muted small">학교 서버를 통해 Gemini에 연결되어 있어요. 키를 넣지 않아도 바로 대화할 수 있어요. 대화는 Google에 저장되지 않게 보내고, 이 브라우저에만 기록됩니다.</p><div class="actions"><button type="button" class="btn" data-action="ai-skip">확인</button></div></div>`;
     m.hidden=false;openAiModal.then=then;return;
@@ -261,6 +387,22 @@ function openAiModal(then){
   m.hidden=false;openAiModal.then=then;
   m.querySelector('#ai-key').focus();
 }
+// 플레이어 등록 팝업: 캐릭터를 고른 뒤 이름을 적고 그 사람의 하루를 시작한다.
+function openJoinModal(c){
+  const m=document.querySelector('#modal');
+  m.setAttribute('aria-label','플레이어 등록');
+  m.innerHTML=`<form class="modal-box join" id="join-form">
+    <div class="join-face">${art(c,'face')}</div>
+    <p class="label">플레이어 등록</p>
+    <h2>오늘 하루, 나는 ${esc(c.name)}입니다</h2>
+    <p class="muted small">${esc(c.country)} · ${esc(c.region)}에 사는 ${esc(c.role)}의 아침·낮·저녁을 살아 봅니다.</p>
+    <label class="field join-field"><span>플레이어 이름</span><input id="join-name" maxlength="20" autocomplete="off" enterkeyhint="go" value="${esc(fields().nickname||'')}" placeholder="이름이나 별명"></label>
+    <button class="btn big join-go">${esc(c.name)}의 하루 시작하기 →</button>
+    <button type="button" class="link" data-action="ai-skip">다시 고를래요</button>
+  </form>`;
+  m.hidden=false;openAiModal.then=null;
+  setTimeout(()=>m.querySelector('#join-name')?.focus(),50);
+}
 function closeModal(){const m=document.querySelector('#modal');m.hidden=true;m.innerHTML='';const then=openAiModal.then;openAiModal.then=null;renderStatus();if(then)then();}
 function renderStatus(){const b=document.querySelector('#ai-status');b.textContent=AI.ready?'AI 연결됨':'AI 연결';b.classList.toggle('on',AI.ready);}
 // 학교 서버에 키가 있으면 키 입력 없이 바로 연결된다.
@@ -269,7 +411,7 @@ AI.serverCheck.then(ok=>{if(!ok)return;renderStatus();if(view==='chat')render();
 /* ---------- 돌아보기 이후: 게임 화면과 같은 틀(왼쪽 그림, 오른쪽 종이 카드) ---------- */
 const EPI=['돌아보기','질문','계획','기록'];
 function epiArt(c,active,extra=''){return `<aside class="stage-art">
-  <figure class="portrait">${art(c,'card')}<figcaption><strong>${esc(c.name)}</strong>${esc(c.country)} · ${esc(c.region)}</figcaption></figure>
+  <figure class="portrait">${art(c,'card')}<figcaption><strong>${esc(c.name)}</strong>${esc(c.country)} · ${esc(c.region)}${playerTag()}</figcaption></figure>
   <ol class="pips" aria-label="마무리 단계">${EPI.map((t,i)=>`<li class="${i<active?'done':i===active?'now':''}"${i===active?' aria-current="step"':''}>${t}</li>`).join('')}</ol>
   ${extra||`<p class="wish">“${esc(c.wish)}”</p>`}
 </aside>`;}
@@ -319,7 +461,7 @@ function plan(c){const pf=keys=>planFields.filter(([k])=>keys.includes(k)).map((
 
 function review(){const f=fields(),checks=[...planFields.map(([n,l])=>[l,typeof f[n]==='string'&&f[n].trim().length>0]),['자료 검토 기록',!!f.evidence?.trim()],['원문·시점 확인 표시',!!f.checkedSource],['사실과 가정 구분 표시',!!f.checkedFiction],['당사자 참여 검토 표시',!!f.checkedVoice]];return `<ul class="review">${checks.map(([l,ok])=>`<li class="${ok?'ok':''}">${ok?'✓':'○'} ${esc(l)}</li>`).join('')}</ul>`;}
 
-function reportText(){const c=current(),r=state.run,f=fields();return `다른 곳의 하루 · 지구촌 탐구 기록\n활동 이름: ${f.nickname||'미입력'}\n캐릭터: ${c.name} (${c.role})\n지역: ${c.country} / ${c.region}\n완료 시각: ${new Date(r.finishedAt).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})} KST\n\n※ 실제 체험·증언이 아닌 학습용 가상 시뮬레이션입니다.\n\n[하루의 선택]\n${c.scenes.map((s,i)=>`${s.time}: ${s.options[r.choices[i]]?.text||'미선택'}\n결과(가정): ${s.options[r.choices[i]]?.result||''}\n선택의 이유: ${f['note'+i]||'미작성'}`).join('\n\n')}\n\n[돌아보기]\n중요했던 것: ${f.feeling||''}\n바꾸기 어려운 조건: ${f.constraint||''}\n더 알아볼 것: ${f.unknown||''}\n\n[질문과 검토]\n첫 질문: ${f.firstQuestion||'미작성'}\n개선 질문: ${f.betterQuestion||'미작성'}\nAI 답변/원문 조사: ${f.answer||'미작성'}\n근거 대조: ${f.evidence||'미작성'}\n수정·보류한 내용: ${f.revision||'미작성'}\n\n[해결 계획]\n${planFields.map(([n,l])=>`${l}\n${f[n]||'미작성'}`).join('\n\n')}\n\n[자가 확인]\n원문·시점: ${f.checkedSource?'확인 표시':'미확인'}\n사실·가정 구분: ${f.checkedFiction?'확인 표시':'미확인'}\n당사자 참여: ${f.checkedVoice?'확인 표시':'미확인'}\n\n[자료]\n${c.sources.map(s=>`${s.title}\n${s.date}\n${s.url}`).join('\n\n')}\n\n선택 결과는 예측이나 통계가 아닙니다. 기관의 승인·감수를 받은 자료는 아닙니다.`;}
+function reportText(){const c=current(),r=state.run,f=fields();return `다른 곳의 하루 · 지구촌 탐구 기록\n활동 이름: ${f.nickname||'미입력'}\n캐릭터: ${c.name} (${c.role})\n지역: ${c.country} / ${c.region}\n완료 시각: ${new Date(r.finishedAt).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})} KST\n\n※ 실제 체험·증언이 아닌 학습용 가상 시뮬레이션입니다.\n\n[하루의 선택]\n${c.scenes.map((s,i)=>`${s.time}: ${s.options[r.choices[i]]?.text||'미선택'}\n결과(가정): ${r.chats[i].brief?.mine?.story||s.options[r.choices[i]]?.result||''}`).join('\n\n')}\n\n[돌아보기]\n중요했던 것: ${f.feeling||''}\n바꾸기 어려운 조건: ${f.constraint||''}\n더 알아볼 것: ${f.unknown||''}\n\n[질문과 검토]\n첫 질문: ${f.firstQuestion||'미작성'}\n개선 질문: ${f.betterQuestion||'미작성'}\nAI 답변/원문 조사: ${f.answer||'미작성'}\n근거 대조: ${f.evidence||'미작성'}\n수정·보류한 내용: ${f.revision||'미작성'}\n\n[해결 계획]\n${planFields.map(([n,l])=>`${l}\n${f[n]||'미작성'}`).join('\n\n')}\n\n[자가 확인]\n원문·시점: ${f.checkedSource?'확인 표시':'미확인'}\n사실·가정 구분: ${f.checkedFiction?'확인 표시':'미확인'}\n당사자 참여: ${f.checkedVoice?'확인 표시':'미확인'}\n\n[자료]\n${c.sources.map(s=>`${s.title}\n${s.date}\n${s.url}`).join('\n\n')}\n\n선택 결과는 예측이나 통계가 아닙니다. 기관의 승인·감수를 받은 자료는 아닙니다.`;}
 
 function report(c){const r=state.run,f=fields();
   const block=(l,n)=>`<div class="report-block"><h3>${esc(l)}</h3><p>${esc(f[n]||'작성하지 않음')}</p></div>`;
@@ -330,7 +472,7 @@ function report(c){const r=state.run,f=fields();
   <div class="card-body">
     <p class="notice">이 체험으로 한 사람의 삶을 다 이해했다고 말할 수는 없습니다. 아래 기록은 자동 평가나 AI의 검증을 거친 결과가 아닙니다.</p>
     ${sec('내가 만난 삶',`<p class="story">“${esc(c.wish)}”</p><p class="sec-note">${esc(c.role)}</p>${facts(c)}`)}
-    ${sec('하루의 선택과 남은 어려움',c.scenes.map((s,i)=>{const o=s.options[r.choices[i]];return `<div class="report-block"><h3>${esc(s.time)} · ${esc(o?.text||'미선택')}</h3><p>결과(가정): ${esc(o?.result||'')}\n내 생각: ${esc(f['note'+i]||'작성하지 않음')}\n선택을 넘어: ${esc(s.barrier)}</p></div>`;}).join(''))}
+    ${sec('하루의 선택과 남은 어려움',c.scenes.map((s,i)=>{const o=s.options[r.choices[i]];return `<div class="report-block"><h3>${esc(s.time)} · ${esc(o?.text||'미선택')}</h3><p>결과(가정): ${esc(r.chats[i].brief?.mine?.story||o?.result||'')}\n선택을 넘어: ${esc(s.barrier)}</p></div>`;}).join(''))}
     ${sec('돌아보기',block('지키고 싶었던 일상과 권리','feeling')+block('내 선택만으로 바꾸기 어려운 조건','constraint')+block('아직 모르는 것','unknown'))}
     ${sec('질문과 검토',block('첫 질문','firstQuestion')+block('고친 질문','betterQuestion')+block('AI 답변 또는 원문 조사','answer')+block('근거 확인 기록','evidence')+block('고치거나 보류한 내용','revision'))}
     ${sec('해결 계획',planFields.map(([n,l])=>block(l,n)).join('')+`<div class="report-block"><h3>자가 확인</h3><p>원문·시점: ${f.checkedSource?'확인':'미확인'} / 사실·가정 구분: ${f.checkedFiction?'확인':'미확인'} / 당사자 참여: ${f.checkedVoice?'확인':'미확인'}</p></div>`)}
@@ -343,7 +485,7 @@ function report(c){const r=state.run,f=fields();
 function render(){
   const c=current();
   if(!c&&!FREE_VIEWS.includes(view))view='home';
-  if(view==='chat')openScene(c);
+  if(view==='chat'){openScene(c);ensureBrief(c);}
   const pages={home,atlas,guide,select,intro:()=>intro(c),chat:()=>chat(c),reflect:()=>reflect(c),lab:()=>lab(c),plan:()=>plan(c),report:()=>report(c)};
   app.innerHTML=(pages[view]||home)();
   document.body.classList.toggle('is-game',['home','select','intro','chat','reflect','lab','plan','report'].includes(view));
@@ -375,6 +517,14 @@ document.addEventListener('click',async e=>{
   if(el.dataset.start){start(el.dataset.start);return;}
   if(el.dataset.filter){filter=el.dataset.filter;render();return;}
   const c=current();
+  if(el.dataset.chip!==undefined){
+    const ch=chatOf(state.run.step),x=ch.chips?.[Number(el.dataset.chip)];
+    if(!x||pending)return;
+    // 결정 칩은 누르는 것이 곧 결정이다. 나머지는 학생의 말로 보낸다.
+    if(x.path==='A'||x.path==='B'){ch.log.push({k:'me',text:x.text});ch.chips=[];lock(c,'AB'.indexOf(x.path));}
+    else say(c,x.text);
+    return;
+  }
   if(el.dataset.pick!==undefined){
     const n=Number(el.dataset.pick),o=c.scenes[state.run.step].options[n];
     // 선택 버튼은 AI 연결 여부와 상관없이 바로 결정한다.
@@ -387,6 +537,10 @@ document.addEventListener('click',async e=>{
   if(a==='redraw')draw(c.id);
   if(a==='resume')navigate(state.run?.view||'home');
   if(a==='enter-chat')navigate('chat');
+  if(a==='join')openJoinModal(c);
+  if(a==='confirm'){const p=chatOf(state.run.step).proposal;if(!pending&&Number.isInteger(p))lock(c,p);}
+  if(a==='keep-talking'){chatOf(state.run.step).proposal=null;save();render();document.querySelector('#say')?.focus();}
+  if(a==='show-options'){chatOf(state.run.step).showOptions=true;save();render();}
   if(a==='ai-settings')openAiModal();
   if(a==='ai-skip')closeModal();
   if(a==='ai-off'){AI.clear();toast('AI 연결을 끊었어요.');closeModal();if(view==='chat')render();}
@@ -394,8 +548,9 @@ document.addEventListener('click',async e=>{
   if(a==='next-scene'){
     if(state.run.choices[state.run.step]===null)return;
     
-    if(state.run.step<2){state.run.step++;save();navigate('chat');}
-    else navigate('reflect');
+    const from=state.run.step;
+    if(from<2){state.run.step++;save();navigate('chat');dayPass(c,from,from+1);}
+    else{navigate('reflect');dayPass(c,from,3);}
   }
   if(a==='prev-scene'){state.run.step=Math.max(0,state.run.step-1);save();navigate('chat');}
   if(a==='copy-prompt')copy(promptText());
@@ -407,6 +562,12 @@ document.addEventListener('click',async e=>{
   if(a==='clear'&&confirm('지금 이야기와 완료 목록을 이 브라우저에서 지울까요? 내려받은 파일은 지워지지 않습니다.')){state={run:null,completed:[]};save();navigate('home');toast('이 브라우저의 기록을 지웠어요.');}
 });
 document.addEventListener('submit',async e=>{
+  if(e.target.id==='join-form'){
+    e.preventDefault();
+    const box=document.querySelector('#join-name'),name=box.value.trim();
+    if(!name){box.focus();box.classList.add('shake');setTimeout(()=>box.classList.remove('shake'),400);return;}
+    state.run.fields.nickname=name;save();closeModal();navigate('chat');return;
+  }
   if(e.target.id==='say-form'){e.preventDefault();const box=document.querySelector('#say');say(current(),box.value);return;}
   if(e.target.id==='ai-form'){
     e.preventDefault();
@@ -429,4 +590,5 @@ document.addEventListener('keydown',e=>{
 document.querySelector('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal();});
 renderStatus();
 render();
+if(document.readyState==='complete')setTimeout(preloadArt,0);else addEventListener('load',preloadArt,{once:true});
 })();
