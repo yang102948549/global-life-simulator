@@ -216,14 +216,23 @@ function lifeCard(c,b,text,result,kind){
 // 장면에 처음 들어오면 카드 첫 문단을 넣는다.
 // 첫 장면이거나 AI가 없으면 대본 글을, 둘째·셋째 장면은 AI가 앞 장면을 이어 받아 다시 쓴 글을 넣는다.
 let opening=false;
+// 첫 장면의 답 칩을 미리 받아 둔다. 등록 팝업에서 이름을 적는 동안 받기 시작해서, 대화 화면에 들어오면 이미 떠 있게.
+let chipsLoading=false;
+function prefetchChips(c){
+  const r=state.run,ch=r?.chats[0];
+  if(!r||!AI.ready||chipsLoading||ch.chips?.length||ch.log.some(e=>e.k==='me'))return;
+  chipsLoading=true;
+  AI.opening({c,step:0,past:[],fixed:true})
+    .then(o=>{if(state.run===r&&!ch.log.some(e=>e.k==='me'))ch.chips=o.chips;})
+    .catch(()=>{})
+    .finally(()=>{chipsLoading=false;save();if(view==='chat'&&state.run===r&&r.step===0){render();scrollLog();}});
+}
 function openScene(c){
   const r=state.run,step=r.step,ch=chatOf(step),s=c.scenes[step];
   if(ch.log.length||opening)return;
   if(step===0||!AI.ready){
     ch.log.push({k:'story',text:s.story});save();
-    if(AI.ready)AI.opening({c,step,past:[],fixed:true})
-      .then(o=>{if(state.run===r&&!ch.log.some(e=>e.k==='me')){ch.chips=o.chips;save();if(view==='chat'&&r.step===step)render();}})
-      .catch(()=>{});
+    if(step===0)prefetchChips(c);
     return;
   }
   opening=pending=true;
@@ -332,9 +341,10 @@ function talkFoot(c,s,ch){
     <div><button class="btn small" data-action="confirm" ${pending?'disabled':''}>이렇게 정하기</button><button class="btn small ghost" data-action="keep-talking">더 이야기하기</button></div>
   </div>`:'';
   const stuck=!confirm&&talked>=STUCK_TALK?(ch.showOptions?`<p class="small-ask">두 가지 길 가운데 하나를 고를 수도 있어요</p>${choiceRow(s)}`:`<button class="link" data-action="show-options">정하기 어렵다면 두 가지 길 보기</button>`):'';
-  const chips=!confirm&&!pending&&ch.chips?.length?`<div class="chips" role="group" aria-label="이렇게 말해 볼까요">${ch.chips.map((x,i)=>`<button type="button" class="chip${x.path==='none'?'':' go'}" data-chip="${i}">${fmt(x.text)}${x.path==='none'?'':'<span aria-hidden="true">→</span>'}</button>`).join('')}</div>`:'';
+  const waitChips=!confirm&&!pending&&!ch.chips?.length&&chipsLoading&&state.run.step===0&&!talked;
+  const chips=waitChips?'<div class="chips" aria-label="말 고르기를 준비하는 중"><span class="chip-wait"></span><span class="chip-wait"></span><span class="chip-wait"></span></div>':!confirm&&!pending&&ch.chips?.length?`<div class="chips" role="group" aria-label="이렇게 말해 볼까요">${ch.chips.map((x,i)=>`<button type="button" class="chip${x.path==='none'?'':' go'}" data-chip="${i}">${fmt(x.text)}${x.path==='none'?'':'<span aria-hidden="true">→</span>'}</button>`).join('')}</div>`:'';
   return `${confirm}${chips}<form id="say-form" class="say-box">
-    <textarea id="say" rows="1" maxlength="500" placeholder="${esc(c.name)}(이)가 되어 말해 보세요" ${pending?'disabled':''}></textarea>
+    <textarea id="say" rows="1" maxlength="500" placeholder="직접 써서 말해 보세요" ${pending?'disabled':''}></textarea>
     <button type="button" class="icon" data-action="star" title="행동 표시(*) 넣기">*</button><button class="btn small" ${pending?'disabled':''}>보내기</button>
   </form>
   <p class="small-ask">${talked?`말을 고르거나 직접 써 보세요. ${esc(c.name)}(이)가 어떻게 할지 정하면 장면이 이어져요`:`말을 고르거나 직접 써서 주변 사람에게 말을 걸어 보세요`}</p>${stuck}`;
@@ -368,8 +378,13 @@ async function say(c,text){
 function scrollLog(){
   const log=document.querySelector('#log'),behavior=reduceMotion?'auto':'smooth';
   if(!log)return;
-  if(log.scrollHeight>log.clientHeight+4)log.scrollTo({top:log.scrollHeight,behavior});
-  else{const last=log.lastElementChild;if(last)last.scrollIntoView({block:'end',behavior});}
+  if(log.scrollHeight>log.clientHeight+4){log.scrollTo({top:log.scrollHeight,behavior});return;}
+  // 휴대폰·태블릿: 페이지가 스크롤되고 입력 영역이 화면 아래에 붙어 있으므로, 마지막 말이 그 위에 오게 내린다.
+  const last=log.lastElementChild;if(!last)return;
+  const foot=document.querySelector('.scene-card .card-foot');
+  const footH=foot&&getComputedStyle(foot).position==='sticky'?foot.getBoundingClientRect().height:0;
+  const target=window.scrollY+last.getBoundingClientRect().bottom-(window.innerHeight-footH)+20;
+  if(target>window.scrollY+2)window.scrollTo({top:target,behavior});
 }
 
 /* ---------- AI 연결 창 ---------- */
@@ -407,6 +422,7 @@ function openJoinModal(c){
   </form>`;
   m.hidden=false;openAiModal.then=null;
   setTimeout(()=>m.querySelector('#join-name')?.focus(),50);
+  AI.serverCheck.then(()=>prefetchChips(c));
 }
 function closeModal(){const m=document.querySelector('#modal');m.hidden=true;m.innerHTML='';const then=openAiModal.then;openAiModal.then=null;renderStatus();if(then)then();}
 // 상단의 AI 연결 표시는 없앴다. 학교 서버 키로 자동 연결된다.
