@@ -45,7 +45,6 @@ function dialog({title,body='',ok='확인',cancel='',icon='!'}){
 function focusEmpty(names){const n=names.find(k=>!fields()[k]?.trim());const el=n&&document.querySelector(`[data-field="${n}"]`);if(el){el.scrollIntoView({block:'center',behavior:reduceMotion?'auto':'smooth'});el.focus({preventScroll:true});}}
 function toast(msg){const el=document.querySelector('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),3800);}
 function navigate(next){
-  if(next!=='chat'&&next!=='reflect'){transition=null;clearTimeout(startTransition.t);}
   view=next;
   if(state.run&&RUN_VIEWS.includes(next)){state.run.view=next;save();}
   render();
@@ -55,7 +54,7 @@ function navigate(next){
 
 /* ---------- 캐릭터 고르기 ---------- */
 const canReplace=async()=>!state.run||state.run.view==='report'||await dialog({title:'새 이야기를 시작할까요?',body:'지금 하던 이야기는 지워져요. 이어서 하려면 "계속하기"를 눌러 주세요.',ok:'새로 시작',cancel:'계속하기',icon:'?'});
-// 아직 마치지 않은 캐릭터 가운데 하나. except는 '다시 뽑기'에서 방금 나온 캐릭터를 빼기 위한 것.
+// 아직 마치지 않은 캐릭터 가운데 하나. except는 '다른 사람 뽑기'에서 방금 나온 캐릭터를 빼기 위한 것.
 function pickRandom(except){
   let pool=cases.filter(x=>!state.completed.includes(x.id)&&x.id!==except);
   if(!pool.length)pool=cases.filter(x=>x.id!==except);
@@ -174,7 +173,7 @@ function intro(c){const i=cases.indexOf(c);return `<section class="profile">
     <div class="callout"><strong>상황</strong><p>${esc(c.summary)}</p></div>
     <blockquote>“${esc(c.wish)}”</blockquote>
     <details><summary>실제로 확인된 사실 보기</summary>${facts(c)}${sourceList(c)}<p class="muted small">인물과 장면은 이 자료를 바탕으로 꾸민 이야기입니다. 선택의 결과는 예측이 아니며 점수도 없습니다.</p></details>
-    <div class="actions"><button class="btn big" data-action="join">이 사람으로 시작</button><button class="link" data-action="redraw">다시 뽑기</button></div>
+    <div class="actions"><button class="btn big" data-action="join">이 사람으로 시작</button><button class="btn big ghost" data-action="redraw"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>다른 사람 뽑기</button></div>
   </div>
 </section>`;}
 
@@ -267,42 +266,40 @@ function passing(c,step,sceneChange){
   if(sceneChange&&step>0)return `<div class="passing scene" role="status"><div class="sky" aria-hidden="true"><span class="arm"><i></i></span></div><p>${esc(c.scenes[step-1].time)}이 지나고 ${esc(s.time)}이 된다</p></div>`;
   return '<p class="msg typing" role="status" aria-label="답을 기다리는 중"><i></i><i></i><i></i></p>';
 }
-// 장면 전환: 다음 장면 카드 안에서 점선 호를 따라 해가 왼쪽에서 오른쪽으로 한 번 지나간다(이 움직임이 곧 진행 표시).
-// 그사이 앞 장면에서 고른 길에 이어지는 일과가 한 줄씩 나타나고, 해가 끝에 닿으면 장면이 열린다.
-// to가 3이면 마지막 장면 뒤: 밤으로 넘어간 뒤 돌아보기 화면으로 간다.
+// 장면 전환: 창 전체가 하루의 하늘로 바뀐다. 지금 시간대의 하늘빛이 다음 시간대의 하늘빛으로 천천히 번지고,
+// 해가 그 시간의 자리로 옮겨 가며, 그사이 앞 장면에서 고른 길에 이어지는 일과가 한 줄씩 지나간다.
+// 뒤에서는 다음 장면 첫머리가 준비된다. to가 3이면 마지막 장면 뒤, 밤으로 넘어간 뒤 돌아보기로 간다.
+const PHASE={아침:'morning',낮:'noon',저녁:'evening',밤:'night'};
 const DAY_FALLBACK={
   낮:[['오전','해가 높이 떠오르고, 하루가 이어진다'],['한낮','그림자가 짧아진다']],
   저녁:[['오후','햇볕이 조금씩 누그러진다'],['해 질 무렵','하늘이 붉게 물든다']],
   밤:[['저녁','하루를 정리한다'],['밤','불이 하나둘 꺼진다']],
 };
-let transition=null;
-function startTransition(c,from,to){
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+async function dayPass(c,from,to){
+  const fromT=c.scenes[from].time,toT=to<3?c.scenes[to].time:'밤';
   const got=chatOf(from).brief?.between;
-  const items=got?.length?got:(DAY_FALLBACK[to<3?c.scenes[to].time:'밤']||[]).map(([when,text])=>({when,text}));
-  const dur=reduceMotion?1500:900+items.length*1000+700;
-  transition={from,to,items,dur};
-  clearTimeout(startTransition.t);
-  startTransition.t=setTimeout(()=>{
-    transition=null;
-    if(to===3)navigate('reflect');
-    else if(view==='chat'){render();scrollLog();}
-  },dur);
+  const items=got?.length?got:(DAY_FALLBACK[toT]||[]).map(([when,text])=>({when,text}));
+  const step=1100,lead=500,dur=lead+items.length*step;
+  const el=document.createElement('div');
+  el.className=`daypass from-${PHASE[fromT]||'morning'} to-${PHASE[toT]||'night'}`;
+  el.setAttribute('role','status');el.setAttribute('aria-live','polite');
+  el.style.setProperty('--dur',dur+'ms');
+  el.innerHTML=`<div class="dp-sky dp-from"></div><div class="dp-sky dp-to"></div><div class="dp-stars" aria-hidden="true"></div><div class="dp-sun" aria-hidden="true"></div>
+    <div class="dp-card">
+      <p class="dp-phase"><span>${esc(fromT)}</span><span class="dp-bar" aria-hidden="true"><i></i></span><span>${esc(toT)}</span></p>
+      <ol class="dp-list">${items.map((x,i)=>`<li style="--i:${i}">${x.when?`<b>${esc(x.when)}</b>`:''}${esc(x.text)}</li>`).join('')}</ol>
+      <p class="dp-next" style="--i:${items.length}">${to<3?`${esc(toT)} · ${esc(c.scenes[to].title)}`:`${esc(c.name)}의 하루가 저문다`}</p>
+    </div>`;
+  document.body.appendChild(el);
+  window.scrollTo({top:0});
+  requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('go')));
+  await wait(reduceMotion?1500:dur+lead+900);
+  // 다음 장면 첫머리를 아직 쓰는 중이면 마지막 줄을 띄운 채 기다린다.
+  while(opening)await wait(200);
+  el.classList.add('out');await wait(450);el.remove();
 }
-function transitionCard(c){
-  const {from,to,items,dur}=transition,fromT=c.scenes[from].time,toT=to<3?c.scenes[to].time:'밤';
-  const s=to<3?c.scenes[to]:null;
-  return `<div class="game play">${stageArt(c,Math.min(to,2),to===3)}<div class="stage-main">
-  <article class="scene-card">
-    <header class="card-head"><p class="label">${to<3?`${esc(toT)} · 장면 ${to+1}/3`:'하루를 마치며'}</p><h1>${s?esc(s.title):`${esc(c.name)}의 하루가 저문다`}</h1></header>
-    <div class="card-body">
-      <div class="passing scene turn" role="status" style="--dur:${dur}ms">
-        <div class="sky" aria-hidden="true"><span class="arm"><i></i></span></div>
-        <p>${esc(fromT)}이 지나고 ${esc(toT)}이 된다</p>
-        <ol class="day-list">${items.map((x,i)=>`<li style="--i:${i}">${x.when?`<b>${esc(x.when)}</b>`:''}${esc(x.text)}</li>`).join('')}</ol>
-      </div>
-    </div>
-  </article></div></div>`;
-}// *행동* 표기를 기울임으로 보여 준다.
+// *행동* 표기를 기울임으로 보여 준다.
 const fmt=t=>esc(t).replace(/\*([^*\n]+)\*/g,'<i>$1</i>');
 function entry(e,c,s){
   // 예전 기록은 장면 설명을 narr로 저장했으므로 같은 문장이면 상황 문단으로 보여 준다.
@@ -319,7 +316,6 @@ function stageArt(c,step,decided){return `<aside class="stage-art">
   <ol class="pips" aria-label="장면 진행">${c.scenes.map((x,i)=>`<li class="${i<step||(i===step&&decided)?'done':i===step?'now':''}">${esc(x.time)}</li>`).join('')}</ol>
 </aside>`;}
 function chat(c){
-  if(transition)return transitionCard(c);
   const r=state.run,step=r.step,s=c.scenes[step],ch=chatOf(step),n=r.choices[step];
   const under=`<div class="card-under">${step>0?'<button class="link" data-action="prev-scene">← 이전 장면</button>':'<span></span>'}<span>인물과 대화는 자료를 바탕으로 꾸민 이야기입니다</span></div>`;
   if(n!==null){
@@ -449,7 +445,7 @@ function renderStatus(){}
 AI.serverCheck.then(ok=>{if(!ok)return;renderStatus();if(view==='chat')render();});
 
 /* ---------- 돌아보기 이후: 게임 화면과 같은 틀(왼쪽 그림, 오른쪽 종이 카드) ---------- */
-const EPI=['돌아보기','질문','계획','기록'];
+const EPI=['돌아보기','질문·조사','계획','기록'];
 function epiArt(c,active,extra=''){return `<aside class="stage-art">
   <figure class="portrait">${art(c,'card')}<figcaption><strong>${esc(c.name)}</strong>${esc(c.country)} · ${esc(c.region)}${playerTag()}</figcaption></figure>
   <ol class="pips" aria-label="마무리 단계">${EPI.map((t,i)=>`<li class="${i<active?'done':i===active?'now':''}"${i===active?' aria-current="step"':''}>${t}</li>`).join('')}</ol>
@@ -466,21 +462,44 @@ function reflect(c){return `<div class="game">${epiArt(c,0)}<div class="stage-ma
       ${sec('나의 하루',recap(c),'세 장면에서 내가 고른 것입니다. ‘선택을 넘어’를 펼쳐 다시 읽어 보세요.')}
       ${sec('생각해 보기',field('feeling','이 사람에게 가장 중요했던 것은 무엇일까?','“불쌍하다”는 말 대신, 지키고 싶었던 일상과 권리를 생각해 보세요.',true)+field('constraint','내 선택만으로 바꾸기 어려웠던 조건은?','시설, 제도, 소득, 안전, 차별 가운데 구체적으로 적어 보세요.',true)+field('unknown','체험만으로는 알 수 없는 것은?','당사자에게 더 듣고 싶은 이야기나 자료로 확인할 내용을 적어 보세요.',true))}
     </div>
-    <footer class="card-foot"><button class="btn big" type="submit">질문 연구소로 →</button><button class="link" type="button" data-nav="chat">← 대화 다시 보기</button></footer>
+    <footer class="card-foot step-nav"><button class="btn ghost back" type="button" data-nav="chat">← 대화로</button><button class="btn big" type="submit">질문 만들고 조사하기 →</button></footer>
   </form>
 </article></div></div>`;}
 
 function promptText(){const c=current(),f=fields();return `나는 중학교 도덕 수업에서 ${c.country}, ${c.region}의 ${c.role}의 관점으로 진행한 가상 시뮬레이션을 했습니다. 인물과 장면은 가상이며 실제 체험이나 증언이 아닙니다.\n\n확인된 배경:\n${c.facts.map(x=>'- '+x).join('\n')}\n출처와 시점:\n${c.sources.map(s=>`${s.title} (${s.date}) ${s.url}`).join('\n')}\n\n내가 발견한 조건: ${f.constraint||'(아직 작성하지 않음)'}\n처음 질문: ${f.firstQuestion||c.question}\n더 구체화한 질문: ${f.betterQuestion||c.question}\n\n위 질문에 대해 ①당사자의 요구와 이미 하는 노력 ②즉시 지원과 장기적 변화 ③주민·정부·기업·국제사회의 역할 ④부작용·비용·실행 조건을 구분해 설명해 주세요. 확인된 사실과 추론을 구분하고 근거의 발행일과 원문 링크를 제시해 주세요. 원문을 확인할 수 없거나 최신 상황을 모르면 모른다고 말해 주세요. 가상의 당사자 발언이나 통계는 만들지 마세요. 결론을 대신 정하지 말고 내가 확인해야 할 질문도 제안해 주세요.`;}
 
+// 조사하기: 처음에 본 확인된 사실과 원문 출처, 그리고 나라·주제별로 더 찾아볼 수 있는 공신력 있는 사이트.
+const ISO={tuvalu:['tuv'],pakistan:['pak'],bangladesh:['bgd'],somalia:['som'],gaza:['pse'],haiti:['hti'],ghana:['gha'],sudan:['sdn','tcd'],rohingya:['mmr','bgd'],afghanistan:['afg'],congo:['cod'],qatar:['qat']};
+const ISO_NAME={tuv:'투발루',pak:'파키스탄',bgd:'방글라데시',som:'소말리아',pse:'팔레스타인',hti:'아이티',gha:'가나',sdn:'수단',tcd:'차드',mmr:'미얀마',afg:'아프가니스탄',cod:'콩고민주공화국',qat:'카타르'};
+const THEME_SITE={
+  환경:{title:'UN 뉴스 · 기후변화',desc:'기후 위기 관련 유엔 소식',url:'https://news.un.org/en/news/topic/climate-change'},
+  물:{title:'WHO·UNICEF 식수·위생 통계(JMP)',desc:'나라별 안전한 식수·화장실 이용률',url:'https://washdata.org/data'},
+  빈곤:{title:'UNDP 인간개발보고서 데이터',desc:'나라별 소득·교육·건강 지표',url:'https://hdr.undp.org/data-center/specific-country-data'},
+  난민:{title:'UNHCR 난민 현황 데이터',desc:'지역별 난민 수와 상황 보고',url:'https://data.unhcr.org/en/situations'},
+  인권:{title:'국제앰네스티 한국지부',desc:'인권 보고서와 캠페인(한국어)',url:'https://amnesty.or.kr'},
+};
+const host=u=>{try{return new URL(u).hostname.replace(/^www\./,'');}catch{return '';}};
+const linkCard=(kind,title,meta,url)=>`<a class="src-card" href="${esc(url)}" target="_blank" rel="noopener noreferrer"><span class="src-kind">${esc(kind)}</span><strong>${esc(title)}</strong><span class="src-meta">${esc(meta)}</span><span class="src-go" aria-hidden="true">↗</span></a>`;
+function research(c){
+  const more=[...(ISO[c.id]||[]).map(k=>linkCard('현지 소식',`ReliefWeb · ${ISO_NAME[k]}`,'유엔이 모은 최신 상황 보고서 · reliefweb.int',`https://reliefweb.int/country/${k}`)),
+    ...(THEME_SITE[c.theme]?[THEME_SITE[c.theme]].map(t=>linkCard('통계·자료',t.title,`${t.desc} · ${host(t.url)}`,t.url)):[])];
+  return `<div class="research">
+    <div class="research-part"><h3>이 이야기의 바탕 자료</h3><p class="sec-note">처음에 본 ‘실제로 확인된 사실’입니다. 원문을 열어 맞는지 직접 확인해 보세요.</p>${facts(c)}
+      <div class="src-grid">${c.sources.map(x=>linkCard('원문 출처',x.title,`${x.date} · ${host(x.url)}`,x.url)).join('')}</div></div>
+    <div class="research-part"><h3>더 찾아볼 곳</h3><p class="sec-note">영어 사이트는 브라우저의 번역 기능을 켜고 읽어도 됩니다. 자료의 날짜를 꼭 확인하세요.</p>
+      <div class="src-grid">${more.join('')}</div></div>
+  </div>`;
+}
 function lab(c){return `<div class="game">${epiArt(c,1)}<div class="stage-main"><article class="paper-card">
-  <header class="card-head"><p class="label">마무리 2/4 · 질문 연구소</p><h1>답을 받기 전에, 질문을 더 깊게.</h1></header>
+  <header class="card-head"><p class="label">마무리 2/4 · 질문·조사</p><h1>답을 받기 전에, 질문을 더 깊게.</h1></header>
   <div class="card-body">
     <div class="callout"><strong>이 이야기의 출발 질문</strong><p>${esc(c.question)}</p></div>
     ${sec('① 질문 다듬기',field('firstQuestion','나의 첫 질문','예: 이 지역의 문제를 어떻게 해결할 수 있을까?')+field('betterQuestion','더 구체적으로 바꾼 질문','누가 겪는 어떤 어려움인가요? 실행 조건과 책임질 주체까지 넣어 보세요.')+`<p class="sec-note">질문에 넣어 볼 주체: ${esc(c.actors)}</p>`)}
-    ${sec('② 조사하기',`<div class="tool-row"><button class="btn ghost" data-action="copy-prompt">AI 질문 복사</button><button class="link" data-action="show-prompt">질문 미리보기</button></div><div id="prompt-preview" class="prompt" hidden></div>`+field('answer','AI 답변 또는 원문 조사 내용','AI를 쓰지 않았다면 읽은 자료를 요약해도 됩니다. 개인정보는 넣지 마세요.'),'질문을 복사해 <strong>학교에서 허용한 AI</strong>에 넣거나, 원문 자료를 직접 읽어 보세요.')}
+    ${sec('② 조사하기',research(c)+`<div class="tool-row"><button class="btn ghost" data-action="copy-prompt">AI 질문 복사</button><button class="btn ghost" data-action="show-prompt" aria-expanded="false" aria-controls="prompt-preview">질문 미리보기 <svg class="ico caret" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></div>
+    <div id="prompt-preview" class="prompt-pop" hidden><div class="pop-head"><strong>AI에게 보낼 질문</strong><span>이 내용이 그대로 복사됩니다</span></div><div class="pop-body"></div></div>`+field('answer','AI 답변 또는 원문 조사 내용','읽은 자료를 요약하거나 AI 답변을 붙여 넣으세요. 개인정보는 넣지 마세요.'),'아래 원문 자료를 직접 열어 읽거나, 질문을 복사해 <strong>학교에서 허용한 AI</strong>에 넣어 보세요.')}
     ${sec('③ 근거 확인하기',field('evidence','어떤 주장을 어디에서 확인했나요?','주장 / 기관 / 자료 제목·날짜 / 원문 주소 / 일치 여부','','AI가 준 링크도 직접 열어 그 주장을 뒷받침하는지 확인하세요.')+field('revision','받아들이지 않거나 고친 내용은?','근거가 없던 주장, 빠진 사람의 입장, 지역에 맞지 않는 제안을 적어 보세요.'))}
   </div>
-  <footer class="card-foot"><button class="btn big" data-action="to-plan">해결 계획 세우기 →</button><button class="link" data-nav="reflect">← 돌아보기 고치기</button></footer>
+  <footer class="card-foot step-nav"><button class="btn ghost back" data-nav="reflect">← 돌아보기</button><button class="btn big" data-action="to-plan">해결 계획 세우기 →</button></footer>
 </article></div></div>`;}
 
 const planFields=[['problem','우리가 해결할 구체적인 문제','누가 어느 지역에서 어떤 권리를 누리지 못하고 있나요?'],['immediate','지금 필요한 지원','당장 필요한 변화와 그것을 실행할 주체를 적어 보세요.'],['longterm','문제를 되풀이하게 만드는 조건을 바꿀 방법','제도·시설·소득·차별 등 원인에 맞서는 방법을 적어 보세요.'],['roles','누가 무엇을 책임져야 하나요?','당사자·정부·기업·국제사회 가운데 관련 주체와 역할을 나눠 보세요.'],['participation','현지 사람들의 의견과 노력을 어떻게 반영할까요?','당사자의 동의·참여와 이미 하고 있는 노력을 생각해 보세요.'],['tradeoff','비용·한계·부작용은 무엇인가요?','누가 부담을 지는지, 필요한 자원, 예상하지 못한 피해를 적으세요.'],['action','우리 모둠이 할 수 있는 구체적인 행동','누구에게, 무엇을, 언제까지 할까요? 문제의 원인과 어떻게 이어지나요?'],['measure','변화를 어떻게 확인할까요?','모금액이나 홍보 횟수 말고, 당사자의 생활이 나아졌는지 확인할 기준을 적으세요.']];
@@ -495,7 +514,7 @@ function plan(c){const pf=keys=>planFields.filter(([k])=>keys.includes(k)).map((
       ${sec('③ 어떻게 할까',pf(['tradeoff','action','measure']))}
       ${sec('마지막 점검',`<div class="checks">${[['checkedSource','원문 자료와 시점을 확인했다.'],['checkedFiction','실제 사실과 시뮬레이션의 가정을 구분했다.'],['checkedVoice','당사자의 의견과 참여를 고려했다.']].map(([n,l])=>`<label><input type="checkbox" data-field="${n}" ${fields()[n]?'checked':''}>${l}</label>`).join('')}</div><div id="plan-review" aria-live="polite"></div>`,'빈칸 점검은 칸이 채워졌는지만 봅니다. 사실이 맞는지, 해결책이 타당한지는 판단하지 않습니다.')}
     </div>
-    <footer class="card-foot"><button class="btn big" type="submit">탐구 기록 완성 →</button><button type="button" class="btn ghost" data-action="review">빈칸 점검</button><button type="button" class="link" data-nav="lab">← 질문 연구소</button></footer>
+    <footer class="card-foot step-nav"><button type="button" class="btn ghost back" data-nav="lab">← 질문·조사</button><button type="button" class="btn ghost" data-action="review">빈칸 점검</button><button class="btn big" type="submit">탐구 기록 완성 →</button></footer>
   </form>
 </article></div></div>`;}
 
@@ -584,15 +603,14 @@ document.addEventListener('click',async e=>{
   if(a==='ai-skip')closeModal();
   if(a==='ai-off'){AI.clear();toast('AI 연결을 끊었어요.');closeModal();if(view==='chat')render();}
   if(a==='next-scene'){
-    if(state.run.choices[state.run.step]===null)return;
-    
+    if(state.run.choices[state.run.step]===null||document.querySelector('.daypass'))return;
     const from=state.run.step;
-    if(from<2){state.run.step++;save();startTransition(c,from,from+1);navigate('chat');}
-    else{startTransition(c,from,3);render();window.scrollTo({top:0});}
+    if(from<2){state.run.step++;save();navigate('chat');dayPass(c,from,from+1);}
+    else{navigate('reflect');dayPass(c,from,3);}
   }
   if(a==='prev-scene'){state.run.step=Math.max(0,state.run.step-1);save();navigate('chat');}
   if(a==='copy-prompt')copy(promptText());
-  if(a==='show-prompt'){const p=document.querySelector('#prompt-preview');p.hidden=!p.hidden;p.textContent=promptText();}
+  if(a==='show-prompt'){const p=document.querySelector('#prompt-preview');p.hidden=!p.hidden;el.setAttribute('aria-expanded',String(!p.hidden));p.querySelector('.pop-body').textContent=promptText();const b=el.getBoundingClientRect(),r=p.getBoundingClientRect();p.style.setProperty('--arrow',Math.round(b.left+b.width/2-r.left)+'px');}
   if(a==='to-plan'){if(!fields().betterQuestion?.trim()){dialog({title:'질문을 먼저 다듬어 주세요',body:'"더 구체적으로 바꾼 질문" 칸을 채우면 다음으로 넘어갈 수 있어요.'}).then(()=>focusEmpty(['betterQuestion']));return;}navigate('plan');}
   if(a==='review'){const box=document.querySelector('#plan-review');box.innerHTML=review();box.scrollIntoView({behavior:'smooth',block:'center'});}
   if(a==='download'){const blob=new Blob(['﻿'+reportText()],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`지구촌탐구_${c.id}.txt`;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('탐구 기록을 내려받기 시작했어요.');}
