@@ -225,6 +225,8 @@ body.is-game main{padding-top:24px;padding-bottom:24px}
 .paper-card .sec .story{margin-top:12px}
 .clear-badge{margin-top:14px;text-align:center;font-family:var(--serif);font-weight:700;font-size:18px;color:var(--tone);border:2px solid var(--tone);border-radius:14px;padding:10px;background:color-mix(in srgb,var(--tone) 8%,var(--card))}
 .side-actions{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+/* 기록 화면은 그림 아래 버튼이 있으므로 그림을 줄여 패널이 한 화면에 들어오게 */
+.stage-art:has(.side-actions) .art{max-height:calc(100vh - var(--topbar) - 360px);min-height:180px}
 .side-actions .btn:not(.ghost){background:var(--tone);border-color:var(--tone)}
 
 /* 모달 */
