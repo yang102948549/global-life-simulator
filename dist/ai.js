@@ -337,5 +337,7 @@ return {
   setModel(m){if(MODELS.some(([id])=>id===m))model=m;},
   clear(){key='';},
   turn,opening,brief,test,
+  // 미리 만들기 스크립트(precompute.cjs)가 같은 지시문·형식·안전 규칙을 쓰도록 내보낸다.
+  _gen:{call,outputText,cleanChips,openingPrompt,background,pastText,chipRules,SAFETY_RULES,PROMPT_HEAD,CHIPS,LIFE,BETWEEN,OPENING_SCHEMA,SAFETY},
 };
 })();

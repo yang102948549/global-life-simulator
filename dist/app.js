@@ -192,9 +192,13 @@ function pastScenes(c){
 // 장면 뒤 브리핑: 결정이 나면 AI가 '그 뒤의 삶'과 '다른 길을 간 삶'을 쓴다.
 // ch.brief가 undefined면 아직 만들지 않은 것, null이면 AI 없이 대본 결과만 쓴다.
 let briefing=false;
+// 미리 만든 내용(precomputed.js): A·B 선택으로 정해지는 부분은 AI를 부르지 않고 여기서 꺼낸다.
+const PRE=window.PRECOMPUTED||{};
 function ensureBrief(c){
   const r=state.run,step=r.step,ch=chatOf(step),n=r.choices[step];
   if(n===null||ch.brief!==undefined||briefing)return;
+  const pre=PRE[c.id]?.scenes?.[step];
+  if(pre){ch.brief={mine:pre.lives[n],other:pre.lives[1-n],between:pre.after[n]};save();return;}
   if(!AI.ready){ch.brief=null;save();return;}
   briefing=true;
   AI.brief({c,step,past:pastScenes(c),n,log:ch.log})
@@ -220,7 +224,9 @@ let opening=false;
 let chipsLoading=false;
 function prefetchChips(c){
   const r=state.run,ch=r?.chats[0];
-  if(!r||!AI.ready||chipsLoading||ch.chips?.length||ch.log.some(e=>e.k==='me'))return;
+  if(!r||chipsLoading||ch.chips?.length||ch.log.some(e=>e.k==='me'))return;
+  if(PRE[c.id]?.chips0){ch.chips=PRE[c.id].chips0;save();return;}
+  if(!AI.ready)return;
   chipsLoading=true;
   AI.opening({c,step:0,past:[],fixed:true})
     .then(o=>{if(state.run===r&&!ch.log.some(e=>e.k==='me'))ch.chips=o.chips;})
@@ -230,6 +236,14 @@ function prefetchChips(c){
 function openScene(c){
   const r=state.run,step=r.step,ch=chatOf(step),s=c.scenes[step];
   if(ch.log.length||opening)return;
+  // 낮·저녁 첫머리: 앞 장면에서 고른 길에 맞춰 미리 만든 글
+  const pre=step>0&&PRE[c.id]?.openings?.[step]?.[r.choices[step-1]];
+  if(pre){
+    ch.opening=pre.narration;ch.chips=pre.chips;
+    ch.log.push({k:'story',text:pre.narration});
+    if(pre.dialogue)ch.log.push({k:'say',speaker:pre.speaker||'주변 사람',text:pre.dialogue});
+    save();return;
+  }
   if(step===0||!AI.ready){
     ch.log.push({k:'story',text:s.story});save();
     if(step===0)prefetchChips(c);
@@ -271,9 +285,9 @@ async function dayPass(c,from,to){
   el.className=`daypass from-${PHASE[fromT]} to-${PHASE[toT]}`;
   el.setAttribute('role','status');el.setAttribute('aria-live','polite');
   el.style.setProperty('--dur',dur+'ms');
-  el.innerHTML=`<div class="dp-sky dp-from"></div><div class="dp-sky dp-to"></div><div class="dp-sun" aria-hidden="true"></div>
+  el.innerHTML=`<div class="dp-sky dp-from"></div><div class="dp-sky dp-to"></div><div class="dp-orbit" aria-hidden="true"><div class="dp-sun"></div></div>
     <div class="dp-card">
-      <p class="dp-phase"><span>${esc(fromT)}</span><span class="dp-bar" aria-hidden="true"><i></i></span><span>${esc(toT)}</span></p>
+      <p class="dp-phase"><span>${esc(fromT)}</span><span class="dp-arc" aria-hidden="true"><span class="arm"><i></i></span></span><span>${esc(toT)}</span></p>
       <ol class="dp-list">${items.map((x,i)=>`<li style="--i:${i}">${x.when?`<b>${esc(x.when)}</b>`:''}${esc(x.text)}</li>`).join('')}</ol>
       <p class="dp-next" style="--i:${items.length}">${to<3?`${esc(toT)} · ${esc(c.scenes[to].title)}`:`${esc(c.name)}의 하루가 저문다`}</p>
     </div>`;
