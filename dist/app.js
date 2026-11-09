@@ -245,6 +245,10 @@ function scrollLog(){
 /* ---------- AI 연결 창 ---------- */
 function openAiModal(then){
   const m=document.querySelector('#modal');
+  if(AI.server){
+    m.innerHTML=`<div class="modal-box"><h2>AI 대화 연결됨</h2><p class="muted small">학교 서버를 통해 Gemini에 연결되어 있어요. 키를 넣지 않아도 바로 대화할 수 있어요. 대화는 Google에 저장되지 않게 보내고, 이 브라우저에만 기록됩니다.</p><div class="actions"><button type="button" class="btn" data-action="ai-skip">확인</button></div></div>`;
+    m.hidden=false;openAiModal.then=then;return;
+  }
   m.innerHTML=`<form class="modal-box" id="ai-form">
     <h2>AI 대화 연결</h2>
     <p class="muted small">Gemini API 키를 넣으면 캐릭터 주변 인물이 학생의 말에 답합니다. 키는 이 탭의 메모리에만 있고 어디에도 저장되지 않습니다. <strong>새로고침하면 다시 넣어야 합니다.</strong></p>
@@ -259,6 +263,8 @@ function openAiModal(then){
 }
 function closeModal(){const m=document.querySelector('#modal');m.hidden=true;m.innerHTML='';const then=openAiModal.then;openAiModal.then=null;renderStatus();if(then)then();}
 function renderStatus(){const b=document.querySelector('#ai-status');b.textContent=AI.ready?'AI 연결됨':'AI 연결';b.classList.toggle('on',AI.ready);}
+// 학교 서버에 키가 있으면 키 입력 없이 바로 연결된다.
+AI.serverCheck.then(ok=>{if(!ok)return;renderStatus();if(view==='chat')render();});
 
 /* ---------- 돌아보기 이후: 게임 화면과 같은 틀(왼쪽 그림, 오른쪽 종이 카드) ---------- */
 const EPI=['돌아보기','질문','계획','기록'];

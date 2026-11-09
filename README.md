@@ -8,9 +8,23 @@
 
 브라우저에서 http://127.0.0.1:4173 을 엽니다. 빌드 없이 HTML/CSS/JavaScript만으로 동작합니다.
 
-## 배포 (GitHub Pages)
+## 배포 (onischool.net/anotherday — 수업용 주소)
 
-- 주소: https://yang102948549.github.io/global-life-simulator/
+- 주소: https://onischool.net/anotherday/
+- onischool.net 사이트 저장소(`yang102948549/onischool`, 로컬 `codex/OniSchool/onischool-release`)의 `anotherday/` 폴더로 들어가고, Cloudflare Pages가 배포합니다.
+- AI 키는 서버 함수 `functions/anotherday/api/chat.js`(onischool 저장소)가 Cloudflare 비밀값 `GEMINI_API_KEY`로 사용합니다. 학생 기기에는 키가 가지 않고, 키 입력 없이 바로 AI와 대화할 수 있습니다.
+- 키 등록: Cloudflare 대시보드 → Workers & Pages → onischool.net을 배포하는 Pages 프로젝트 → Settings → Variables and Secrets → Production에 `GEMINI_API_KEY`(Secret) 추가 → 다시 배포.
+- 고친 뒤 반영하기:
+
+```
+node validate.cjs
+node sync-onischool.cjs        # dist → onischool-release/anotherday 복사
+# 그다음 onischool-release 저장소에서 커밋하고 git push origin main
+```
+
+## 예비 주소 (GitHub Pages)
+
+- 주소: https://yang102948549.github.io/global-life-simulator/ (서버 함수가 없으므로 교사가 'AI 연결'에 키를 직접 넣는 방식)
 - `dist` 폴더 내용만 `gh-pages` 브랜치로 올리면 Pages가 그대로 보여 줍니다.
 - 고친 뒤 다시 배포하기 (`main`에 커밋한 다음):
 
