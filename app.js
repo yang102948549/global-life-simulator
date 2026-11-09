@@ -200,13 +200,14 @@ function chat(c){
   <article class="scene-card">
     <header class="card-head"><p class="label">${esc(s.time)} · 장면 ${step+1}/3</p><h1>${esc(s.title)}</h1></header>
     <div class="card-body" id="log" aria-live="polite">${ch.log.map(e=>entry(e,c,s)).join('')}${pending?'<p class="msg typing" aria-label="답을 쓰는 중"><i></i><i></i><i></i></p>':''}</div>
-    <footer class="card-foot">
-      <p class="ask">${esc(c.name)}(이)라면, 어떻게 할까요?</p>
-      <div class="choice-row">${s.options.map((o,i)=>`<button class="choice" data-pick="${i}" ${pending?'disabled':''}><span class="key">${'AB'[i]}</span><span>${esc(o.text)}</span></button>`).join('')}</div>
+    <footer class="card-foot${AI.ready?' talk':''}">
       ${AI.ready?`<form id="say-form" class="say-box">
-        <textarea id="say" rows="1" maxlength="500" placeholder="고르기 전에 주변 사람에게 말을 걸어 보세요. *행동*은 별표로" ${pending?'disabled':''}></textarea>
+        <textarea id="say" rows="1" maxlength="500" placeholder="${esc(c.name)}(이)가 되어 말해 보세요" ${pending?'disabled':''}></textarea>
         <button type="button" class="icon" data-action="star" title="행동 표시(*) 넣기">*</button><button class="btn small" ${pending?'disabled':''}>보내기</button>
-      </form>`:`<p class="hint">오른쪽 위 <b>AI 연결</b>을 하면 고르기 전에 주변 사람과 직접 대화할 수 있어요.</p>`}
+      </form>
+      <p class="ask small-ask">결정할 준비가 되면 하나를 고르세요${ch.lean&&ch.lean!=='none'?` · 지금은 <b>${ch.lean}</b> 쪽으로 기운 것 같아요`:''}</p>`:`<p class="ask">${esc(c.name)}(이)라면, 어떻게 할까요?</p>`}
+      <div class="choice-row">${s.options.map((o,i)=>`<button class="choice${ch.lean==='AB'[i]?' leaning':''}" data-pick="${i}" ${pending?'disabled':''}><span class="key">${'AB'[i]}</span><span>${esc(o.text)}</span></button>`).join('')}</div>
+      ${AI.ready?'':`<p class="hint">오른쪽 위 <b>AI 연결</b>을 하면 고르기 전에 주변 사람과 자유롭게 대화할 수 있어요.</p>`}
     </footer>
   </article>${under}</div></div>`;}
 function lock(c,n){
@@ -224,8 +225,8 @@ async function say(c,text){
     ch.api=history;
     if(reply.narration?.trim())ch.log.push({k:'narr',text:reply.narration.trim()});
     if(reply.dialogue?.trim())ch.log.push({k:'say',speaker:reply.speaker?.trim()||'주변 사람',text:reply.dialogue.trim().replace(/^["“]|["”]$/g,'')});
-    pending=false;
-    if(reply.choice==='A'||reply.choice==='B'){lock(c,reply.choice==='A'?0:1);return;}
+    // AI는 결정하지 않는다. 학생의 말이 어느 쪽으로 기울었는지만 표시하고, 결정은 버튼으로.
+    ch.lean=reply.lean;
   }catch(err){
     ch.log.pop();
     ch.log.push({k:'error',text:err.message});
@@ -233,7 +234,13 @@ async function say(c,text){
   }
   pending=false;save();render();scrollLog();
 }
-function scrollLog(){const log=document.querySelector('#log');if(log)log.scrollTo({top:log.scrollHeight,behavior:reduceMotion?'auto':'smooth'});}
+// 넓은 화면은 카드 안쪽이, 휴대폰·태블릿은 페이지 전체가 스크롤된다. 어느 쪽이든 마지막 말이 보이게 내린다.
+function scrollLog(){
+  const log=document.querySelector('#log'),behavior=reduceMotion?'auto':'smooth';
+  if(!log)return;
+  if(log.scrollHeight>log.clientHeight+4)log.scrollTo({top:log.scrollHeight,behavior});
+  else{const last=log.lastElementChild;if(last)last.scrollIntoView({block:'end',behavior});}
+}
 
 /* ---------- AI 연결 창 ---------- */
 function openAiModal(then){
@@ -350,7 +357,9 @@ async function copy(text){
 }
 
 /* ---------- 입력 처리 ---------- */
-document.addEventListener('input',e=>{const el=e.target;if(el.dataset.field&&state.run){state.run.fields[el.dataset.field]=el.type==='checkbox'?el.checked:el.value;save();}});
+document.addEventListener('input',e=>{const el=e.target;
+  // 대화 입력칸은 쓰는 만큼 늘어난다(최대 약 5줄)
+  if(el.id==='say'){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,140)+'px';}if(el.dataset.field&&state.run){state.run.fields[el.dataset.field]=el.type==='checkbox'?el.checked:el.value;save();}});
 document.addEventListener('click',async e=>{
   const el=e.target.closest('button,a#brand');if(!el)return;
   if(el.id==='brand'){e.preventDefault();navigate('home');return;}
