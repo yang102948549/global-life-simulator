@@ -179,9 +179,16 @@ body.is-game main{padding-top:24px;padding-bottom:24px}
 .choice{display:flex;gap:12px;align-items:flex-start;text-align:left;padding:14px 16px;border-radius:16px;border:2px solid var(--line);background:var(--card);font-size:15px;line-height:1.55;font-weight:600;transition:border-color .15s,transform .15s,box-shadow .15s}
 .choice:hover:not(:disabled){border-color:var(--tone);transform:translateY(-2px);box-shadow:0 10px 20px -14px rgba(60,40,20,.5)}
 .choice .key{flex:none;width:26px;height:26px;border-radius:8px;background:var(--tone);color:#fffaf0;display:grid;place-items:center;font-size:13px}
+/* AI 대화 중: 입력칸이 주인공, 선택 버튼은 아래에 작게. 학생의 말이 기운 쪽은 살짝 강조 */
+.card-foot.talk .say-box{margin-top:0}
+.small-ask{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--muted);margin:12px 0 8px}
+.small-ask b{color:var(--tone)}
+.card-foot.talk .choice{padding:10px 14px;font-size:14px;border-width:1px}
+.choice.leaning{border-color:var(--tone);background:color-mix(in srgb,var(--tone) 8%,var(--card))}
 .say-box{display:flex;align-items:flex-end;gap:6px;margin-top:12px;border:1px solid var(--line);border-radius:16px;padding:8px 8px 8px 14px;background:var(--card)}
 .say-box:focus-within{border-color:var(--tone)}
-.say-box textarea{flex:1;width:auto;min-width:0;display:block;border:0;resize:none;outline:none;margin:0;padding:6px 0;min-height:0;line-height:1.6;background:transparent;border-radius:0}
+.say-box textarea{flex:1;width:auto;min-width:0;display:block;border:0;resize:none;outline:none;margin:0;padding:6px 0;min-height:0;line-height:1.6;background:transparent;border-radius:0;overflow-y:auto;scrollbar-width:none}
+.say-box textarea::-webkit-scrollbar{display:none}
 .icon{width:36px;height:36px;border-radius:10px;border:0;background:none;font-size:18px;font-weight:700;color:var(--muted)}
 .icon:hover{background:var(--paper-2);color:var(--ink)}
 .hint{font-size:14px;color:var(--muted);margin-top:12px}
@@ -287,6 +294,23 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
 
 @keyframes dot{0%,100%{opacity:.3}50%{opacity:1}}
 
+/* 휴대폰 주소창이 늘었다 줄었다 해도 높이가 맞도록 dvh를 쓴다(지원하지 않으면 위의 vh 값 사용) */
+@supports (height:100dvh){
+  main{min-height:calc(100dvh - var(--topbar) - 70px)}
+  .title-screen{min-height:calc(100dvh - var(--topbar) - 70px)}
+  .scene-card{max-height:calc(100dvh - var(--topbar) - 90px)}
+  .stage-art .art{max-height:calc(100dvh - var(--topbar) - 190px)}
+}
+/* 손가락으로 누르는 기기: 누르는 곳을 44px 이상으로, 마우스용 떠오르는 효과는 끈다 */
+@media (pointer:coarse){
+  .icon{width:44px;height:44px}
+  .btn.small{min-height:44px}
+  .link{padding:10px 4px}
+  .chip{padding:10px 16px}
+  nav button{min-height:40px}
+  .choice:hover:not(:disabled),.tile:hover{transform:none;box-shadow:none}
+}
+
 @media (max-width:900px){
   .game{grid-template-columns:1fr;gap:16px}
   .stage-art{position:static;display:grid;grid-template-columns:96px 1fr;gap:6px 14px;align-items:center}
@@ -296,7 +320,11 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
   .stage-art figcaption{display:none}
   .stage-art .pips{margin:0}
   .stage-art .wish{margin:0;font-size:15px}
-  .scene-card{max-height:none}
+  /* 태블릿·휴대폰: 카드가 페이지째 길어지고, 입력칸과 선택 버튼은 화면 아래에 붙는다 */
+  .scene-card{max-height:none!important;overflow:visible}
+  .scene-card .card-head{border-radius:22px 22px 0 0}
+  .scene-card .card-foot{position:sticky;bottom:0;z-index:5;border-radius:0 0 22px 22px;padding-bottom:max(16px,env(safe-area-inset-bottom));box-shadow:0 -10px 24px -18px rgba(60,40,20,.5)}
+  .scene-card.result .card-foot{position:static;box-shadow:none}
   .recap{grid-template-columns:1fr}
   .stage-art .clear-badge,.stage-art .side-actions{grid-column:1/-1}
   .split,.profile{grid-template-columns:1fr;gap:28px}
@@ -306,8 +334,17 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
   .grid3,.grid2{grid-template-columns:1fr}
 }
 @media (max-width:560px){
-  .topbar{height:auto;min-height:var(--topbar);flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
-  nav button{padding:6px 8px;font-size:14px}
+  :root{--topbar:54px}
+  .topbar{gap:6px}
+  .brand{font-size:16px;white-space:nowrap}
+  nav button{padding:6px 7px;font-size:13px;white-space:nowrap}
+  nav button[data-nav="home"]{display:none}
+  .ai-status{margin-left:2px}
+  .card-head h1{font-size:22px}
+  .story{font-size:17px}
+  .scene-card .card-foot{padding-left:12px;padding-right:12px}
+  .card-foot.talk .choice{padding:9px 12px}
+  textarea,input:not([type=checkbox]),select,.say-box textarea{font-size:16px}
   main{padding-top:24px}
   .slots{grid-template-columns:repeat(3,1fr);gap:8px}
   .choice-row{grid-template-columns:1fr}
@@ -317,6 +354,8 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
   .stage-art .art{width:72px}
   .stage-art .wish{display:none}
   .btn{flex:1 1 auto}
+  .say-box .btn{flex:none}
+  .say-box .icon{width:36px}
   .title-fan .art{margin:0 -18px}
   .split .side .art{max-width:180px}
 }

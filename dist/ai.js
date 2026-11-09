@@ -19,9 +19,9 @@ const SCHEMA={
     narration:{type:'string',description:'장면 묘사. 3인칭 현재형, 1~3문장. 주인공의 생각이나 감정을 대신 정하지 않는다.'},
     speaker:{type:'string',description:'이번에 말하는 주변 인물의 이름이나 호칭(예: 엄마, 탈라). 대사가 없으면 빈 문자열.'},
     dialogue:{type:'string',description:'주변 인물의 대사. 따옴표 없이 1~2문장. 없으면 빈 문자열.'},
-    choice:{type:'string',enum:['none','A','B'],description:'학생의 이번 말이나 행동이 선택지 A 또는 B를 실행하기로 분명히 정한 것이면 그 글자, 아니면 none.'},
+    lean:{type:'string',enum:['none','A','B'],description:'지금까지 학생의 말이 선택지 A·B 가운데 어느 쪽으로 기울었는지. 분명하지 않으면 none. 이것은 표시용이며 장면을 끝내지 않는다.'},
   },
-  required:['narration','speaker','dialogue','choice'],
+  required:['narration','speaker','dialogue','lean'],
 };
 
 function systemPrompt(c,step,prevChoices){
@@ -40,17 +40,19 @@ ${before}
 
 [현재 장면: ${s.time} 「${s.title}」]
 ${s.story}
-선택지 A: ${s.options[0].text}
-선택지 B: ${s.options[1].text}
+이 장면 끝에 학생이 화면의 버튼으로 직접 고를 두 가지 길(참고용):
+- A: ${s.options[0].text}
+- B: ${s.options[1].text}
 (이 장면의 구조적 배경: ${s.barrier})
 
 [진행 규칙]
-1. 학생의 말과 행동에 주변 인물이 자연스럽게 반응하게 하라. 장면의 긴장(두 선택 모두 무언가를 잃는다)을 유지하라.
-2. 학생이 A나 B를 하기로 분명히 말하거나 행동하면 choice에 그 글자를 넣고, 그 행동이 막 시작되는 순간까지만 묘사하라. 결과는 앱이 따로 보여 준다.
-3. 학생이 A·B가 아닌 제3의 방법을 시도하면, 현실의 제약 때문에 쉽지 않다는 것을 주변 인물의 반응으로 보여 주고 다시 두 선택 쪽으로 돌아오게 하라. 개인의 노력만으로 구조적 문제가 해결되는 것처럼 그리지 마라.
-4. 학생이 망설이거나 대화가 길어지면 주변 인물이 결정을 부드럽게 재촉하게 하라.
-5. 주인공의 감정·생각·말을 대신 쓰지 마라. 그것은 학생의 몫이다.
-6. 한국어로, 중학생이 읽기 쉬운 문장으로 짧게 써라.
+1. 이것은 자유 대화다. 학생이 무엇을 말하든 주변 인물이 그 말에 진짜로 반응하게 하라. 질문에는 답하고, 인물마다 자기 사정·걱정·바람을 가진 사람으로 말하게 하라.
+2. 결정은 학생이 화면의 버튼으로 내린다. 너는 장면을 끝내거나 선택을 대신 확정하지 마라. 학생이 "A로 할게"처럼 말해도 주변 인물이 그 말에 반응할 뿐, 행동의 결과는 쓰지 마라.
+3. 대화를 넓혀라. 주변 인물이 학생에게 되묻거나, 학생이 아직 모르는 사정(시간, 돈, 거리, 가족의 형편, 지역의 조건)을 하나씩 드러내게 하라. 같은 말을 되풀이하지 마라.
+4. 학생이 A·B가 아닌 제3의 방법을 시도하면 그것을 시도하는 장면을 짧게 보여 주되, 현실의 제약 때문에 쉽게 풀리지 않는다는 것을 드러내라. 개인의 노력만으로 구조적 문제가 해결되는 것처럼 그리지 마라.
+5. 결정을 서두르게 하지 마라. 학생이 여러 번 말을 나눈 뒤에야, 주변 인물이 "이제 어떻게 할래?"처럼 자연스럽게 물을 수 있다.
+6. 주인공의 감정·생각·말을 대신 쓰지 마라. 그것은 학생의 몫이다.
+7. 한국어로, 중학생이 읽기 쉬운 문장으로 짧게 써라.
 
 [안전 규칙: 항상 우선]
 - 죽음, 잔인한 폭력, 성적인 내용, 연애 묘사를 쓰지 마라. 위험은 암시만 하라.
@@ -99,7 +101,7 @@ async function turn({c,step,prevChoices,history,text}){
   });
   let reply;
   try{reply=JSON.parse(outputText(data));}catch{throw new Error('AI 답을 읽지 못했어요. 한 번 더 보내 주세요.');}
-  if(!['none','A','B'].includes(reply.choice))reply.choice='none';
+  if(!['none','A','B'].includes(reply.lean))reply.lean='none';
   return {reply,history:[...input,...(data.steps||[])]};
 }
 
