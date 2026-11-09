@@ -198,6 +198,35 @@ body.is-game main{padding-top:24px;padding-bottom:24px}
 .card-under{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;font-size:13px;color:var(--muted)}
 @keyframes deal{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
 
+/* 마무리 화면(돌아보기·질문·계획·기록): 장면 카드와 같은 종이 카드, 내용이 길어 페이지째 스크롤 */
+.paper-card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:0 24px 50px -28px rgba(60,40,20,.5);animation:deal .35s ease both}
+.paper-card .card-body{overflow:visible;min-height:0;gap:0;padding-bottom:8px}
+.paper-card .card-foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;border-radius:0 0 22px 22px}
+.paper-card .card-foot .btn.big{width:auto}
+.paper-card .card-foot .sec-note{width:100%;margin:0}
+.paper-card .btn:not(.ghost){background:var(--tone);border-color:var(--tone)}
+.paper-card .btn:not(.ghost):hover{filter:brightness(1.08)}
+.sec{padding:22px 0;border-top:1px dashed var(--line)}
+.sec:first-child,.callout+.sec{border-top:0}
+.sec h2{font-size:19px;color:var(--ink)}
+.sec-note{font-size:14px;color:var(--muted);margin-top:4px}
+.sec .field{margin:18px 0 0}
+.sec .field:first-of-type{margin-top:14px}
+.recap{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.recap-item{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px 14px 12px;display:flex;flex-direction:column}
+.recap-item .label{margin-bottom:4px}
+.recap-item strong{font-family:var(--serif);font-size:16px;line-height:1.5}
+.recap-item details{margin-top:auto;padding-top:10px;font-size:14px}
+.recap-item details p{color:var(--ink-2);margin-top:6px}
+.tool-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
+.paper-card .callout{margin-top:6px}
+.paper-card .report-block{padding:16px 0}
+.paper-card .report-block:first-of-type{border-top:0}
+.paper-card .sec .story{margin-top:12px}
+.clear-badge{margin-top:14px;text-align:center;font-family:var(--serif);font-weight:700;font-size:18px;color:var(--tone);border:2px solid var(--tone);border-radius:14px;padding:10px;background:color-mix(in srgb,var(--tone) 8%,var(--card))}
+.side-actions{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.side-actions .btn:not(.ghost){background:var(--tone);border-color:var(--tone)}
+
 /* 모달 */
 .modal{position:fixed;inset:0;z-index:50;background:rgba(43,33,25,.5);display:grid;place-items:center;padding:16px}
 .modal[hidden]{display:none}
@@ -266,6 +295,8 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
   .stage-art .pips{margin:0}
   .stage-art .wish{margin:0;font-size:15px}
   .scene-card{max-height:none}
+  .recap{grid-template-columns:1fr}
+  .stage-art .clear-badge,.stage-art .side-actions{grid-column:1/-1}
   .split,.profile{grid-template-columns:1fr;gap:28px}
   .side,.profile .portrait{position:static}
   .profile .portrait{max-width:360px;margin:0 auto;width:100%}
@@ -288,13 +319,16 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
   .split .side .art{max-width:180px}
 }
 @media (prefers-reduced-motion:reduce){
-  .msg.typing i,.scene-card{animation:none}
+  .msg.typing i,.scene-card,.paper-card{animation:none}
   .slot,.choice,.tile,.btn{transition:none}
 }
 @media print{
   body{font-size:11pt;background:#fff}
-  .topbar,body > footer,.no-print,#toast,.modal{display:none!important}
+  .topbar,body > footer,.no-print,#toast,.modal,.stage-art{display:none!important}
   main{padding:0;max-width:none}
+  .game{display:block}
+  .paper-card{border:0;box-shadow:none;animation:none}
+  .paper-card .card-head,.paper-card .card-body{padding-left:0;padding-right:0}
   .notice{background:none;border:1px solid #999}
   .report-block{break-inside:avoid}
 }

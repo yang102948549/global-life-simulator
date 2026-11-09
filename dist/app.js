@@ -67,9 +67,6 @@ function art(c,kind='card',extra=''){
   const src=`assets/characters/${esc(c.id)}${kind==='face'?'-face':''}.webp`;
   return `<div class="art art-${kind} ${extra}" style="--tone:${TONE[c.id]||DEFAULT_TONE}" aria-hidden="true"><span class="art-initial">${esc([...c.name][0])}</span><img src="${src}" alt="" loading="lazy" onerror="this.remove()"></div>`;
 }
-const STEPS=['캐릭터','대화','돌아보기','질문 연구소','해결 계획'];
-const trail=active=>`<ol class="trail" aria-label="진행 단계">${STEPS.map((t,i)=>`<li class="${i===active?'active':i<active?'done':''}"${i===active?' aria-current="step"':''}>${t}</li>`).join('')}</ol>`;
-function sideCard(c){return `<aside class="side">${art(c,'card')}<h2>${esc(c.name)}</h2><p class="muted">${esc(c.role)}</p><p class="muted">${esc(c.country)} · ${esc(c.region)}</p><blockquote>“${esc(c.wish)}”</blockquote><details><summary>실제로 확인된 사실</summary>${facts(c)}${sourceList(c)}</details></aside>`;}
 function field(name,label,placeholder='',required=false,help=''){return `<label class="field"><span>${esc(label)}${required?' <em>필수</em>':''}</span>${help?`<small>${esc(help)}</small>`:''}<textarea data-field="${name}" name="${name}" maxlength="4000" ${required?'required':''} placeholder="${esc(placeholder)}">${esc(fields()[name]||'')}</textarea></label>`;}
 function tile(c){const i=cases.indexOf(c),done=state.completed.includes(c.id);return `<button class="tile" data-start="${c.id}" style="--tone:${TONE[c.id]}">${art(c,'card')}<span class="tile-body"><span class="tile-meta">No.${pad(i+1)} · ${esc(c.theme)}${done?' · 완료':''}</span><strong>${esc(c.name)}</strong><span class="tile-title">${esc(c.title)}</span><span class="tile-desc">${esc(c.summary)}</span></span></button>`;}
 
@@ -256,65 +253,78 @@ function openAiModal(then){
 function closeModal(){const m=document.querySelector('#modal');m.hidden=true;m.innerHTML='';const then=openAiModal.then;openAiModal.then=null;renderStatus();if(then)then();}
 function renderStatus(){const b=document.querySelector('#ai-status');b.textContent=AI.ready?'AI 연결됨':'AI 연결';b.classList.toggle('on',AI.ready);}
 
-/* ---------- 돌아보기 이후 ---------- */
-function reflect(c){return `${trail(2)}<div class="split">${sideCard(c)}<section>
-  <p class="label">돌아보기</p>
-  <h1>어려웠던 건,<br>선택만의 문제였을까요?</h1>
-  <div class="history">${c.scenes.map((s,i)=>`<div><p class="label">${esc(s.time)} · ${esc(s.title)}</p><strong>${esc(s.options[state.run.choices[i]]?.text||'아직 고르지 않음')}</strong><p class="muted">${esc(s.barrier)}</p></div>`).join('')}</div>
-  <form id="reflection-form">${field('feeling','이 사람에게 가장 중요했던 것은 무엇일까?','“불쌍하다”는 말 대신, 지키고 싶었던 일상과 권리를 생각해 보세요.',true)}${field('constraint','내 선택만으로 바꾸기 어려웠던 조건은?','시설, 제도, 소득, 안전, 차별 가운데 구체적으로 적어 보세요.',true)}${field('unknown','체험만으로는 알 수 없는 것은?','당사자에게 더 듣고 싶은 이야기나 자료로 확인할 내용을 적어 보세요.',true)}
-  <div class="actions"><button class="btn" type="submit">질문 연구소로 →</button><button class="link" type="button" data-nav="chat">← 대화 다시 보기</button></div></form>
-</section></div>`;}
+/* ---------- 돌아보기 이후: 게임 화면과 같은 틀(왼쪽 그림, 오른쪽 종이 카드) ---------- */
+const EPI=['돌아보기','질문','계획','기록'];
+function epiArt(c,active,extra=''){return `<aside class="stage-art">
+  <figure class="portrait">${art(c,'card')}<figcaption><strong>${esc(c.name)}</strong>${esc(c.country)} · ${esc(c.region)}</figcaption></figure>
+  <ol class="pips" aria-label="마무리 단계">${EPI.map((t,i)=>`<li class="${i<active?'done':i===active?'now':''}"${i===active?' aria-current="step"':''}>${t}</li>`).join('')}</ol>
+  ${extra||`<p class="wish">“${esc(c.wish)}”</p>`}
+</aside>`;}
+// 하루 동안 고른 세 선택을 작은 카드로
+function recap(c){return `<div class="recap">${c.scenes.map((s,i)=>{const o=s.options[state.run.choices[i]];return `<div class="recap-item"><span class="label">${esc(s.time)}</span><strong>${esc(o?.text||'고르지 않음')}</strong><details><summary>선택을 넘어</summary><p>${esc(s.barrier)}</p></details></div>`;}).join('')}</div>`;}
+function sec(title,body,note=''){return `<section class="sec"><h2>${title}</h2>${note?`<p class="sec-note">${note}</p>`:''}${body}</section>`;}
+
+function reflect(c){return `<div class="game">${epiArt(c,0)}<div class="stage-main"><article class="paper-card">
+  <header class="card-head"><p class="label">마무리 1/4 · 돌아보기</p><h1>어려웠던 건, 선택만의 문제였을까요?</h1></header>
+  <form id="reflection-form">
+    <div class="card-body">
+      ${sec('나의 하루',recap(c),'세 장면에서 내가 고른 것입니다. ‘선택을 넘어’를 펼쳐 다시 읽어 보세요.')}
+      ${sec('생각해 보기',field('feeling','이 사람에게 가장 중요했던 것은 무엇일까?','“불쌍하다”는 말 대신, 지키고 싶었던 일상과 권리를 생각해 보세요.',true)+field('constraint','내 선택만으로 바꾸기 어려웠던 조건은?','시설, 제도, 소득, 안전, 차별 가운데 구체적으로 적어 보세요.',true)+field('unknown','체험만으로는 알 수 없는 것은?','당사자에게 더 듣고 싶은 이야기나 자료로 확인할 내용을 적어 보세요.',true))}
+    </div>
+    <footer class="card-foot"><button class="btn big" type="submit">질문 연구소로 →</button><button class="link" type="button" data-nav="chat">← 대화 다시 보기</button></footer>
+  </form>
+</article></div></div>`;}
 
 function promptText(){const c=current(),f=fields();return `나는 중학교 도덕 수업에서 ${c.country}, ${c.region}의 ${c.role}의 관점으로 진행한 가상 시뮬레이션을 했습니다. 인물과 장면은 가상이며 실제 체험이나 증언이 아닙니다.\n\n확인된 배경:\n${c.facts.map(x=>'- '+x).join('\n')}\n출처와 시점:\n${c.sources.map(s=>`${s.title} (${s.date}) ${s.url}`).join('\n')}\n\n내가 발견한 조건: ${f.constraint||'(아직 작성하지 않음)'}\n처음 질문: ${f.firstQuestion||c.question}\n더 구체화한 질문: ${f.betterQuestion||c.question}\n\n위 질문에 대해 ①당사자의 요구와 이미 하는 노력 ②즉시 지원과 장기적 변화 ③주민·정부·기업·국제사회의 역할 ④부작용·비용·실행 조건을 구분해 설명해 주세요. 확인된 사실과 추론을 구분하고 근거의 발행일과 원문 링크를 제시해 주세요. 원문을 확인할 수 없거나 최신 상황을 모르면 모른다고 말해 주세요. 가상의 당사자 발언이나 통계는 만들지 마세요. 결론을 대신 정하지 말고 내가 확인해야 할 질문도 제안해 주세요.`;}
 
-function lab(c){return `${trail(3)}<div class="split">${sideCard(c)}<section>
-  <p class="label">질문 연구소</p>
-  <h1>답을 받기 전에,<br>질문을 더 깊게.</h1>
-  <p class="lead-sm">질문을 복사해 <strong>학교에서 허용한 AI</strong>에 넣고, 답을 아래에 가져와 검토하세요. AI 없이 원문 자료로 조사해도 됩니다.</p>
-  <div class="callout"><strong>이 이야기의 출발 질문</strong><p>${esc(c.question)}</p></div>
-  ${field('firstQuestion','나의 첫 질문','예: 이 지역의 문제를 어떻게 해결할 수 있을까?')}
-  ${field('betterQuestion','더 구체적으로 바꾼 질문','누가 겪는 어떤 어려움인가요? 실행 조건과 책임질 주체까지 넣어 보세요.')}
-  <p class="muted small">질문에 넣어 볼 주체: ${esc(c.actors)}</p>
-  <div class="actions"><button class="btn ghost" data-action="copy-prompt">AI 질문 복사</button><button class="link" data-action="show-prompt">질문 미리보기</button></div>
-  <div id="prompt-preview" class="prompt" hidden></div>
-  ${field('answer','AI 답변 또는 원문 조사 내용','AI를 쓰지 않았다면 읽은 자료를 요약해도 됩니다. 개인정보는 넣지 마세요.')}
-  ${field('evidence','어떤 주장을 어디에서 확인했나요?','주장 / 기관 / 자료 제목·날짜 / 원문 주소 / 일치 여부','','AI가 준 링크도 직접 열어 그 주장을 뒷받침하는지 확인하세요.')}
-  ${field('revision','받아들이지 않거나 고친 내용은?','근거가 없던 주장, 빠진 사람의 입장, 지역에 맞지 않는 제안을 적어 보세요.')}
-  <div class="actions"><button class="btn" data-action="to-plan">해결 계획 세우기 →</button><button class="link" data-nav="reflect">← 돌아보기 고치기</button></div>
-</section></div>`;}
+function lab(c){return `<div class="game">${epiArt(c,1)}<div class="stage-main"><article class="paper-card">
+  <header class="card-head"><p class="label">마무리 2/4 · 질문 연구소</p><h1>답을 받기 전에, 질문을 더 깊게.</h1></header>
+  <div class="card-body">
+    <div class="callout"><strong>이 이야기의 출발 질문</strong><p>${esc(c.question)}</p></div>
+    ${sec('① 질문 다듬기',field('firstQuestion','나의 첫 질문','예: 이 지역의 문제를 어떻게 해결할 수 있을까?')+field('betterQuestion','더 구체적으로 바꾼 질문','누가 겪는 어떤 어려움인가요? 실행 조건과 책임질 주체까지 넣어 보세요.')+`<p class="sec-note">질문에 넣어 볼 주체: ${esc(c.actors)}</p>`)}
+    ${sec('② 조사하기',`<div class="tool-row"><button class="btn ghost" data-action="copy-prompt">AI 질문 복사</button><button class="link" data-action="show-prompt">질문 미리보기</button></div><div id="prompt-preview" class="prompt" hidden></div>`+field('answer','AI 답변 또는 원문 조사 내용','AI를 쓰지 않았다면 읽은 자료를 요약해도 됩니다. 개인정보는 넣지 마세요.'),'질문을 복사해 <strong>학교에서 허용한 AI</strong>에 넣거나, 원문 자료를 직접 읽어 보세요.')}
+    ${sec('③ 근거 확인하기',field('evidence','어떤 주장을 어디에서 확인했나요?','주장 / 기관 / 자료 제목·날짜 / 원문 주소 / 일치 여부','','AI가 준 링크도 직접 열어 그 주장을 뒷받침하는지 확인하세요.')+field('revision','받아들이지 않거나 고친 내용은?','근거가 없던 주장, 빠진 사람의 입장, 지역에 맞지 않는 제안을 적어 보세요.'))}
+  </div>
+  <footer class="card-foot"><button class="btn big" data-action="to-plan">해결 계획 세우기 →</button><button class="link" data-nav="reflect">← 돌아보기 고치기</button></footer>
+</article></div></div>`;}
 
 const planFields=[['problem','우리가 해결할 구체적인 문제','누가 어느 지역에서 어떤 권리를 누리지 못하고 있나요?'],['immediate','지금 필요한 지원','당장 필요한 변화와 그것을 실행할 주체를 적어 보세요.'],['longterm','문제를 되풀이하게 만드는 조건을 바꿀 방법','제도·시설·소득·차별 등 원인에 맞서는 방법을 적어 보세요.'],['roles','누가 무엇을 책임져야 하나요?','당사자·정부·기업·국제사회 가운데 관련 주체와 역할을 나눠 보세요.'],['participation','현지 사람들의 의견과 노력을 어떻게 반영할까요?','당사자의 동의·참여와 이미 하고 있는 노력을 생각해 보세요.'],['tradeoff','비용·한계·부작용은 무엇인가요?','누가 부담을 지는지, 필요한 자원, 예상하지 못한 피해를 적으세요.'],['action','우리 모둠이 할 수 있는 구체적인 행동','누구에게, 무엇을, 언제까지 할까요? 문제의 원인과 어떻게 이어지나요?'],['measure','변화를 어떻게 확인할까요?','모금액이나 홍보 횟수 말고, 당사자의 생활이 나아졌는지 확인할 기준을 적으세요.']];
 
-function plan(c){return `${trail(4)}<div class="split">${sideCard(c)}<section>
-  <p class="label">해결 계획</p>
-  <h1>좋은 마음을,<br>실행할 수 있는 계획으로.</h1>
-  <p class="lead-sm">개인의 노력과 공동체·제도의 변화를 이어 보세요. 정답 하나를 찾기보다 근거와 한계를 드러내는 제안을 만듭니다.</p>
-  <form id="plan-form">${planFields.map(([n,l,p])=>field(n,l,p,true)).join('')}
-  <p class="label">마지막 점검</p>
-  <div class="checks">${[['checkedSource','원문 자료와 시점을 확인했다.'],['checkedFiction','실제 사실과 시뮬레이션의 가정을 구분했다.'],['checkedVoice','당사자의 의견과 참여를 고려했다.']].map(([n,l])=>`<label><input type="checkbox" data-field="${n}" ${fields()[n]?'checked':''}>${l}</label>`).join('')}</div>
-  <div class="actions"><button class="btn" type="submit">탐구 기록 완성 →</button><button type="button" class="btn ghost" data-action="review">빈칸 점검</button><button type="button" class="link" data-nav="lab">← 질문 연구소</button></div>
-  <div id="plan-review" aria-live="polite"></div>
-  <p class="muted small">빈칸 점검은 칸이 채워졌는지만 봅니다. 사실이 맞는지, 해결책이 타당한지는 판단하지 않습니다.</p></form>
-</section></div>`;}
+function plan(c){const pf=keys=>planFields.filter(([k])=>keys.includes(k)).map(([n,l,p])=>field(n,l,p,true)).join('');return `<div class="game">${epiArt(c,2)}<div class="stage-main"><article class="paper-card">
+  <header class="card-head"><p class="label">마무리 3/4 · 해결 계획</p><h1>좋은 마음을, 실행할 수 있는 계획으로.</h1></header>
+  <form id="plan-form">
+    <div class="card-body">
+      <p class="sec-note">개인의 노력과 공동체·제도의 변화를 이어 보세요. 정답 하나를 찾기보다 근거와 한계를 드러내는 제안을 만듭니다.</p>
+      ${sec('① 무엇을 바꿀까',pf(['problem','immediate','longterm']))}
+      ${sec('② 누가 함께할까',pf(['roles','participation']))}
+      ${sec('③ 어떻게 할까',pf(['tradeoff','action','measure']))}
+      ${sec('마지막 점검',`<div class="checks">${[['checkedSource','원문 자료와 시점을 확인했다.'],['checkedFiction','실제 사실과 시뮬레이션의 가정을 구분했다.'],['checkedVoice','당사자의 의견과 참여를 고려했다.']].map(([n,l])=>`<label><input type="checkbox" data-field="${n}" ${fields()[n]?'checked':''}>${l}</label>`).join('')}</div><div id="plan-review" aria-live="polite"></div>`,'빈칸 점검은 칸이 채워졌는지만 봅니다. 사실이 맞는지, 해결책이 타당한지는 판단하지 않습니다.')}
+    </div>
+    <footer class="card-foot"><button class="btn big" type="submit">탐구 기록 완성 →</button><button type="button" class="btn ghost" data-action="review">빈칸 점검</button><button type="button" class="link" data-nav="lab">← 질문 연구소</button></footer>
+  </form>
+</article></div></div>`;}
 
 function review(){const f=fields(),checks=[...planFields.map(([n,l])=>[l,typeof f[n]==='string'&&f[n].trim().length>0]),['자료 검토 기록',!!f.evidence?.trim()],['원문·시점 확인 표시',!!f.checkedSource],['사실과 가정 구분 표시',!!f.checkedFiction],['당사자 참여 검토 표시',!!f.checkedVoice]];return `<ul class="review">${checks.map(([l,ok])=>`<li class="${ok?'ok':''}">${ok?'✓':'○'} ${esc(l)}</li>`).join('')}</ul>`;}
 
 function reportText(){const c=current(),r=state.run,f=fields();return `다른 곳의 하루 · 지구촌 탐구 기록\n활동 이름: ${f.nickname||'미입력'}\n캐릭터: ${c.name} (${c.role})\n지역: ${c.country} / ${c.region}\n완료 시각: ${new Date(r.finishedAt).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})} KST\n\n※ 실제 체험·증언이 아닌 학습용 가상 시뮬레이션입니다.\n\n[하루의 선택]\n${c.scenes.map((s,i)=>`${s.time}: ${s.options[r.choices[i]]?.text||'미선택'}\n결과(가정): ${s.options[r.choices[i]]?.result||''}\n선택의 이유: ${f['note'+i]||'미작성'}`).join('\n\n')}\n\n[돌아보기]\n중요했던 것: ${f.feeling||''}\n바꾸기 어려운 조건: ${f.constraint||''}\n더 알아볼 것: ${f.unknown||''}\n\n[질문과 검토]\n첫 질문: ${f.firstQuestion||'미작성'}\n개선 질문: ${f.betterQuestion||'미작성'}\nAI 답변/원문 조사: ${f.answer||'미작성'}\n근거 대조: ${f.evidence||'미작성'}\n수정·보류한 내용: ${f.revision||'미작성'}\n\n[해결 계획]\n${planFields.map(([n,l])=>`${l}\n${f[n]||'미작성'}`).join('\n\n')}\n\n[자가 확인]\n원문·시점: ${f.checkedSource?'확인 표시':'미확인'}\n사실·가정 구분: ${f.checkedFiction?'확인 표시':'미확인'}\n당사자 참여: ${f.checkedVoice?'확인 표시':'미확인'}\n\n[자료]\n${c.sources.map(s=>`${s.title}\n${s.date}\n${s.url}`).join('\n\n')}\n\n선택 결과는 예측이나 통계가 아닙니다. 기관의 승인·감수를 받은 자료는 아닙니다.`;}
 
-function report(c){const r=state.run,f=fields();return `<section class="report">
-  <p class="label">탐구 기록</p>
-  <h1>다른 곳의 하루에서,<br>함께 바꿀 내일로.</h1>
-  <p class="muted">${esc(f.nickname||'나의 탐구 기록')} · ${esc(c.name)} · ${esc(c.country)} / ${esc(c.region)}</p>
-  <div class="actions no-print"><button class="btn" data-action="download">기록 내려받기</button><button class="btn ghost" data-action="print">인쇄 / PDF</button><button class="link" data-nav="plan">← 계획 고치기</button></div>
-  <p class="notice">이 체험으로 한 사람의 삶을 다 이해했다고 말할 수는 없습니다. 아래 기록은 자동 평가나 AI의 검증을 거친 결과가 아닙니다.</p>
-  <div class="report-block"><h3>내가 만난 삶</h3><p>${esc(c.role)} · “${esc(c.wish)}”</p>${facts(c)}</div>
-  <div class="report-block"><h3>하루의 선택과 남은 어려움</h3>${c.scenes.map((s,i)=>`<p><strong>${esc(s.time)} · ${esc(s.options[r.choices[i]]?.text||'미선택')}</strong>\n결과(가정): ${esc(s.options[r.choices[i]]?.result||'')}\n내 생각: ${esc(f['note'+i]||'작성하지 않음')}\n선택을 넘어: ${esc(s.barrier)}</p>`).join('')}</div>
-  ${[['지키고 싶었던 일상과 권리','feeling'],['내 선택만으로 바꾸기 어려운 조건','constraint'],['아직 모르는 것','unknown'],['첫 질문','firstQuestion'],['고친 질문','betterQuestion'],['AI 답변 또는 원문 조사','answer'],['근거 확인 기록','evidence'],['고치거나 보류한 내용','revision'],...planFields.map(([n,l])=>[l,n])].map(([l,n])=>`<div class="report-block"><h3>${esc(l)}</h3><p>${esc(f[n]||'작성하지 않음')}</p></div>`).join('')}
-  <div class="report-block"><h3>자가 확인</h3><p>원문·시점: ${f.checkedSource?'확인':'미확인'} / 사실·가정 구분: ${f.checkedFiction?'확인':'미확인'} / 당사자 참여: ${f.checkedVoice?'확인':'미확인'}</p></div>
-  <div class="report-block"><h3>참고 자료와 시점</h3>${sourceList(c)}<p class="muted small">장면·인물·대화·선택 결과는 가상입니다. 해당 기관의 승인이나 감수를 받은 콘텐츠가 아닙니다.</p></div>
-  <div class="actions no-print"><button class="btn" data-action="random">다른 캐릭터 뽑기</button><button class="btn ghost" data-nav="atlas">캐릭터 목록</button></div>
-  <p class="muted small no-print">새 캐릭터를 시작하면 지금 기록이 바뀝니다. 먼저 내려받아 두세요.</p>
-</section>`;}
+function report(c){const r=state.run,f=fields();
+  const block=(l,n)=>`<div class="report-block"><h3>${esc(l)}</h3><p>${esc(f[n]||'작성하지 않음')}</p></div>`;
+  const side=`<div class="clear-badge">하루를 마쳤어요</div>
+  <div class="side-actions no-print"><button class="btn big" data-action="download">기록 내려받기</button><button class="btn ghost" data-action="print">인쇄 / PDF</button><button class="link" data-nav="plan">← 계획 고치기</button></div>`;
+  return `<div class="game">${epiArt(c,4,side)}<div class="stage-main"><article class="paper-card report">
+  <header class="card-head"><p class="label">마무리 4/4 · 탐구 기록</p><h1>다른 곳의 하루에서, 함께 바꿀 내일로.</h1><p class="muted">${esc(f.nickname||'나의 탐구 기록')} · ${esc(c.name)} · ${esc(c.country)} / ${esc(c.region)}</p></header>
+  <div class="card-body">
+    <p class="notice">이 체험으로 한 사람의 삶을 다 이해했다고 말할 수는 없습니다. 아래 기록은 자동 평가나 AI의 검증을 거친 결과가 아닙니다.</p>
+    ${sec('내가 만난 삶',`<p class="story">“${esc(c.wish)}”</p><p class="sec-note">${esc(c.role)}</p>${facts(c)}`)}
+    ${sec('하루의 선택과 남은 어려움',c.scenes.map((s,i)=>{const o=s.options[r.choices[i]];return `<div class="report-block"><h3>${esc(s.time)} · ${esc(o?.text||'미선택')}</h3><p>결과(가정): ${esc(o?.result||'')}\n내 생각: ${esc(f['note'+i]||'작성하지 않음')}\n선택을 넘어: ${esc(s.barrier)}</p></div>`;}).join(''))}
+    ${sec('돌아보기',block('지키고 싶었던 일상과 권리','feeling')+block('내 선택만으로 바꾸기 어려운 조건','constraint')+block('아직 모르는 것','unknown'))}
+    ${sec('질문과 검토',block('첫 질문','firstQuestion')+block('고친 질문','betterQuestion')+block('AI 답변 또는 원문 조사','answer')+block('근거 확인 기록','evidence')+block('고치거나 보류한 내용','revision'))}
+    ${sec('해결 계획',planFields.map(([n,l])=>block(l,n)).join('')+`<div class="report-block"><h3>자가 확인</h3><p>원문·시점: ${f.checkedSource?'확인':'미확인'} / 사실·가정 구분: ${f.checkedFiction?'확인':'미확인'} / 당사자 참여: ${f.checkedVoice?'확인':'미확인'}</p></div>`)}
+    ${sec('참고 자료와 시점',sourceList(c)+'<p class="sec-note">장면·인물·대화·선택 결과는 가상입니다. 해당 기관의 승인이나 감수를 받은 콘텐츠가 아닙니다.</p>')}
+  </div>
+  <footer class="card-foot no-print"><button class="btn big" data-action="random">다른 캐릭터 뽑기</button><button class="btn ghost" data-nav="atlas">캐릭터 목록</button><p class="sec-note">새 캐릭터를 시작하면 지금 기록이 바뀝니다. 먼저 내려받아 두세요.</p></footer>
+</article></div></div>`;}
 
 /* ---------- 그리기 ---------- */
 function render(){
@@ -323,7 +333,7 @@ function render(){
   if(view==='chat')openScene(c);
   const pages={home,atlas,guide,select,intro:()=>intro(c),chat:()=>chat(c),reflect:()=>reflect(c),lab:()=>lab(c),plan:()=>plan(c),report:()=>report(c)};
   app.innerHTML=(pages[view]||home)();
-  document.body.classList.toggle('is-game',['home','select','intro','chat'].includes(view));
+  document.body.classList.toggle('is-game',['home','select','intro','chat','reflect','lab','plan','report'].includes(view));
   document.querySelector('#resume').hidden=!state.run||RUN_VIEWS.includes(view)||view==='select';
   document.querySelectorAll('nav [data-nav]').forEach(b=>{if(b.dataset.nav===view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
   document.body.style.setProperty('--tone',c&&RUN_VIEWS.includes(view)?TONE[c.id]:DEFAULT_TONE);
