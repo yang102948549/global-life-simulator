@@ -72,14 +72,26 @@ function errorMessage(status,body){
   if(status===401||status===403)return 'API 키를 쓸 수 없어요. 키가 맞는지, 이 사이트에서 쓰도록 허용되어 있는지 확인해 주세요.';
   if(status===404)return '선택한 모델을 찾을 수 없어요. 다른 모델을 골라 주세요.';
   if(status===429)return '요청이 너무 많아요. 잠시 뒤에 다시 보내 주세요.';
+  if(code==='not_configured')return '학교 서버에 AI 키가 아직 설정되지 않았어요. 선생님께 알려 주세요.';
   if(status>=500)return 'AI 서버에 문제가 있어요. 잠시 뒤에 다시 시도해 주세요.';
   return err.message||`AI 요청이 실패했어요 (${status}).`;
 }
 
+// 학교 서버(Cloudflare Pages 함수)가 키를 갖고 있으면 그쪽으로 보낸다. 키는 브라우저에 오지 않는다.
+// 서버가 없거나(GitHub Pages·로컬) 키가 설정되지 않았으면 교사가 넣은 키로 Google에 직접 보낸다.
+const SERVER_PATH='api/chat';
+let server=false;
+const serverCheck=fetch(SERVER_PATH,{cache:'no-store'})
+  .then(r=>r.ok?r.json():null)
+  .then(d=>{server=!!d?.configured;return server;})
+  .catch(()=>false);
+
 async function call(body){
   let res;
   try{
-    res=await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});
+    res=server
+      ?await fetch(SERVER_PATH,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+      :await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});
   }catch{throw new Error('AI 서버에 연결하지 못했어요. 인터넷 연결을 확인해 주세요.');}
   let data=null;try{data=await res.json();}catch{}
   if(!res.ok)throw new Error(errorMessage(res.status,data));
@@ -113,7 +125,9 @@ async function test(){
 
 return {
   MODELS,
-  get ready(){return !!key;},
+  serverCheck,
+  get server(){return server;},
+  get ready(){return server||!!key;},
   get model(){return model;},
   setKey(k){key=String(k||'').trim();},
   setModel(m){if(MODELS.some(([id])=>id===m))model=m;},
