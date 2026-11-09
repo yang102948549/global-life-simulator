@@ -72,21 +72,19 @@ function field(name,label,placeholder='',required=false,help=''){return `<label 
 function tile(c){const i=cases.indexOf(c),done=state.completed.includes(c.id);return `<button class="tile" data-start="${c.id}">${art(c,'small')}<span class="tile-body"><span class="tile-meta">No.${pad(i+1)} · ${esc(c.theme)}${done?' · 완료':''}</span><strong>${esc(c.name)}</strong><span class="tile-title">${esc(c.title)}</span><span class="tile-desc">${esc(c.summary)}</span></span></button>`;}
 
 /* ---------- 홈 · 목록 · 안내 ---------- */
-function home(){return `<section class="hero">
-  <p class="label">대화형 지구촌 시뮬레이션</p>
+// 홈은 게임 타이틀 화면: 제목과 시작 버튼만.
+function home(){const r=state.run,c=current();return `<section class="title-screen">
+  <div class="title-stack" aria-hidden="true">${['pakistan','gaza','tuvalu','ghana','afghanistan'].map(id=>art(cases.find(x=>x.id===id),'small')).join('')}</div>
+  <p class="eyebrow">대화형 지구촌 시뮬레이션</p>
   <h1>다른 곳의 하루</h1>
-  <p class="lead">지구촌 어딘가에 사는 또래 한 사람이 되어 하루를 보냅니다.<br>주변 사람들과 대화하며 정답 없는 선택을 하고, 그 선택이 왜 어려웠는지 함께 생각해 봅니다.</p>
-  <div class="actions center"><button class="btn" data-action="random">캐릭터 뽑기</button>${state.run?'<button class="btn ghost" data-action="resume">이어하기</button>':''}</div>
-</section>
-<section class="steps">
-  <div><span>1</span><strong>캐릭터 뽑기</strong><p>12명 가운데 한 사람이 무작위로 정해져요.</p></div>
-  <div><span>2</span><strong>대화로 하루 보내기</strong><p>아침·낮·저녁 세 장면에서 직접 말하고 행동해요.</p></div>
-  <div><span>3</span><strong>돌아보고 계획하기</strong><p>선택이 어려웠던 이유를 찾고 해결 계획을 세워요.</p></div>
-</section>
-<div class="section-head"><div><p class="label">캐릭터</p><h2>직접 고르고 싶다면</h2></div><button class="link" data-nav="atlas">12명 모두 보기 →</button></div>
-<div class="tiles">${cases.slice(0,6).map(tile).join('')}</div>
-<p class="notice">실제 자료를 바탕으로 만들었지만 인물, 장면, 대화는 수업을 위해 꾸민 이야기입니다. 무엇을 골랐는지보다 왜 고르기 어려웠는지, 무엇이 바뀌어야 하는지에 주목해 주세요.</p>
-${!storageOK?'<p class="notice">브라우저 저장을 쓸 수 없습니다. 끝난 뒤 기록을 꼭 내려받아 주세요.</p>':''}`;}
+  <p class="title-sub">지구촌 어딘가의 또래가 되어 하루를 살아 보세요.<br>당신의 말과 선택에 따라 하루가 흘러갑니다.</p>
+  <div class="title-actions">
+    <button class="btn big" data-action="random">게임 시작</button>
+    ${r&&c?`<button class="btn big ghost" data-action="resume">이어하기 · ${esc(c.name)}</button>`:''}
+  </div>
+  <p class="title-links"><button class="link" data-nav="atlas">캐릭터 직접 고르기</button><span>·</span><button class="link" data-nav="guide">선생님 안내</button></p>
+  <p class="title-note">실제 자료를 바탕으로 만든 이야기입니다. 인물과 대화는 꾸민 것입니다.${!storageOK?' 이 브라우저는 저장을 쓸 수 없으니 끝난 뒤 기록을 내려받아 주세요.':''}</p>
+</section>`;}
 
 function atlas(){const shown=filter==='전체'?cases:cases.filter(c=>c.theme===filter);return `<div class="page-head"><p class="label">캐릭터</p><h1>열두 명의 하루</h1><p class="muted">나라 전체가 아니라 특정 지역에 사는 한 사람의 조건을 따라갑니다. 이 브라우저에서 ${state.completed.length} / 12명을 마쳤습니다.</p></div>
 <div class="filters" role="group" aria-label="주제별 보기">${['전체','환경','물','빈곤','난민','인권'].map(t=>`<button class="chip" aria-pressed="${filter===t}" data-filter="${t}">${t}</button>`).join('')}</div>
@@ -152,66 +150,69 @@ function intro(c){const i=cases.indexOf(c);return `<section class="profile">
     <blockquote>“${esc(c.wish)}”</blockquote>
     <details><summary>실제로 확인된 사실 보기</summary>${facts(c)}${sourceList(c)}<p class="muted small">인물과 장면은 이 자료를 바탕으로 꾸민 이야기입니다. 선택의 결과는 예측이 아니며 점수도 없습니다.</p></details>
     <label class="field compact"><span>플레이어 이름 (선택)</span><input data-field="nickname" maxlength="40" value="${esc(fields().nickname||'')}" placeholder="모둠 이름이나 별명"></label>
-    <div class="actions"><button class="btn" data-action="enter-chat">${esc(c.name)}(으)로 하루 시작하기</button><button class="link" data-action="redraw">다른 캐릭터 뽑기</button></div>
+    <div class="actions"><button class="btn big" data-action="enter-chat">이 사람으로 시작</button><button class="link" data-action="redraw">다시 뽑기</button></div>
   </div>
 </section>`;}
 
-/* ---------- 대화 ---------- */
+/* ---------- 게임 화면: 장면 카드 ---------- */
 const chatOf=step=>state.run.chats[step];
 function prevChoices(c){return c.scenes.slice(0,state.run.step).map((s,i)=>s.options[state.run.choices[i]]?.text||'고르지 않음');}
-// 장면에 처음 들어오면 대본의 장면 설명을 첫 서술로 넣는다.
+// 장면에 처음 들어오면 대본의 장면 설명을 카드 첫 문단으로 넣는다.
 function openScene(c){
   const ch=chatOf(state.run.step),s=c.scenes[state.run.step];
-  if(!ch.log.length){ch.log.push({k:'scene',time:s.time,title:s.title});ch.log.push({k:'narr',text:s.story});save();}
+  if(!ch.log.length){ch.log.push({k:'story',text:s.story});save();}
 }
 // *행동* 표기를 기울임으로 보여 준다.
 const fmt=t=>esc(t).replace(/\*([^*\n]+)\*/g,'<i>$1</i>');
-function entry(e,c,s,step){
-  if(e.k==='scene')return '';// 장면 제목은 대화창 머리말에 이미 보인다.
+function entry(e,c,s){
+  // 예전 기록은 장면 설명을 narr로 저장했으므로 같은 문장이면 상황 문단으로 보여 준다.
+  if(e.k==='story'||(e.k==='narr'&&s&&e.text===s.story))return `<p class="story">${fmt(e.text)}</p>`;
   if(e.k==='narr')return `<p class="msg narr">${fmt(e.text)}</p>`;
   if(e.k==='say')return `<p class="msg say"><b>${esc(e.speaker)}</b>“${esc(e.text)}”</p>`;
   if(e.k==='me')return `<p class="msg me"><b>${esc(c.name)} (나)</b>${fmt(e.text)}</p>`;
   if(e.k==='error')return `<p class="msg error">${esc(e.text)}</p>`;
-  if(e.k==='result'){
-    const o=s.options[e.n],other=s.options[1-e.n];
-    return `<div class="result-card">
-      <p class="label">나의 선택 ${'AB'[e.n]}</p><h3>${esc(o.text)}</h3>
-      <p>${esc(o.result)}</p>
-      <div class="beyond"><strong>선택을 넘어</strong><p>${esc(s.barrier)}</p></div>
-      <details><summary>다른 선택이었다면?</summary><p><b>${esc(other.text)}</b><br>${esc(other.result)}</p></details>
-      ${field('note'+step,'나는 왜 이 선택을 했을까? (선택)','가장 마음에 걸린 점이나 바꾸고 싶었던 조건을 적어 보세요.')}
-      <div class="actions"><button class="btn" data-action="next-scene">${step===2?'하루 돌아보기':'다음 장면으로'} →</button></div>
-    </div>`;
-  }
-  return '';
+  return '';// 예전 기록의 scene·result 항목은 카드 머리말과 결과 카드가 대신 보여 준다.
 }
-function chat(c){
-  const r=state.run,step=r.step,s=c.scenes[step],ch=chatOf(step),decided=r.choices[step]!==null;
-  const myTurns=ch.log.filter(e=>e.k==='me').length;
-  const showChips=!AI.ready||myTurns>=3||chat.chips;
-  return `<div class="chat-layout">
-  ${sideCard(c)}
-  <section class="chat-main">
-    <header class="chat-head">
-      <div><p class="label">${esc(s.time)} · 장면 ${step+1}/3</p><h1>${esc(s.title)}</h1></div>
-      <ol class="scene-dots" aria-label="장면 진행">${c.scenes.map((x,i)=>`<li class="${i<step||(i===step&&decided)?'done':i===step?'now':''}">${esc(x.time)}</li>`).join('')}</ol>
-    </header>
-    <div class="log" id="log" aria-live="polite">${ch.log.map(e=>entry(e,c,s,step)).join('')}${pending?'<p class="msg typing" aria-label="답을 쓰는 중"><i></i><i></i><i></i></p>':''}</div>
-    ${decided?'':`<div class="composer">
-      ${showChips?`<div class="suggest"><span>${AI.ready?'이렇게 해 볼 수도 있어요':'하나를 골라 주세요'}</span>${s.options.map((o,i)=>`<button class="chip" data-pick="${i}" ${pending?'disabled':''}><b>${'AB'[i]}</b> ${esc(o.text)}</button>`).join('')}</div>`:''}
-      ${AI.ready?`<form id="say-form" class="say-box">
-        <textarea id="say" rows="2" maxlength="500" placeholder="${esc(c.name)}(이)가 되어 말하거나 행동해 보세요. *행동*은 별표로 감싸요." ${pending?'disabled':''}></textarea>
-        <div class="say-tools"><button type="button" class="icon" data-action="star" title="행동 표시(*) 넣기">*</button><button type="button" class="icon" data-action="chips" title="선택지 보기">?</button><button class="btn small" ${pending?'disabled':''}>보내기</button></div>
-      </form>`:`<p class="muted small">AI를 연결하면 직접 말하고 행동할 수 있어요. <button class="link" data-action="ai-settings">AI 연결하기</button></p>`}
-    </div>`}
-    <div class="chat-foot">${step>0?'<button class="link" data-action="prev-scene">← 이전 장면</button>':'<span></span>'}<span class="muted small">인물과 대화는 꾸민 이야기입니다</span></div>
-  </section>
+// 화면 위쪽 HUD: 캐릭터와 아침·낮·저녁 진행
+function hud(c,step,decided){return `<div class="hud">
+  <div class="hud-who">${art(c,'small')}<div><strong>${esc(c.name)}</strong><span>${esc(c.country)} · ${esc(c.region)}</span></div></div>
+  <ol class="pips" aria-label="장면 진행">${c.scenes.map((x,i)=>`<li class="${i<step||(i===step&&decided)?'done':i===step?'now':''}">${esc(x.time)}</li>`).join('')}</ol>
 </div>`;}
+function chat(c){
+  const r=state.run,step=r.step,s=c.scenes[step],ch=chatOf(step),n=r.choices[step];
+  const under=`<div class="card-under">${step>0?'<button class="link" data-action="prev-scene">← 이전 장면</button>':'<span></span>'}<span>인물과 대화는 자료를 바탕으로 꾸민 이야기입니다</span></div>`;
+  if(n!==null){
+    const o=s.options[n],other=s.options[1-n],talked=ch.log.some(e=>e.k==='me'||e.k==='say');
+    return `<div class="game">${hud(c,step,true)}
+    <article class="scene-card result" aria-live="polite">
+      <header class="card-head"><span class="tag-choice">선택 ${'AB'[n]}</span><p class="label">${esc(s.time)} · ${esc(s.title)}</p><h1>${esc(o.text)}</h1></header>
+      <div class="card-body">
+        <p class="story">${esc(o.result)}</p>
+        <div class="beyond"><strong>선택을 넘어</strong><p>${esc(s.barrier)}</p></div>
+        <details><summary>다른 선택이었다면?</summary><p><b>${esc(other.text)}</b><br>${esc(other.result)}</p></details>
+        ${talked?`<details><summary>이 장면의 대화 다시 보기</summary><div class="replay">${ch.log.map(e=>entry(e,c,s)).join('')}</div></details>`:''}
+        ${field('note'+step,'나는 왜 이 선택을 했을까? (선택)','가장 마음에 걸린 점이나 바꾸고 싶었던 조건을 적어 보세요.')}
+      </div>
+      <footer class="card-foot"><button class="btn big" data-action="next-scene">${step===2?'하루 돌아보기':'다음 장면'} →</button></footer>
+    </article>${under}</div>`;
+  }
+  return `<div class="game">${hud(c,step,false)}
+  <article class="scene-card">
+    <header class="card-head"><p class="label">${esc(s.time)} · 장면 ${step+1}/3</p><h1>${esc(s.title)}</h1></header>
+    <div class="card-body" id="log" aria-live="polite">${ch.log.map(e=>entry(e,c,s)).join('')}${pending?'<p class="msg typing" aria-label="답을 쓰는 중"><i></i><i></i><i></i></p>':''}</div>
+    <footer class="card-foot">
+      <p class="ask">${esc(c.name)}(이)라면, 어떻게 할까요?</p>
+      <div class="choice-row">${s.options.map((o,i)=>`<button class="choice" data-pick="${i}" ${pending?'disabled':''}><span class="key">${'AB'[i]}</span><span>${esc(o.text)}</span></button>`).join('')}</div>
+      ${AI.ready?`<form id="say-form" class="say-box">
+        <textarea id="say" rows="1" maxlength="500" placeholder="고르기 전에 주변 사람에게 말을 걸어 보세요. *행동*은 별표로" ${pending?'disabled':''}></textarea>
+        <button type="button" class="icon" data-action="star" title="행동 표시(*) 넣기">*</button><button class="btn small" ${pending?'disabled':''}>보내기</button>
+      </form>`:`<p class="hint">오른쪽 위 <b>AI 연결</b>을 하면 고르기 전에 주변 사람과 직접 대화할 수 있어요.</p>`}
+    </footer>
+  </article>${under}</div>`;}
 function lock(c,n){
-  const r=state.run,ch=chatOf(r.step);
-  r.choices[r.step]=n;
-  ch.log.push({k:'result',n});
-  save();render();scrollLog();
+  state.run.choices[state.run.step]=n;
+  save();render();
+  window.scrollTo({top:0,behavior:reduceMotion?'auto':'smooth'});
 }
 async function say(c,text){
   text=text.trim();if(!text||pending)return;
@@ -319,7 +320,7 @@ function render(){
   if(view==='chat')openScene(c);
   const pages={home,atlas,guide,select,intro:()=>intro(c),chat:()=>chat(c),reflect:()=>reflect(c),lab:()=>lab(c),plan:()=>plan(c),report:()=>report(c)};
   app.innerHTML=(pages[view]||home)();
-  document.body.classList.toggle('is-chat',view==='chat');
+  document.body.classList.toggle('is-game',['home','select','intro','chat'].includes(view));
   document.querySelector('#resume').hidden=!state.run||RUN_VIEWS.includes(view)||view==='select';
   document.querySelectorAll('nav [data-nav]').forEach(b=>{if(b.dataset.nav===view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
   document.title=`${c&&RUN_VIEWS.includes(view)?c.name+' · ':''}다른 곳의 하루`;
@@ -347,27 +348,27 @@ document.addEventListener('click',async e=>{
   const c=current();
   if(el.dataset.pick!==undefined){
     const n=Number(el.dataset.pick),o=c.scenes[state.run.step].options[n];
-    if(AI.ready)say(c,o.text);
-    else{chatOf(state.run.step).log.push({k:'me',text:o.text});lock(c,n);}
+    // 선택 버튼은 AI 연결 여부와 상관없이 바로 결정한다.
+    if(pending)return;
+    chatOf(state.run.step).log.push({k:'me',text:o.text});lock(c,n);
     return;
   }
   const a=el.dataset.action;
   if(a==='random')draw();
   if(a==='redraw')draw(c.id);
   if(a==='resume')navigate(state.run?.view||'home');
-  if(a==='enter-chat'){if(AI.ready)navigate('chat');else openAiModal(()=>navigate('chat'));}
+  if(a==='enter-chat')navigate('chat');
   if(a==='ai-settings')openAiModal();
   if(a==='ai-skip')closeModal();
   if(a==='ai-off'){AI.clear();toast('AI 연결을 끊었어요.');closeModal();if(view==='chat')render();}
   if(a==='star'){const box=document.querySelector('#say');const s=box.selectionStart,t=box.selectionEnd,v=box.value;box.value=v.slice(0,s)+'*'+v.slice(s,t)+'*'+v.slice(t);box.focus();box.setSelectionRange(s+1,t+1);}
-  if(a==='chips'){chat.chips=!chat.chips;const draft=document.querySelector('#say')?.value;render();if(draft)document.querySelector('#say').value=draft;}
   if(a==='next-scene'){
     if(state.run.choices[state.run.step]===null)return;
-    chat.chips=false;
+    
     if(state.run.step<2){state.run.step++;save();navigate('chat');}
     else navigate('reflect');
   }
-  if(a==='prev-scene'){state.run.step=Math.max(0,state.run.step-1);chat.chips=false;save();navigate('chat');}
+  if(a==='prev-scene'){state.run.step=Math.max(0,state.run.step-1);save();navigate('chat');}
   if(a==='copy-prompt')copy(promptText());
   if(a==='show-prompt'){const p=document.querySelector('#prompt-preview');p.hidden=!p.hidden;p.textContent=promptText();}
   if(a==='to-plan'){if(!fields().betterQuestion?.trim()){toast('더 구체적으로 바꾼 질문을 먼저 적어 주세요.');document.querySelector('[data-field="betterQuestion"]').focus();return;}navigate('plan');}
