@@ -8,6 +8,21 @@
 
 브라우저에서 http://127.0.0.1:4173 을 엽니다. 빌드 없이 HTML/CSS/JavaScript만으로 동작합니다.
 
+## 배포 (GitHub Pages)
+
+- 주소: https://yang102948549.github.io/global-life-simulator/
+- `dist` 폴더 내용만 `gh-pages` 브랜치로 올리면 Pages가 그대로 보여 줍니다.
+- 고친 뒤 다시 배포하기 (`main`에 커밋한 다음):
+
+```
+git push origin main
+git subtree split --prefix dist -b gh-pages
+git push -f origin gh-pages
+git branch -D gh-pages
+```
+
+- Gemini 키는 Google AI Studio에서 사용처를 `https://yang102948549.github.io/*`로 제한해 두세요.
+
 ## 흐름
 
 1. 캐릭터 뽑기: 이 브라우저에서 아직 마치지 않은 캐릭터 가운데 무작위로 고릅니다. 목록에서 직접 고를 수도 있습니다.
