@@ -536,3 +536,6 @@ h1,h2,.brand,.portrait figcaption strong,.tile strong,.join h2,.life h2,.dp-next
 .chip-wait:nth-child(3){width:min(180px,50%);animation-delay:.3s}
 @keyframes chipWait{from{opacity:.45}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){.chip-wait{animation:none}}
+
+/* 답 칩은 말이든 행동이든 같은 서체로(행동 표시 *…*도 기울이지 않는다) */
+.chips .chip i{font-style:normal}
