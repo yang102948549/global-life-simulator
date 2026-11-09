@@ -298,7 +298,7 @@ async function brief({c,step,past,n,log}){
 // 칩 정리: 빈 칩을 빼고 3개까지. 아직 결정할 때가 아닌데 결정 칩이 오면 그 칩은 버린다.
 function cleanChips(chips,next){
   return (Array.isArray(chips)?chips:[])
-    .map(x=>({text:String(x?.text||'').trim().slice(0,80),path:['A','B'].includes(x?.path)?x.path:'none'}))
+    .map(x=>({text:String(x?.text||'').trim().replace(/^["“'‘]+|["”'’]+$/g,'').trim().slice(0,80),path:['A','B'].includes(x?.path)?x.path:'none'}))
     .filter(x=>x.text&&(x.path==='none'||next>=MIN_TALK))
     .slice(0,3);
 }

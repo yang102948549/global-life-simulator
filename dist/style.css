@@ -6,7 +6,7 @@
   --card:#fffcf6;
   --ink:#2b2119;
   --ink-2:#4a3d31;
-  --muted:#7d6d5c;
+  --muted:#6b5b4b;
   --line:#e3d7c4;
   --tone:#9a4a2a;
   --say:#9a4a2a;
@@ -45,9 +45,6 @@ nav button{border:0;background:none;padding:8px 12px;border-radius:10px;font-siz
 nav button:hover{background:var(--paper-2);color:var(--ink)}
 nav button[aria-current="page"]{color:var(--ink);font-weight:700}
 #resume{color:var(--tone);font-weight:700}
-.ai-status{margin-left:6px;border:1px solid var(--line)!important;background:var(--card)!important;color:var(--ink)!important;font-weight:600}
-.ai-status::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#c9bba6;margin-right:7px;vertical-align:1px}
-.ai-status.on::before{background:#3f8f4f}
 main{max-width:1180px;margin:0 auto;padding:36px var(--gutter) 72px;min-height:calc(100vh - var(--topbar) - 70px)}
 body > footer{text-align:center;color:var(--muted);font-size:13px;padding:20px var(--gutter) 28px;border-top:1px solid var(--line)}
 body.is-game > footer{display:none}
@@ -169,7 +166,13 @@ body.is-game main{padding-top:24px;padding-bottom:24px}
 .msg.me{color:var(--me);align-self:flex-end;text-align:right;background:#eaf1f8;border-radius:16px 16px 4px 16px;padding:9px 15px;max-width:85%}
 .msg.me b{color:#5a82ab}
 .msg.error{color:var(--danger);font-size:14px;background:#f8e6df;border-radius:10px;padding:10px 14px}
-/* 기다리는 동안: 시간이 흐르는 표시 */
+/* 대화·선택을 기다리는 동안: 점 세 개 */
+.msg.typing{display:flex;gap:5px;padding:4px 0}
+.msg.typing i{width:7px;height:7px;border-radius:50%;background:#b8a990;animation:dot 1s infinite}
+.msg.typing i:nth-child(2){animation-delay:.15s}
+.msg.typing i:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,100%{opacity:.3}50%{opacity:1}}
+/* 장면이 바뀔 때(전체 화면 전환 뒤) */
 .passing{display:flex;align-items:center;gap:10px;padding:6px 0;color:var(--muted);font-family:var(--serif);font-size:15px}
 .pass-text{transition:opacity .25s}
 .pass-text.fade{opacity:0}
@@ -351,7 +354,8 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
   .recap{grid-template-columns:1fr}
   .stage-art .clear-badge,.stage-art .side-actions{grid-column:1/-1}
   .split,.profile{grid-template-columns:1fr;gap:28px}
-  .side,.profile .portrait{position:static}
+  .side{position:static}
+  .profile .portrait{position:relative;top:auto}
   .profile .portrait{max-width:360px;margin:0 auto;width:100%}
   .slots{grid-template-columns:repeat(4,1fr)}
   .grid3,.grid2{grid-template-columns:1fr}
@@ -362,7 +366,6 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
   .brand{font-size:16px;white-space:nowrap}
   nav button{padding:6px 7px;font-size:13px;white-space:nowrap}
   nav button[data-nav="home"]{display:none}
-  .ai-status{margin-left:2px}
   .card-head h1{font-size:22px}
   .story{font-size:17px}
   .scene-card .card-foot{padding-left:12px;padding-right:12px}
@@ -383,7 +386,7 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
   .split .side .art{max-width:180px}
 }
 @media (prefers-reduced-motion:reduce){
-  .clock::before,.clock i,.scene-card,.paper-card{animation:none}
+  .clock::before,.clock i,.msg.typing i,.scene-card,.paper-card{animation:none}
   .sky .arm{animation:none;transform:rotate(90deg)}
   .slot,.choice,.tile,.btn{transition:none}
 }
@@ -461,3 +464,33 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
   .dp-to,.dp-sun,.dp-bar i{transition:none}
   .dp-list li,.dp-next{animation:none;opacity:1;transform:none}
 }
+
+/* ---------- 알림·확인 팝업(브라우저 기본 창 대신) ---------- */
+.modal.dialog{z-index:70;animation:fadeIn .15s ease-out}
+.dialog-box{text-align:center;padding:28px 24px 22px;width:min(400px,100%);animation:pop .2s ease-out}
+.dialog-icon{display:inline-grid;place-items:center;width:44px;height:44px;margin-bottom:10px;border-radius:50%;background:color-mix(in srgb,var(--tone) 14%,var(--card));color:var(--tone);font-family:var(--serif);font-size:24px;font-weight:700}
+.dialog-box h2{font-size:20px;margin-bottom:6px}
+.dialog-box p{color:var(--ink-2);font-size:15px;line-height:1.6}
+.dialog-actions{display:flex;gap:8px;justify-content:center;margin-top:20px}
+.dialog-actions .btn{flex:1;max-width:180px;background:var(--tone);border-color:var(--tone)}
+.dialog-actions .btn.ghost{background:transparent;color:var(--ink);border-color:#cdbfa9}
+@keyframes fadeIn{from{opacity:0}}
+@media (prefers-reduced-motion:reduce){.modal.dialog,.dialog-box{animation:none}}
+
+/* ---------- 소개 화면: 그림과 정보 높이를 맞추고, 시작 버튼을 그림 아래 끝선에 맞춘다 ---------- */
+@media (min-width:901px){
+  .profile{align-items:stretch}
+  .profile .portrait{display:flex}
+  .profile .portrait .art{flex:1;aspect-ratio:auto;min-height:480px}
+  .profile .portrait .art img{object-position:50% 18%}
+  .profile-body{display:flex;flex-direction:column}
+  .profile-body .actions{margin-top:auto;padding-top:24px}
+}
+/* ---------- 대화 화면: 왼쪽 그림과 대화 카드를 같은 높이로 ---------- */
+@media (min-width:901px){
+  .game.play{--stage-h:clamp(540px,calc(100vh - var(--topbar) - 84px),760px);align-items:start}
+  .game.play .scene-card{height:var(--stage-h);max-height:none}
+  .game.play .stage-art .art{height:calc(var(--stage-h) - 48px);max-height:none;aspect-ratio:auto}
+  .game.play .stage-art .art img{object-position:50% 18%}
+}
+.modal-box.join .btn{background:var(--tone);border-color:var(--tone)}

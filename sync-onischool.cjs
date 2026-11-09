@@ -20,4 +20,15 @@ function copyDir(from, to) {
 }
 fs.rmSync(dest, { recursive: true, force: true });
 copyDir(src, dest);
+// 학교 사이트는 코드 파일을 브라우저가 4시간 동안 다시 묻지 않게 보낸다(Cloudflare 계정 설정).
+// 그래서 index.html의 ?v= 값을 파일 내용의 해시로 바꿔, 파일이 바뀌면 주소가 달라져 바로 새로 받게 한다.
+const crypto = require('crypto');
+const indexPath = path.join(dest, 'index.html');
+const html = fs.readFileSync(indexPath, 'utf8').replace(/(href|src)="([\w.-]+\.(?:js|css))(?:\?v=[^"]*)?"/g, (m, attr, file) => {
+  const f = path.join(dest, file);
+  if (!fs.existsSync(f)) return m;
+  const v = crypto.createHash('sha1').update(fs.readFileSync(f)).digest('hex').slice(0, 10);
+  return `${attr}="${file}?v=${v}"`;
+});
+fs.writeFileSync(indexPath, html);
 console.log(`${count}개 파일을 복사했습니다 → ${dest}`);

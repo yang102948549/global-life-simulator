@@ -28,7 +28,22 @@ try{
 
 const current=()=>cases.find(c=>c.id===state.run?.id);
 const fields=()=>state.run?.fields||{};
-function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch{storageOK=false;toast('자동 저장을 쓸 수 없습니다. 끝난 뒤 기록을 내려받아 주세요.');}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch{if(storageOK)dialog({title:'자동 저장을 쓸 수 없어요',body:'이 브라우저에서는 기록이 저장되지 않아요. 활동이 끝나면 탐구 기록을 꼭 내려받아 주세요.'});storageOK=false;}}
+// 테마에 맞춘 알림·확인 팝업. 브라우저 기본 alert·confirm 대신 쓴다. 확인을 누르면 true.
+function dialog({title,body='',ok='확인',cancel='',icon='!'}){
+  return new Promise(res=>{
+    const d=document.createElement('div'),prev=document.activeElement;
+    d.className='modal dialog';d.setAttribute('role','alertdialog');d.setAttribute('aria-modal','true');d.setAttribute('aria-label',title);
+    d.innerHTML=`<div class="modal-box dialog-box"><span class="dialog-icon" aria-hidden="true">${icon}</span><h2>${esc(title)}</h2>${body?`<p>${esc(body)}</p>`:''}<div class="dialog-actions">${cancel?`<button type="button" class="btn ghost" data-dlg="0">${esc(cancel)}</button>`:''}<button type="button" class="btn" data-dlg="1">${esc(ok)}</button></div></div>`;
+    const key=e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();done(!cancel);}};
+    const done=v=>{d.remove();document.removeEventListener('keydown',key,true);prev?.focus?.({preventScroll:true});res(v);};
+    d.addEventListener('click',e=>{const b=e.target.closest('[data-dlg]');if(b){e.stopPropagation();done(b.dataset.dlg==='1');}else if(e.target===d)done(!cancel);});
+    document.addEventListener('keydown',key,true);
+    document.body.appendChild(d);d.querySelector('[data-dlg="1"]').focus();
+  });
+}
+// 비어 있는 첫 칸으로 데려간다.
+function focusEmpty(names){const n=names.find(k=>!fields()[k]?.trim());const el=n&&document.querySelector(`[data-field="${n}"]`);if(el){el.scrollIntoView({block:'center',behavior:reduceMotion?'auto':'smooth'});el.focus({preventScroll:true});}}
 function toast(msg){const el=document.querySelector('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),3800);}
 function navigate(next){
   view=next;
@@ -39,7 +54,7 @@ function navigate(next){
 }
 
 /* ---------- 캐릭터 고르기 ---------- */
-const canReplace=()=>!state.run||state.run.view==='report'||confirm('진행 중인 기록을 새 이야기로 바꿀까요? 취소하면 지금 이야기를 이어갈 수 있습니다.');
+const canReplace=async()=>!state.run||state.run.view==='report'||await dialog({title:'새 이야기를 시작할까요?',body:'지금 하던 이야기는 지워져요. 이어서 하려면 "계속하기"를 눌러 주세요.',ok:'새로 시작',cancel:'계속하기',icon:'?'});
 // 아직 마치지 않은 캐릭터 가운데 하나. except는 '다시 뽑기'에서 방금 나온 캐릭터를 빼기 위한 것.
 function pickRandom(except){
   let pool=cases.filter(x=>!state.completed.includes(x.id)&&x.id!==except);
@@ -51,9 +66,9 @@ function begin(c){
   state.run={id:c.id,step:0,choices:[null,null,null],fields:{},chats:emptyChats(),view:'intro',startedAt:new Date().toISOString()};
   save();navigate('intro');
 }
-function start(id){if(!canReplace())return;const c=cases.find(x=>x.id===id);if(c)begin(c);}
-function draw(except){
-  if(!except&&!canReplace())return;
+async function start(id){if(!await canReplace())return;const c=cases.find(x=>x.id===id);if(c)begin(c);}
+async function draw(except){
+  if(!except&&!await canReplace())return;
   const target=pickRandom(except);
   navigate('select');
   roulette(target);
@@ -104,7 +119,7 @@ function guide(){return `<div class="page-head"><p class="label">수업 안내</
   <article class="cell"><p class="label">3차시 · 45분</p><h3>함께 바꿀 계획</h3><p>해결 계획 20분 → 모둠끼리 교차 검토 15분 → 고치기·기록 제출 10분.</p></article>
 </div>
 <div class="grid2">
-  <article class="cell"><h3>AI 대화 설정</h3><p>상단의 ‘AI 연결’에 Gemini API 키를 넣으면 학생이 자유롭게 말하고 AI가 주변 인물로 답합니다. 키는 이 탭의 메모리에만 있고 저장되지 않아 새로고침하면 다시 넣어야 합니다. 키는 Google에 직접 전송됩니다. 교사용 키를 쓰고, Google AI Studio에서 키 사용처를 이 사이트로 제한하는 것을 권장합니다. AI가 연결되면 선택지 버튼은 보이지 않고, 학생이 대화 속에서 말이나 행동으로 어떻게 할지 정하면 확인을 거쳐 장면이 이어집니다(세 번 이상 말한 뒤부터). 오래 정하지 못하면 두 가지 길을 볼 수 있습니다. 키가 없으면 선택 버튼으로 진행됩니다.</p></article>
+  <article class="cell"><h3>AI 대화 설정</h3><p>onischool.net에서는 학교 서버가 AI 키를 갖고 있어 학생은 키 입력 없이 바로 대화합니다. 키는 학생 기기로 가지 않습니다. AI가 연결되면 선택지 버튼은 보이지 않고, 학생은 답 칩을 누르거나 직접 말하며 대화하다가 세 번째 말부터 나오는 결정 칩(→)이나 직접 쓴 결정으로 장면을 마칩니다. AI를 쓸 수 없을 때는 선택 버튼으로 진행됩니다.</p></article>
   <article class="cell"><h3>AI 대화의 안전장치</h3><p>대화는 Google 쪽에 저장되지 않게 보냅니다. 괴롭힘·혐오·성적·위험 내용 필터를 켜 두었고, 잔인한 묘사·연애 묘사·개인정보 요청을 막는 지침을 넣었습니다. 그래도 AI는 실수할 수 있으니 수업 중 화면을 살펴 주세요. 학생에게 실명·학교·연락처를 쓰지 않도록 안내해 주세요.</p></article>
   <article class="cell"><h3>12명을 모두 다루려면</h3><p>12개 모둠, 또는 6개 모둠×2회로 운영하세요. 무작위 뽑기는 이 브라우저에서 마치지 않은 캐릭터를 먼저 고릅니다. 기기 사이의 중복은 자동으로 조정되지 않으니 ‘캐릭터’ 목록에서 직접 나눠 줄 수 있습니다.</p></article>
   <article class="cell"><h3>공감을 다루는 방법</h3><p>생존 점수, 빈곤 순위, 사망 결말은 없습니다. 모든 선택에는 얻는 것과 잃는 것이 있습니다. 불편한 장면은 다른 캐릭터로 바꾸거나 자료 읽기로 대신해도 됩니다.</p></article>
@@ -219,17 +234,11 @@ function openScene(c){
     .catch(()=>{if(state.run===r&&!ch.log.length)ch.log.push({k:'story',text:s.story});})
     .finally(()=>{opening=pending=false;save();if(view==='chat'&&state.run===r)render();});
 }
-// 기다리는 동안: '답을 쓰는 중' 대신 캐릭터의 하루가 흘러가는 것처럼 보여 준다.
-// 대화 중에는 시계와 시간 문구, 장면이 바뀔 때는 해가 하늘을 건너간다.
-const PASSING={
-  아침:['해가 조금씩 떠오른다','하늘이 밝아 온다','시곗바늘이 조금 움직인다','아침 공기가 달라진다'],
-  낮:['햇볕이 머리 위로 올라온다','그림자가 짧아진다','시곗바늘이 조금 움직인다','한낮의 열기가 퍼진다'],
-  저녁:['해가 기울며 그림자가 길어진다','하늘이 붉게 물든다','바깥이 어둑해진다','시곗바늘이 조금 움직인다'],
-};
+// 기다리는 동안: 대화·선택 때는 점 세 개, 장면이 바뀔 때는 해가 하늘을 건너간다(전체 화면 전환 뒤에 가려짐).
 function passing(c,step,sceneChange){
-  const s=c.scenes[step],lines=PASSING[s.time]||PASSING.낮;
+  const s=c.scenes[step];
   if(sceneChange&&step>0)return `<div class="passing scene" role="status"><div class="sky" aria-hidden="true"><span class="arm"><i></i></span></div><p>${esc(c.scenes[step-1].time)}이 지나고 ${esc(s.time)}이 된다</p></div>`;
-  return `<p class="passing" role="status"><span class="clock" aria-hidden="true"><i></i></span><span class="pass-text" data-lines="${esc(lines.join('|'))}">${esc(lines[0])}</span></p>`;
+  return '<p class="msg typing" role="status" aria-label="답을 기다리는 중"><i></i><i></i><i></i></p>';
 }
 // 장면 전환: 화면 전체에서 하늘빛이 바뀌고 해가 건너가며, 그사이 캐릭터의 일과가 한 줄씩 지나간다.
 // 학생에게는 하루가 흐르는 장면이고, 그동안 뒤에서 AI가 다음 장면 첫머리를 쓴다.
@@ -264,12 +273,6 @@ async function dayPass(c,from,to){
   while(opening)await wait(200);
   el.classList.add('out');await wait(450);el.remove();
 }
-// 시간 문구를 몇 초마다 바꾼다.
-setInterval(()=>{
-  const el=document.querySelector('.pass-text');if(!el)return;
-  const lines=el.dataset.lines.split('|'),i=(lines.indexOf(el.textContent)+1)%lines.length;
-  el.classList.add('fade');setTimeout(()=>{el.textContent=lines[i];el.classList.remove('fade');},250);
-},2200);
 // *행동* 표기를 기울임으로 보여 준다.
 const fmt=t=>esc(t).replace(/\*([^*\n]+)\*/g,'<i>$1</i>');
 function entry(e,c,s){
@@ -285,7 +288,6 @@ function entry(e,c,s){
 function stageArt(c,step,decided){return `<aside class="stage-art">
   <figure class="portrait">${art(c,'card')}<figcaption><strong>${esc(c.name)}</strong>${esc(c.country)} · ${esc(c.region)}${playerTag()}</figcaption></figure>
   <ol class="pips" aria-label="장면 진행">${c.scenes.map((x,i)=>`<li class="${i<step||(i===step&&decided)?'done':i===step?'now':''}">${esc(x.time)}</li>`).join('')}</ol>
-  <p class="wish">“${esc(c.wish)}”</p>
 </aside>`;}
 function chat(c){
   const r=state.run,step=r.step,s=c.scenes[step],ch=chatOf(step),n=r.choices[step];
@@ -293,11 +295,11 @@ function chat(c){
   if(n!==null){
     const o=s.options[n],other=s.options[1-n],talked=ch.log.some(e=>e.k==='me'||e.k==='say');
     const waiting=ch.brief===undefined,b=ch.brief;
-    return `<div class="game">${stageArt(c,step,true)}<div class="stage-main">
+    return `<div class="game play">${stageArt(c,step,true)}<div class="stage-main">
     <article class="scene-card result" aria-live="polite">
       <header class="card-head"><p class="label">${esc(s.time)} · 장면 ${step+1}/3 브리핑</p><h1>${esc(s.title)}</h1></header>
       <div class="card-body">
-        ${waiting?`<div class="passing scene" role="status"><div class="sky" aria-hidden="true"><span class="arm"><i></i></span></div><p>그 뒤로 시간이 흐른다</p></div>`:`
+        ${waiting?`<p class="msg typing" role="status" aria-label="브리핑을 만드는 중"><i></i><i></i><i></i></p>`:`
         ${lifeCard(c,b?.mine,o.text,o.result,'mine')}
         ${lifeCard(c,b?.other,other.text,other.result,'other')}
         <div class="beyond"><strong>선택을 넘어</strong><p>${esc(s.barrier)}</p></div>
@@ -306,7 +308,7 @@ function chat(c){
       <footer class="card-foot"><button class="btn big" data-action="next-scene" ${waiting?'disabled':''}>${step===2?'하루 돌아보기':'다음 장면'} →</button></footer>
     </article>${under}</div></div>`;
   }
-  return `<div class="game">${stageArt(c,step,false)}<div class="stage-main">
+  return `<div class="game play">${stageArt(c,step,false)}<div class="stage-main">
   <article class="scene-card">
     <header class="card-head"><p class="label">${esc(s.time)} · 장면 ${step+1}/3</p><h1>${esc(s.title)}</h1></header>
     <div class="card-body" id="log" aria-live="polite">${ch.log.map(e=>entry(e,c,s)).join('')}${pending?passing(c,step,opening):''}</div>
@@ -404,7 +406,8 @@ function openJoinModal(c){
   setTimeout(()=>m.querySelector('#join-name')?.focus(),50);
 }
 function closeModal(){const m=document.querySelector('#modal');m.hidden=true;m.innerHTML='';const then=openAiModal.then;openAiModal.then=null;renderStatus();if(then)then();}
-function renderStatus(){const b=document.querySelector('#ai-status');b.textContent=AI.ready?'AI 연결됨':'AI 연결';b.classList.toggle('on',AI.ready);}
+// 상단의 AI 연결 표시는 없앴다. 학교 서버 키로 자동 연결된다.
+function renderStatus(){}
 // 학교 서버에 키가 있으면 키 입력 없이 바로 연결된다.
 AI.serverCheck.then(ok=>{if(!ok)return;renderStatus();if(view==='chat')render();});
 
@@ -501,7 +504,7 @@ function render(){
 }
 async function copy(text){
   try{await navigator.clipboard.writeText(text);toast('질문을 복사했어요. 허용된 AI에 붙여 넣어 주세요.');}
-  catch{const p=document.querySelector('#prompt-preview');if(p){p.hidden=false;p.textContent=text;const range=document.createRange();range.selectNodeContents(p);const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);}toast('자동 복사가 안 됩니다. 표시된 질문을 직접 복사해 주세요.');}
+  catch{const p=document.querySelector('#prompt-preview');if(p){p.hidden=false;p.textContent=text;const range=document.createRange();range.selectNodeContents(p);const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);}dialog({title:'자동 복사가 안 돼요',body:'아래에 표시된 질문을 길게 눌러 직접 복사해 주세요.'});}
 }
 
 /* ---------- 입력 처리 ---------- */
@@ -512,7 +515,6 @@ document.addEventListener('click',async e=>{
   const el=e.target.closest('button,a#brand');if(!el)return;
   if(el.id==='brand'){e.preventDefault();navigate('home');return;}
   if(el.id==='resume'){navigate(state.run?.view||'home');return;}
-  if(el.id==='ai-status'){openAiModal();return;}
   if(el.dataset.nav){navigate(el.dataset.nav);return;}
   if(el.dataset.start){start(el.dataset.start);return;}
   if(el.dataset.filter){filter=el.dataset.filter;render();return;}
@@ -555,11 +557,11 @@ document.addEventListener('click',async e=>{
   if(a==='prev-scene'){state.run.step=Math.max(0,state.run.step-1);save();navigate('chat');}
   if(a==='copy-prompt')copy(promptText());
   if(a==='show-prompt'){const p=document.querySelector('#prompt-preview');p.hidden=!p.hidden;p.textContent=promptText();}
-  if(a==='to-plan'){if(!fields().betterQuestion?.trim()){toast('더 구체적으로 바꾼 질문을 먼저 적어 주세요.');document.querySelector('[data-field="betterQuestion"]').focus();return;}navigate('plan');}
+  if(a==='to-plan'){if(!fields().betterQuestion?.trim()){dialog({title:'질문을 먼저 다듬어 주세요',body:'"더 구체적으로 바꾼 질문" 칸을 채우면 다음으로 넘어갈 수 있어요.'}).then(()=>focusEmpty(['betterQuestion']));return;}navigate('plan');}
   if(a==='review'){const box=document.querySelector('#plan-review');box.innerHTML=review();box.scrollIntoView({behavior:'smooth',block:'center'});}
   if(a==='download'){const blob=new Blob(['﻿'+reportText()],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`지구촌탐구_${c.id}.txt`;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('탐구 기록을 내려받기 시작했어요.');}
   if(a==='print')window.print();
-  if(a==='clear'&&confirm('지금 이야기와 완료 목록을 이 브라우저에서 지울까요? 내려받은 파일은 지워지지 않습니다.')){state={run:null,completed:[]};save();navigate('home');toast('이 브라우저의 기록을 지웠어요.');}
+  if(a==='clear')dialog({title:'이 브라우저의 기록을 지울까요?',body:'지금 이야기와 완료 목록이 지워져요. 이미 내려받은 파일은 그대로 남아요.',ok:'지우기',cancel:'그만두기',icon:'?'}).then(ok=>{if(!ok)return;state={run:null,completed:[]};save();navigate('home');toast('이 브라우저의 기록을 지웠어요.');});
 });
 document.addEventListener('submit',async e=>{
   if(e.target.id==='join-form'){
@@ -579,8 +581,8 @@ document.addEventListener('submit',async e=>{
     catch(err){AI.clear();msg.textContent=err.message;btn.disabled=false;}
     return;
   }
-  if(e.target.id==='reflection-form'){e.preventDefault();if(['feeling','constraint','unknown'].some(k=>!fields()[k]?.trim())){toast('돌아보기 세 칸을 모두 적어 주세요.');return;}navigate('lab');}
-  if(e.target.id==='plan-form'){e.preventDefault();if(planFields.some(([n])=>!fields()[n]?.trim())){toast('계획의 필수 칸을 모두 적어 주세요.');return;}state.run.finishedAt=new Date().toISOString();if(!state.completed.includes(state.run.id))state.completed.push(state.run.id);save();navigate('report');}
+  if(e.target.id==='reflection-form'){e.preventDefault();if(['feeling','constraint','unknown'].some(k=>!fields()[k]?.trim())){dialog({title:'돌아보기 세 칸을 모두 적어 주세요',body:'비어 있는 칸으로 안내할게요.'}).then(()=>focusEmpty(['feeling','constraint','unknown']));return;}navigate('lab');}
+  if(e.target.id==='plan-form'){e.preventDefault();if(planFields.some(([n])=>!fields()[n]?.trim())){dialog({title:'계획의 필수 칸을 모두 적어 주세요',body:'비어 있는 칸으로 안내할게요.'}).then(()=>focusEmpty(planFields.map(([n])=>n)));return;}state.run.finishedAt=new Date().toISOString();if(!state.completed.includes(state.run.id))state.completed.push(state.run.id);save();navigate('report');}
 });
 document.addEventListener('keydown',e=>{
   // 대화창: Enter로 보내고 Shift+Enter로 줄을 바꾼다.
