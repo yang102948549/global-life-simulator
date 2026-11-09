@@ -5,7 +5,9 @@ const FREE_VIEWS=['home','atlas','guide','select'];
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad=n=>String(n).padStart(2,'0');
-const THEME_COLOR={'환경':'#0f766e','물':'#1d4ed8','빈곤':'#b45309','난민':'#6d28d9','인권':'#be123c'};
+// 캐릭터마다 그림 속 옷·소품 색에서 고른 포인트 색
+const TONE={tuvalu:'#1f7f7c',pakistan:'#2d6b63',bangladesh:'#3e6399',somalia:'#b06d12',gaza:'#3f74a8',haiti:'#a86a14',ghana:'#86552a',sudan:'#76589f',rohingya:'#71519c',afghanistan:'#a3303d',congo:'#ad2843',qatar:'#66750f'};
+const DEFAULT_TONE='#9a4a2a';
 
 /* ---------- 저장 ---------- */
 let state={run:null,completed:[]},view='home',filter='전체',storageOK=true,pending=false;
@@ -60,21 +62,21 @@ function draw(except){
 /* ---------- 공통 조각 ---------- */
 const sourceList=c=>`<ul class="sources">${c.sources.map(s=>`<li><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title)} ↗</a><span>${esc(s.date)}</span></li>`).join('')}</ul>`;
 const facts=c=>`<ul class="facts">${c.facts.map(f=>`<li>${esc(f)}</li>`).join('')}</ul>`;
-// 캐릭터 그림. assets/characters/<id>.webp가 있으면 그 그림을, 없으면 이름 첫 글자 카드를 보여 준다.
-function art(c,size=''){
-  const color=THEME_COLOR[c.theme]||'#334155';
-  return `<div class="art ${size}" style="--tone:${color}" aria-hidden="true"><span class="art-initial">${esc([...c.name][0])}</span><span class="art-country">${esc(c.country)}</span><img src="assets/characters/${esc(c.id)}.webp" alt="" loading="lazy" onerror="this.remove()"></div>`;
+// 캐릭터 그림. kind가 face면 얼굴 부분, 아니면 전신 그림. 그림을 못 읽으면 이름 첫 글자가 보인다.
+function art(c,kind='card',extra=''){
+  const src=`assets/characters/${esc(c.id)}${kind==='face'?'-face':''}.webp`;
+  return `<div class="art art-${kind} ${extra}" style="--tone:${TONE[c.id]||DEFAULT_TONE}" aria-hidden="true"><span class="art-initial">${esc([...c.name][0])}</span><img src="${src}" alt="" loading="lazy" onerror="this.remove()"></div>`;
 }
 const STEPS=['캐릭터','대화','돌아보기','질문 연구소','해결 계획'];
 const trail=active=>`<ol class="trail" aria-label="진행 단계">${STEPS.map((t,i)=>`<li class="${i===active?'active':i<active?'done':''}"${i===active?' aria-current="step"':''}>${t}</li>`).join('')}</ol>`;
-function sideCard(c){return `<aside class="side">${art(c,'mid')}<h2>${esc(c.name)}</h2><p class="muted">${esc(c.role)}</p><p class="muted">${esc(c.country)} · ${esc(c.region)}</p><blockquote>“${esc(c.wish)}”</blockquote><details><summary>실제로 확인된 사실</summary>${facts(c)}${sourceList(c)}</details></aside>`;}
+function sideCard(c){return `<aside class="side">${art(c,'card')}<h2>${esc(c.name)}</h2><p class="muted">${esc(c.role)}</p><p class="muted">${esc(c.country)} · ${esc(c.region)}</p><blockquote>“${esc(c.wish)}”</blockquote><details><summary>실제로 확인된 사실</summary>${facts(c)}${sourceList(c)}</details></aside>`;}
 function field(name,label,placeholder='',required=false,help=''){return `<label class="field"><span>${esc(label)}${required?' <em>필수</em>':''}</span>${help?`<small>${esc(help)}</small>`:''}<textarea data-field="${name}" name="${name}" maxlength="4000" ${required?'required':''} placeholder="${esc(placeholder)}">${esc(fields()[name]||'')}</textarea></label>`;}
-function tile(c){const i=cases.indexOf(c),done=state.completed.includes(c.id);return `<button class="tile" data-start="${c.id}">${art(c,'small')}<span class="tile-body"><span class="tile-meta">No.${pad(i+1)} · ${esc(c.theme)}${done?' · 완료':''}</span><strong>${esc(c.name)}</strong><span class="tile-title">${esc(c.title)}</span><span class="tile-desc">${esc(c.summary)}</span></span></button>`;}
+function tile(c){const i=cases.indexOf(c),done=state.completed.includes(c.id);return `<button class="tile" data-start="${c.id}" style="--tone:${TONE[c.id]}">${art(c,'card')}<span class="tile-body"><span class="tile-meta">No.${pad(i+1)} · ${esc(c.theme)}${done?' · 완료':''}</span><strong>${esc(c.name)}</strong><span class="tile-title">${esc(c.title)}</span><span class="tile-desc">${esc(c.summary)}</span></span></button>`;}
 
 /* ---------- 홈 · 목록 · 안내 ---------- */
 // 홈은 게임 타이틀 화면: 제목과 시작 버튼만.
 function home(){const r=state.run,c=current();return `<section class="title-screen">
-  <div class="title-stack" aria-hidden="true">${['pakistan','gaza','tuvalu','ghana','afghanistan'].map(id=>art(cases.find(x=>x.id===id),'small')).join('')}</div>
+  <div class="title-fan" aria-hidden="true">${['bangladesh','tuvalu','gaza','ghana','afghanistan'].map(id=>art(cases.find(x=>x.id===id),'card')).join('')}</div>
   <p class="eyebrow">대화형 지구촌 시뮬레이션</p>
   <h1>다른 곳의 하루</h1>
   <p class="title-sub">지구촌 어딘가의 또래가 되어 하루를 살아 보세요.<br>당신의 말과 선택에 따라 하루가 흘러갑니다.</p>
@@ -110,7 +112,7 @@ function guide(){return `<div class="page-head"><p class="label">수업 안내</
 function select(){return `<section class="select">
   <p class="label center">캐릭터 뽑기</p>
   <h1 class="center">오늘 당신이 살아 볼 사람은?</h1>
-  <div class="slots">${cases.map((c,i)=>`<div class="slot${state.completed.includes(c.id)?' done':''}" data-slot="${i}">${art(c,'small')}<strong>${esc(c.name)}</strong><span>${esc(c.country)}</span></div>`).join('')}</div>
+  <div class="slots">${cases.map((c,i)=>`<div class="slot${state.completed.includes(c.id)?' done':''}" data-slot="${i}" style="--tone:${TONE[c.id]}">${art(c,'face')}<strong>${esc(c.name)}</strong><span>${esc(c.country)}</span></div>`).join('')}</div>
   <p class="muted center" id="select-status" aria-live="polite">고르는 중…</p>
 </section>`;}
 function roulette(target){
@@ -136,9 +138,9 @@ function roulette(target){
 }
 
 function intro(c){const i=cases.indexOf(c);return `<section class="profile">
-  ${art(c,'big')}
+  <figure class="portrait">${art(c,'card')}<figcaption><span>No.${pad(i+1)} · ${esc(c.theme)}</span><strong>${esc(c.name)}</strong>${esc(c.country)}</figcaption></figure>
   <div class="profile-body">
-    <p class="label">No.${pad(i+1)} · ${esc(c.theme)}</p>
+    <p class="label">당신이 살아 볼 사람</p>
     <h1>${esc(c.name)}</h1>
     <p class="muted">${esc(c.role)}</p>
     <dl class="facts-table">
@@ -173,17 +175,18 @@ function entry(e,c,s){
   if(e.k==='error')return `<p class="msg error">${esc(e.text)}</p>`;
   return '';// 예전 기록의 scene·result 항목은 카드 머리말과 결과 카드가 대신 보여 준다.
 }
-// 화면 위쪽 HUD: 캐릭터와 아침·낮·저녁 진행
-function hud(c,step,decided){return `<div class="hud">
-  <div class="hud-who">${art(c,'small')}<div><strong>${esc(c.name)}</strong><span>${esc(c.country)} · ${esc(c.region)}</span></div></div>
+// 장면 화면 왼쪽: 캐릭터 그림, 이름표, 아침·낮·저녁 진행
+function stageArt(c,step,decided){return `<aside class="stage-art">
+  <figure class="portrait">${art(c,'card')}<figcaption><strong>${esc(c.name)}</strong>${esc(c.country)} · ${esc(c.region)}</figcaption></figure>
   <ol class="pips" aria-label="장면 진행">${c.scenes.map((x,i)=>`<li class="${i<step||(i===step&&decided)?'done':i===step?'now':''}">${esc(x.time)}</li>`).join('')}</ol>
-</div>`;}
+  <p class="wish">“${esc(c.wish)}”</p>
+</aside>`;}
 function chat(c){
   const r=state.run,step=r.step,s=c.scenes[step],ch=chatOf(step),n=r.choices[step];
   const under=`<div class="card-under">${step>0?'<button class="link" data-action="prev-scene">← 이전 장면</button>':'<span></span>'}<span>인물과 대화는 자료를 바탕으로 꾸민 이야기입니다</span></div>`;
   if(n!==null){
     const o=s.options[n],other=s.options[1-n],talked=ch.log.some(e=>e.k==='me'||e.k==='say');
-    return `<div class="game">${hud(c,step,true)}
+    return `<div class="game">${stageArt(c,step,true)}<div class="stage-main">
     <article class="scene-card result" aria-live="polite">
       <header class="card-head"><span class="tag-choice">선택 ${'AB'[n]}</span><p class="label">${esc(s.time)} · ${esc(s.title)}</p><h1>${esc(o.text)}</h1></header>
       <div class="card-body">
@@ -194,9 +197,9 @@ function chat(c){
         ${field('note'+step,'나는 왜 이 선택을 했을까? (선택)','가장 마음에 걸린 점이나 바꾸고 싶었던 조건을 적어 보세요.')}
       </div>
       <footer class="card-foot"><button class="btn big" data-action="next-scene">${step===2?'하루 돌아보기':'다음 장면'} →</button></footer>
-    </article>${under}</div>`;
+    </article>${under}</div></div>`;
   }
-  return `<div class="game">${hud(c,step,false)}
+  return `<div class="game">${stageArt(c,step,false)}<div class="stage-main">
   <article class="scene-card">
     <header class="card-head"><p class="label">${esc(s.time)} · 장면 ${step+1}/3</p><h1>${esc(s.title)}</h1></header>
     <div class="card-body" id="log" aria-live="polite">${ch.log.map(e=>entry(e,c,s)).join('')}${pending?'<p class="msg typing" aria-label="답을 쓰는 중"><i></i><i></i><i></i></p>':''}</div>
@@ -208,7 +211,7 @@ function chat(c){
         <button type="button" class="icon" data-action="star" title="행동 표시(*) 넣기">*</button><button class="btn small" ${pending?'disabled':''}>보내기</button>
       </form>`:`<p class="hint">오른쪽 위 <b>AI 연결</b>을 하면 고르기 전에 주변 사람과 직접 대화할 수 있어요.</p>`}
     </footer>
-  </article>${under}</div>`;}
+  </article>${under}</div></div>`;}
 function lock(c,n){
   state.run.choices[state.run.step]=n;
   save();render();
@@ -323,6 +326,7 @@ function render(){
   document.body.classList.toggle('is-game',['home','select','intro','chat'].includes(view));
   document.querySelector('#resume').hidden=!state.run||RUN_VIEWS.includes(view)||view==='select';
   document.querySelectorAll('nav [data-nav]').forEach(b=>{if(b.dataset.nav===view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
+  document.body.style.setProperty('--tone',c&&RUN_VIEWS.includes(view)?TONE[c.id]:DEFAULT_TONE);
   document.title=`${c&&RUN_VIEWS.includes(view)?c.name+' · ':''}다른 곳의 하루`;
   if(view==='chat'){
     const box=document.querySelector('#say');
