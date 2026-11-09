@@ -5,6 +5,7 @@
 // 화면은 이 파일에서 바로 꺼내 쓰므로 이 부분에는 AI 호출이 없다. 대화 응답만 AI가 맡는다.
 //
 // 사용: node precompute.cjs              (열두 명 모두 새로 만든다)
+//       node precompute.cjs --review     (손으로 고친 뒤 검토용 문서만 새로 쓴다)
 //       node precompute.cjs ghana gaza   (일부만 새로 만들고 나머지는 그대로 둔다)
 // onischool.net 서버(학교 키)를 통해 Gemini를 부른다. 만든 뒤 검토용 문서도 함께 쓴다.
 const fs = require('fs'), path = require('path');
@@ -43,7 +44,7 @@ const cleanAfter = arr => { const a = (Array.isArray(arr) ? arr : []).map(x => (
 
 // 한 장면의 두 삶과 그 뒤 일과를 한 번에 쓴다(두 삶의 결이 맞도록).
 function scenePrompt(c, step) {
-  const s = c.scenes[step], next = c.scenes[step + 1], [A, B] = s.options;
+  const s = c.scenes[step], next = c.scenes[step + 1], prev = c.scenes[step - 1], [A, B] = s.options;
   return `${G.PROMPT_HEAD}. 지금은 한 장면이 끝난 뒤의 브리핑을 미리 쓴다. 주인공은 ${c.name}(${c.role})이다. 학생은 길 A와 B 가운데 하나를 고르고, 브리핑에는 고른 길의 삶과 고르지 않은 길의 삶이 나란히 나온다.
 
 ${G.background(c)}
@@ -58,9 +59,16 @@ ${s.story}
 [길 B] ${B.text}
 대본의 결과: ${B.result}
 
-[쓰는 법]
+${prev ? `[앞 장면: 같은 날 ${prev.time} 「${prev.title}」]
+학생은 앞 장면에서 다음 둘 중 하나를 골랐다. 어느 쪽인지는 알 수 없다.
+- ${prev.options[0].text}: ${prev.options[0].result}
+- ${prev.options[1].text}: ${prev.options[1].result}
+
+` : ''}[쓰는 법]
 1. a는 길 A를, b는 길 B를 간 ${c.name}의 삶이다. 각 story는 그 길의 대본 결과를 바탕으로 3~4문장. 대본 결과에 나온 일은 모두 담고 바꾸지 마라.
-2. "${c.name}은(는) …했다"처럼 3인칭 과거형으로 쓰고, 시점은 대본 결과가 다루는 때까지만 써라.
+2. "${c.name}은(는) …했다"처럼 3인칭 과거형으로 쓰고, 시점은 대본 결과가 다루는 때까지만 써라.${next ? `
+   이 장면 뒤에는 같은 날 ${next.time} 장면이 이어진다. 대본 결과에 ${next.time}보다 늦은 때를 가리키는 말("저녁에", "밤에" 등)이 있으면, 일은 그대로 담되 그 때를 가리키는 말은 빼거나 "그 뒤", "집에 돌아와서"처럼 바꿔 써라.` : ''}
+   조사와 호응을 정확히 써라(이름 뒤 은/는·이/가·을/를·와/과, 주어와 서술어, 높임말 일치).
 3. headline은 그 삶을 한눈에 보여 주는 짧은 제목(15자 안팎)으로, 두 삶의 차이가 드러나게 써라. gained와 lost는 대본 결과에서 드러나는 것만 한 문장으로 쓴다. 어느 길도 정답이나 실패처럼 보이게 하지 마라.
 4. 결과를 과장하거나 새 불행을 만들지 마라. 개인의 노력만으로 구조적 문제가 해결된 것처럼 쓰지 마라.
 5. 주인공의 마음은 대본에 드러난 만큼만 써라.
@@ -68,7 +76,10 @@ ${s.story}
 7. afterA와 afterB에는 각 길을 간 뒤 ${next ? `다음 장면(${next.time} 「${next.title}」)이 시작되기 직전까지` : '잠들 때까지'} ${c.name}의 일과를 시간 순서로 3개 써라. 그 길의 결과에 이어지게 하고, 이 지역의 평범한 생활(오가는 길, 집안일, 수업, 식사 등)을 담아라.${next ? `
    다음 장면은 이렇게 시작한다: ${next.story}
    일과는 이 상황과 어긋나면 안 되고, 다음 장면의 고민거리를 미리 풀거나 정하지 마라.
-   다음 장면은 같은 날 ${next.time}이다. 시간은 같은 날 안에서만 흘러가게 하고, "다음 날"이나 "며칠 뒤"로 넘기지 마라.` : ''}
+   다음 장면은 같은 날 ${next.time}이다. 시간은 같은 날 안에서만 흘러가게 하고, "다음 날"이나 "며칠 뒤"로 넘기지 마라.
+   대본 결과 가운데 다음 장면보다 나중에 일어나는 일(몇 달 뒤, 계절이 바뀐 뒤 등)은 일과에 쓰지 마라.` : `
+   일과는 이 장면이 끝난 그날 저녁부터 잠들 때까지, 같은 날 밤의 일만 써라. 대본 결과에 나오는 나중 일(다음 날, 며칠·몇 달 뒤, 방송이 나간 뒤, 답장, 다른 사람들의 반응 등)은 아직 일어나지 않았으니 일과에 쓰지 마라.`}${prev ? `
+   학생이 앞 장면에서 어느 길을 골랐는지 모르므로, 일과에 앞 장면의 한쪽 결과에만 맞는 일(예: 일하러 간 경우에만 맞는 일, 시험을 본 경우에만 맞는 일)을 쓰지 마라. 앞 장면의 두 결과 모두와 어긋나지 않게 써라.` : ''}
    when은 "오전 8시쯤", "점심 무렵"처럼 대략적인 때로 쓰고, text는 "${c.name}은(는) …한다"처럼 3인칭 현재형으로 25자 안팎으로 써라.
 
 ${G.SAFETY_RULES}`;
@@ -133,6 +144,8 @@ ${i > 0 ? [0, 1].map(p => { const o = d.openings[i][p]; return `<div class="open
 }
 
 (async () => {
+  // node precompute.cjs --review : 다시 만들지 않고 검토용 문서만 새로 쓴다(precomputed.js를 손으로 고친 뒤).
+  if (process.argv[2] === '--review') { writeReview(load()); console.log(`검토용: ${REVIEW}`); return; }
   await window.AI.serverCheck;
   if (!window.AI.server) { console.error('학교 서버에 AI 키가 없어 만들 수 없습니다.'); process.exit(1); }
   const only = process.argv.slice(2);

@@ -45,6 +45,7 @@ function dialog({title,body='',ok='확인',cancel='',icon='!'}){
 function focusEmpty(names){const n=names.find(k=>!fields()[k]?.trim());const el=n&&document.querySelector(`[data-field="${n}"]`);if(el){el.scrollIntoView({block:'center',behavior:reduceMotion?'auto':'smooth'});el.focus({preventScroll:true});}}
 function toast(msg){const el=document.querySelector('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),3800);}
 function navigate(next){
+  if(next!=='chat'&&next!=='reflect'){transition=null;clearTimeout(startTransition.t);}
   view=next;
   if(state.run&&RUN_VIEWS.includes(next)){state.run.view=next;save();}
   render();
@@ -260,46 +261,48 @@ function openScene(c){
     .catch(()=>{if(state.run===r&&!ch.log.length)ch.log.push({k:'story',text:s.story});})
     .finally(()=>{opening=pending=false;save();if(view==='chat'&&state.run===r)render();});
 }
-// 기다리는 동안: 대화·선택 때는 점 세 개, 장면이 바뀔 때는 해가 하늘을 건너간다(전체 화면 전환 뒤에 가려짐).
+// 기다리는 동안: 대화·선택 때는 점 세 개, 장면 첫머리를 AI가 쓰는 동안(미리 만든 글이 없을 때)은 호를 따라 도는 해.
 function passing(c,step,sceneChange){
   const s=c.scenes[step];
   if(sceneChange&&step>0)return `<div class="passing scene" role="status"><div class="sky" aria-hidden="true"><span class="arm"><i></i></span></div><p>${esc(c.scenes[step-1].time)}이 지나고 ${esc(s.time)}이 된다</p></div>`;
   return '<p class="msg typing" role="status" aria-label="답을 기다리는 중"><i></i><i></i><i></i></p>';
 }
-// 장면 전환: 화면 전체에서 하늘빛이 바뀌고 해가 건너가며, 그사이 캐릭터의 일과가 한 줄씩 지나간다.
-// 학생에게는 하루가 흐르는 장면이고, 그동안 뒤에서 AI가 다음 장면 첫머리를 쓴다.
-// to가 3이면 마지막 장면 뒤, 밤으로 넘어간다.
-const PHASE={아침:'morning',낮:'noon',저녁:'evening',밤:'night'};
+// 장면 전환: 다음 장면 카드 안에서 점선 호를 따라 해가 왼쪽에서 오른쪽으로 한 번 지나간다(이 움직임이 곧 진행 표시).
+// 그사이 앞 장면에서 고른 길에 이어지는 일과가 한 줄씩 나타나고, 해가 끝에 닿으면 장면이 열린다.
+// to가 3이면 마지막 장면 뒤: 밤으로 넘어간 뒤 돌아보기 화면으로 간다.
 const DAY_FALLBACK={
   낮:[['오전','해가 높이 떠오르고, 하루가 이어진다'],['한낮','그림자가 짧아진다']],
   저녁:[['오후','햇볕이 조금씩 누그러진다'],['해 질 무렵','하늘이 붉게 물든다']],
   밤:[['저녁','하루를 정리한다'],['밤','불이 하나둘 꺼진다']],
 };
-const wait=ms=>new Promise(r=>setTimeout(r,ms));
-async function dayPass(c,from,to){
-  const fromT=c.scenes[from].time,toT=to<3?c.scenes[to].time:'밤';
+let transition=null;
+function startTransition(c,from,to){
   const got=chatOf(from).brief?.between;
-  const items=got?.length?got:(DAY_FALLBACK[toT]||[]).map(([when,text])=>({when,text}));
-  const step=1100,lead=500,dur=lead+items.length*step;
-  const el=document.createElement('div');
-  el.className=`daypass from-${PHASE[fromT]} to-${PHASE[toT]}`;
-  el.setAttribute('role','status');el.setAttribute('aria-live','polite');
-  el.style.setProperty('--dur',dur+'ms');
-  el.innerHTML=`<div class="dp-sky dp-from"></div><div class="dp-sky dp-to"></div><div class="dp-orbit" aria-hidden="true"><div class="dp-sun"></div></div>
-    <div class="dp-card">
-      <p class="dp-phase"><span>${esc(fromT)}</span><span class="dp-arc" aria-hidden="true"><span class="arm"><i></i></span></span><span>${esc(toT)}</span></p>
-      <ol class="dp-list">${items.map((x,i)=>`<li style="--i:${i}">${x.when?`<b>${esc(x.when)}</b>`:''}${esc(x.text)}</li>`).join('')}</ol>
-      <p class="dp-next" style="--i:${items.length}">${to<3?`${esc(toT)} · ${esc(c.scenes[to].title)}`:`${esc(c.name)}의 하루가 저문다`}</p>
-    </div>`;
-  document.body.appendChild(el);
-  window.scrollTo({top:0});
-  requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('go')));
-  await wait(reduceMotion?1500:dur+lead+900);
-  // 다음 장면 첫머리를 아직 쓰는 중이면 마지막 줄을 띄운 채 기다린다.
-  while(opening)await wait(200);
-  el.classList.add('out');await wait(450);el.remove();
+  const items=got?.length?got:(DAY_FALLBACK[to<3?c.scenes[to].time:'밤']||[]).map(([when,text])=>({when,text}));
+  const dur=reduceMotion?1500:900+items.length*1000+700;
+  transition={from,to,items,dur};
+  clearTimeout(startTransition.t);
+  startTransition.t=setTimeout(()=>{
+    transition=null;
+    if(to===3)navigate('reflect');
+    else if(view==='chat'){render();scrollLog();}
+  },dur);
 }
-// *행동* 표기를 기울임으로 보여 준다.
+function transitionCard(c){
+  const {from,to,items,dur}=transition,fromT=c.scenes[from].time,toT=to<3?c.scenes[to].time:'밤';
+  const s=to<3?c.scenes[to]:null;
+  return `<div class="game play">${stageArt(c,Math.min(to,2),to===3)}<div class="stage-main">
+  <article class="scene-card">
+    <header class="card-head"><p class="label">${to<3?`${esc(toT)} · 장면 ${to+1}/3`:'하루를 마치며'}</p><h1>${s?esc(s.title):`${esc(c.name)}의 하루가 저문다`}</h1></header>
+    <div class="card-body">
+      <div class="passing scene turn" role="status" style="--dur:${dur}ms">
+        <div class="sky" aria-hidden="true"><span class="arm"><i></i></span></div>
+        <p>${esc(fromT)}이 지나고 ${esc(toT)}이 된다</p>
+        <ol class="day-list">${items.map((x,i)=>`<li style="--i:${i}">${x.when?`<b>${esc(x.when)}</b>`:''}${esc(x.text)}</li>`).join('')}</ol>
+      </div>
+    </div>
+  </article></div></div>`;
+}// *행동* 표기를 기울임으로 보여 준다.
 const fmt=t=>esc(t).replace(/\*([^*\n]+)\*/g,'<i>$1</i>');
 function entry(e,c,s){
   // 예전 기록은 장면 설명을 narr로 저장했으므로 같은 문장이면 상황 문단으로 보여 준다.
@@ -316,6 +319,7 @@ function stageArt(c,step,decided){return `<aside class="stage-art">
   <ol class="pips" aria-label="장면 진행">${c.scenes.map((x,i)=>`<li class="${i<step||(i===step&&decided)?'done':i===step?'now':''}">${esc(x.time)}</li>`).join('')}</ol>
 </aside>`;}
 function chat(c){
+  if(transition)return transitionCard(c);
   const r=state.run,step=r.step,s=c.scenes[step],ch=chatOf(step),n=r.choices[step];
   const under=`<div class="card-under">${step>0?'<button class="link" data-action="prev-scene">← 이전 장면</button>':'<span></span>'}<span>인물과 대화는 자료를 바탕으로 꾸민 이야기입니다</span></div>`;
   if(n!==null){
@@ -583,8 +587,8 @@ document.addEventListener('click',async e=>{
     if(state.run.choices[state.run.step]===null)return;
     
     const from=state.run.step;
-    if(from<2){state.run.step++;save();navigate('chat');dayPass(c,from,from+1);}
-    else{navigate('reflect');dayPass(c,from,3);}
+    if(from<2){state.run.step++;save();startTransition(c,from,from+1);navigate('chat');}
+    else{startTransition(c,from,3);render();window.scrollTo({top:0});}
   }
   if(a==='prev-scene'){state.run.step=Math.max(0,state.run.step-1);save();navigate('chat');}
   if(a==='copy-prompt')copy(promptText());
