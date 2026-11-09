@@ -4,10 +4,9 @@ const RUN_VIEWS=['intro','chat','reflect','lab','plan','report'];
 const FREE_VIEWS=['home','atlas','guide','select'];
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const pad=n=>String(n).padStart(2,'0');
 // 캐릭터마다 그림 속 옷·소품 색에서 고른 포인트 색
 const TONE={tuvalu:'#1f7f7c',pakistan:'#2d6b63',bangladesh:'#3e6399',somalia:'#b06d12',gaza:'#3f74a8',haiti:'#a86a14',ghana:'#86552a',sudan:'#76589f',rohingya:'#71519c',afghanistan:'#a3303d',congo:'#ad2843',qatar:'#66750f'};
-const DEFAULT_TONE='#9a4a2a';
+const DEFAULT_TONE='#111111';
 
 /* ---------- 저장 ---------- */
 let state={run:null,completed:[]},view='home',filter='전체',storageOK=true,pending=false;
@@ -90,29 +89,34 @@ function preloadArt(){
   preloadArt.keep=keep;
 }
 function field(name,label,placeholder='',required=false,help=''){return `<label class="field"><span>${esc(label)}${required?' <em>필수</em>':''}</span>${help?`<small>${esc(help)}</small>`:''}<textarea data-field="${name}" name="${name}" maxlength="4000" ${required?'required':''} placeholder="${esc(placeholder)}">${esc(fields()[name]||'')}</textarea></label>`;}
-function tile(c){const i=cases.indexOf(c),done=state.completed.includes(c.id);return `<button class="tile" data-start="${c.id}" style="--tone:${TONE[c.id]}">${art(c,'card')}<span class="tile-body"><span class="tile-meta">No.${pad(i+1)} · ${esc(c.theme)}${done?' · 완료':''}</span><strong>${esc(c.name)}</strong><span class="tile-title">${esc(c.title)}</span><span class="tile-desc">${esc(c.summary)}</span></span></button>`;}
+function tile(c){const i=cases.indexOf(c),done=state.completed.includes(c.id);return `<button class="tile" data-start="${c.id}" style="--tone:${TONE[c.id]}">${art(c,'card')}<span class="tile-body"><span class="tile-meta">${esc(c.theme)}${done?' · 완료':''}</span><strong>${esc(c.name)}</strong><span class="tile-title">${esc(c.title)}</span><span class="tile-desc">${esc(c.summary)}</span></span></button>`;}
 
 /* ---------- 홈 · 목록 · 안내 ---------- */
 // 홈은 게임 타이틀 화면: 제목과 시작 버튼만.
+// 홈: 보고서 표지처럼. 위쪽은 초상과 캐릭터 색 타일을 틈 없이 붙인 모자이크, 아래는 큰 제목.
+const MOSAIC=[['p','bangladesh','p1'],['t','gaza','t1'],['p','tuvalu','p2'],['t','congo','t2'],['p','afghanistan','p3'],['t','sudan','t3'],['p','ghana','p4'],['p','gaza','p5'],['t','haiti','t4']];
 function home(){const r=state.run,c=current();return `<section class="title-screen">
-  <div class="title-fan" aria-hidden="true">${['bangladesh','tuvalu','gaza','ghana','afghanistan'].map(id=>art(cases.find(x=>x.id===id),'card')).join('')}</div>
-  <p class="eyebrow">대화형 지구촌 시뮬레이션</p>
-  <h1>다른 곳의 하루</h1>
-  <p class="title-sub">지구촌 어딘가의 또래가 되어 하루를 살아 보세요.<br>당신의 말과 선택에 따라 하루가 흘러갑니다.</p>
-  <div class="title-actions">
-    <button class="btn big" data-action="random">게임 시작</button>
-    ${r&&c?`<button class="btn big ghost" data-action="resume">이어하기 · ${esc(c.name)}</button>`:''}
+  <div class="mosaic" aria-hidden="true">${MOSAIC.map(([k,id,area])=>k==='p'?`<div class="m-cell a-${area}" style="grid-area:${area}">${art(cases.find(x=>x.id===id),'card')}</div>`:`<div class="m-cell m-tile a-${area}" style="grid-area:${area};background:${TONE[id]}"></div>`).join('')}</div>
+  <div class="title-body">
+    <p class="title-sub">지구촌 어딘가에 사는 또래가 되어, 대화하며 아침부터 저녁까지 하루를 살아 보는 도덕 수업 게임입니다.</p>
+    <div class="title-main">
+      <h1><span class="line"><span>다른 곳의</span></span><span class="line"><span>하루</span></span></h1>
+      <div class="title-actions">
+        <button class="btn big" data-action="random">게임 시작</button>
+        ${r&&c?`<button class="btn big ghost" data-action="resume">이어하기 · ${esc(c.name)}</button>`:''}
+        <button class="link" data-nav="atlas">캐릭터 직접 고르기</button>
+      </div>
+      <p class="title-note">실제 자료를 바탕으로 만든 이야기입니다. 인물과 대화는 꾸민 것입니다.${!storageOK?' 이 브라우저는 저장을 쓸 수 없으니 끝난 뒤 기록을 내려받아 주세요.':''}</p>
+    </div>
   </div>
-  <p class="title-links"><button class="link" data-nav="atlas">캐릭터 직접 고르기</button><span>·</span><button class="link" data-nav="guide">선생님 안내</button></p>
-  <p class="title-note">실제 자료를 바탕으로 만든 이야기입니다. 인물과 대화는 꾸민 것입니다.${!storageOK?' 이 브라우저는 저장을 쓸 수 없으니 끝난 뒤 기록을 내려받아 주세요.':''}</p>
 </section>`;}
 
-function atlas(){const shown=filter==='전체'?cases:cases.filter(c=>c.theme===filter);return `<div class="page-head"><p class="label">캐릭터</p><h1>열두 명의 하루</h1><p class="muted">나라 전체가 아니라 특정 지역에 사는 한 사람의 조건을 따라갑니다. 이 브라우저에서 ${state.completed.length} / 12명을 마쳤습니다.</p></div>
+function atlas(){const shown=filter==='전체'?cases:cases.filter(c=>c.theme===filter);return `<div class="page-head"><h1>열두 명의 하루</h1><p class="muted">나라 전체가 아니라 특정 지역에 사는 한 사람의 조건을 따라갑니다. 이 브라우저에서 ${state.completed.length} / 12명을 마쳤습니다.</p></div>
 <div class="filters" role="group" aria-label="주제별 보기">${['전체','환경','물','빈곤','난민','인권'].map(t=>`<button class="chip" aria-pressed="${filter===t}" data-filter="${t}">${t}</button>`).join('')}</div>
 <div class="tiles">${shown.map(tile).join('')}</div>
 <div class="actions"><button class="btn" data-action="random">무작위로 뽑기</button></div>`;}
 
-function guide(){return `<div class="page-head"><p class="label">수업 안내</p><h1>체험에서 공감으로,<br>공감에서 책임으로.</h1><p class="muted">중학교 도덕 · 지구촌 문제 해결 수업. 모든 사례는 자료 시점의 특정 지역 상황이며 나라 전체를 대표하지 않습니다.</p></div>
+function guide(){return `<div class="page-head"><h1>체험에서 공감으로,<br>공감에서 책임으로.</h1><p class="muted">중학교 도덕 · 지구촌 문제 해결 수업. 모든 사례는 자료 시점의 특정 지역 상황이며 나라 전체를 대표하지 않습니다.</p></div>
 <div class="grid3">
   <article class="cell"><p class="label">1차시 · 45분</p><h3>캐릭터와 대화하기</h3><p>도입·뽑기 10분 → 세 장면 대화 20분 → 개인 성찰과 모둠 대화 15분. 다른 선택의 결과도 비교해 봅니다.</p></article>
   <article class="cell"><p class="label">2차시 · 45분</p><h3>질문과 근거 검토</h3><p>질문 고치기 10분 → AI 또는 원문 조사 20분 → 출처 대조·빠진 관점 검토 15분.</p></article>
@@ -157,9 +161,8 @@ function roulette(target){
 }
 
 function intro(c){const i=cases.indexOf(c);return `<section class="profile">
-  <figure class="portrait">${art(c,'card')}<figcaption><span>No.${pad(i+1)} · ${esc(c.theme)}</span><strong>${esc(c.name)}</strong>${esc(c.country)}</figcaption></figure>
+  <figure class="portrait">${art(c,'card')}<figcaption><span>${esc(c.theme)}</span><strong>${esc(c.name)}</strong>${esc(c.country)}</figcaption></figure>
   <div class="profile-body">
-    <p class="label">당신이 살아 볼 사람</p>
     <h1>${esc(c.name)}</h1>
     <p class="muted">${esc(c.role)}</p>
     <dl class="facts-table">
@@ -462,7 +465,7 @@ function plan(c){const pf=keys=>planFields.filter(([k])=>keys.includes(k)).map((
   </form>
 </article></div></div>`;}
 
-function review(){const f=fields(),checks=[...planFields.map(([n,l])=>[l,typeof f[n]==='string'&&f[n].trim().length>0]),['자료 검토 기록',!!f.evidence?.trim()],['원문·시점 확인 표시',!!f.checkedSource],['사실과 가정 구분 표시',!!f.checkedFiction],['당사자 참여 검토 표시',!!f.checkedVoice]];return `<ul class="review">${checks.map(([l,ok])=>`<li class="${ok?'ok':''}">${ok?'✓':'○'} ${esc(l)}</li>`).join('')}</ul>`;}
+function review(){const f=fields(),checks=[...planFields.map(([n,l])=>[l,typeof f[n]==='string'&&f[n].trim().length>0]),['자료 검토 기록',!!f.evidence?.trim()],['원문·시점 확인 표시',!!f.checkedSource],['사실과 가정 구분 표시',!!f.checkedFiction],['당사자 참여 검토 표시',!!f.checkedVoice]];return `<ul class="review">${checks.map(([l,ok])=>`<li class="${ok?'ok':''}">${esc(l)}</li>`).join('')}</ul>`;}
 
 function reportText(){const c=current(),r=state.run,f=fields();return `다른 곳의 하루 · 지구촌 탐구 기록\n활동 이름: ${f.nickname||'미입력'}\n캐릭터: ${c.name} (${c.role})\n지역: ${c.country} / ${c.region}\n완료 시각: ${new Date(r.finishedAt).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})} KST\n\n※ 실제 체험·증언이 아닌 학습용 가상 시뮬레이션입니다.\n\n[하루의 선택]\n${c.scenes.map((s,i)=>`${s.time}: ${s.options[r.choices[i]]?.text||'미선택'}\n결과(가정): ${r.chats[i].brief?.mine?.story||s.options[r.choices[i]]?.result||''}`).join('\n\n')}\n\n[돌아보기]\n중요했던 것: ${f.feeling||''}\n바꾸기 어려운 조건: ${f.constraint||''}\n더 알아볼 것: ${f.unknown||''}\n\n[질문과 검토]\n첫 질문: ${f.firstQuestion||'미작성'}\n개선 질문: ${f.betterQuestion||'미작성'}\nAI 답변/원문 조사: ${f.answer||'미작성'}\n근거 대조: ${f.evidence||'미작성'}\n수정·보류한 내용: ${f.revision||'미작성'}\n\n[해결 계획]\n${planFields.map(([n,l])=>`${l}\n${f[n]||'미작성'}`).join('\n\n')}\n\n[자가 확인]\n원문·시점: ${f.checkedSource?'확인 표시':'미확인'}\n사실·가정 구분: ${f.checkedFiction?'확인 표시':'미확인'}\n당사자 참여: ${f.checkedVoice?'확인 표시':'미확인'}\n\n[자료]\n${c.sources.map(s=>`${s.title}\n${s.date}\n${s.url}`).join('\n\n')}\n\n선택 결과는 예측이나 통계가 아닙니다. 기관의 승인·감수를 받은 자료는 아닙니다.`;}
 
