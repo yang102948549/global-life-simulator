@@ -96,10 +96,10 @@ function tile(c){const i=cases.indexOf(c),done=state.completed.includes(c.id);re
 /* ---------- 홈 · 목록 · 안내 ---------- */
 // 홈은 게임 타이틀 화면: 제목과 시작 버튼만.
 // 홈: 보고서 표지처럼. 위쪽은 초상과 캐릭터 색 타일을 틈 없이 붙인 모자이크, 아래는 큰 제목.
-// 첫 화면 모자이크: 캐릭터 4명과 밝은 색 칸 3개(햇살 노랑·코랄·하늘색)
-const MOSAIC=[['p','bangladesh','p1'],['t','#FFC94D','t1'],['p','tuvalu','p2'],['t','#5EC4F2','t2'],['t','#FF8A6B','t3'],['p','ghana','p4'],['p','gaza','p5']];
+// 첫 화면 모자이크: 캐릭터 4명과 색 칸 3개. 색은 캐릭터 그림에서 뽑은 키 컬러(TONE) 가운데 밝고 따뜻한 것(호단 호박색·시오네 청록·그라스 다홍)
+const MOSAIC=[['p','bangladesh','p1'],['t','somalia','t1'],['p','tuvalu','p2'],['t','congo','t2'],['t','tuvalu','t3'],['p','ghana','p4'],['p','gaza','p5']];
 function home(){const r=state.run,c=current();return `<section class="title-screen">
-  <div class="mosaic" aria-hidden="true">${MOSAIC.map(([k,id,area])=>k==='p'?`<div class="m-cell a-${area}" style="grid-area:${area}">${art(cases.find(x=>x.id===id),'card')}</div>`:`<div class="m-cell m-tile a-${area}" style="grid-area:${area};background:${id}"></div>`).join('')}</div>
+  <div class="mosaic" aria-hidden="true">${MOSAIC.map(([k,id,area])=>k==='p'?`<div class="m-cell a-${area}" style="grid-area:${area}">${art(cases.find(x=>x.id===id),'card')}</div>`:`<div class="m-cell m-tile a-${area}" style="grid-area:${area};background:${TONE[id]}"></div>`).join('')}</div>
   <div class="title-body">
     <p class="title-kicker">중학교 도덕 · 지구촌 문제 수업</p>
     <h1><span class="line"><span>다른 곳의</span></span><span class="line"><span>하루</span></span></h1>
