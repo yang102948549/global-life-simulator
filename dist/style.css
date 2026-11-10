@@ -799,11 +799,19 @@ select:focus-visible{outline:2px solid var(--tone);outline-offset:2px}
   .game.play .scene-card:not(.result) .card-head h1{font-size:18px;line-height:1.35}
   .sit{top:12px;right:14px}
   .sit p{width:calc(100vw - 32px);right:-4px}
-  /* 칩은 가로 한 줄: 옆으로 밀어 보고, 다음 칩이 살짝 보인다 */
+  /* 대화 글은 반 단계 작게, 줄 간격과 말 사이 간격도 조금 좁혀 한 화면에 더 보이게 */
+  .game.play .scene-card .card-body{gap:10px;padding-top:10px}
+  .game.play .story{font-size:16.5px;line-height:1.8}
+  .game.play .msg{font-size:15px;line-height:1.7}
+  .game.play .msg.say{font-size:16px}
+  .game.play .msg b{font-size:12px}
+  .game.play .msg.narr{padding-left:12px}
+  .game.play .msg.me{padding:8px 12px;max-width:88%}
+  /* 칩은 세로로 한 줄에 하나씩: 낮고 작은 글씨로 촘촘하게 */
   .card-foot.talk{padding-top:10px}
-  .card-foot.talk .chips{flex-wrap:nowrap;overflow-x:auto;scroll-snap-type:x proximity;margin:0 -12px 8px;padding:0 28px 2px 12px;scrollbar-width:none;-webkit-overflow-scrolling:touch;-webkit-mask-image:linear-gradient(90deg,#000 82%,transparent);mask-image:linear-gradient(90deg,#000 82%,transparent)}
-  .card-foot.talk .chips::-webkit-scrollbar{display:none}
-  .card-foot.talk .chips .chip{flex:0 0 auto;width:min(236px,68vw);scroll-snap-align:start;font-size:14px;padding:9px 12px;align-items:center;white-space:normal}
+  .card-foot.talk .chips{flex-direction:column;align-items:stretch;gap:6px;margin-bottom:8px}
+  .card-foot.talk .chips .chip{justify-content:space-between;width:100%;min-height:40px;font-size:14px;line-height:1.35;padding:7px 12px}
+  .card-foot.talk .chips .chip-wait{height:36px}
   .card-foot.talk .say-box{margin-top:0;padding:6px 6px 6px 12px}
   .card-foot.talk .small-ask{margin:8px 0 0;font-size:12px}
   .card-foot.talk .small-ask.later{display:none}
