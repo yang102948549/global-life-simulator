@@ -186,6 +186,8 @@ function errorMessage(status,body){
   const code=err.code,reasons=(err.details||[]).map(d=>d.reason);
   if(code==='safety'||code==='jailbreak'||code==='prohibited_content'||code==='blocklist')return '안전 필터가 이 말을 막았어요. 표현을 바꿔서 다시 써 보세요.';
   if(reasons.includes('API_KEY_INVALID')||/api key not valid/i.test(err.message||''))return 'API 키가 올바르지 않아요. 키를 다시 확인해 주세요.';
+  // Google이 요청이 나온 곳을 지원하지 않는 지역으로 판단할 때. 학교망은 Cloudflare 홍콩 서버를 거치는 일이 있어 이렇게 된다.
+  if(/user location is not supported/i.test(err.message||''))return 'AI 서버가 지원되지 않는 지역을 거쳐 연결됐어요. 선생님께 알려 주세요. 급하면 휴대폰 핫스팟으로 연결해 다시 시도해 보세요.';
   if(status===401||status===403)return 'API 키를 쓸 수 없어요. 키가 맞는지, 이 사이트에서 쓰도록 허용되어 있는지 확인해 주세요.';
   if(status===404)return '선택한 모델을 찾을 수 없어요. 다른 모델을 골라 주세요.';
   if(status===429)return '요청이 너무 많아요. 잠시 뒤에 다시 보내 주세요.';

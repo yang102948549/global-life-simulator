@@ -109,6 +109,7 @@ body.is-game > footer{display:none}
 .slot strong{font-size:16px;font-weight:800}
 .slot span{font-size:12px;color:var(--muted)}
 .slot.done{opacity:.5}
+.slot.deal-in{animation:deal .4s ease-out backwards}
 .slot.on{border-color:var(--tone);transform:translateY(-4px)}
 .slot.picked{border-color:var(--tone);background:color-mix(in srgb,var(--tone) 12%,var(--card));opacity:1;transform:scale(1.06)}
 #select-status{margin-top:26px;font-size:20px;font-weight:700}

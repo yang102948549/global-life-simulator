@@ -143,21 +143,27 @@ function roulette(target){
   const land=()=>{
     slots.forEach(s=>s.classList.remove('on'));slots[end].classList.add('on','picked');
     const st=app.querySelector('#select-status');if(st)st.innerHTML=`<strong>${esc(target.name)}</strong> · ${esc(target.country)}`;
-    setTimeout(()=>{if(view==='select')begin(target);},reduceMotion?300:1000);
+    setTimeout(()=>{if(view==='select')begin(target);},reduceMotion?300:1800);
   };
   if(reduceMotion){land();return;}
-  // 두 바퀴 돈 뒤 목표 칸에서 멈추고, 끝에 가까울수록 느려진다.
-  const total=slots.length*2+end;
-  let step=0,delay=50;
+  // 먼저 카드를 하나씩 펼쳐 누가 있는지 보여 준 뒤 돌린다.
+  // 한 바퀴 돈 뒤 목표 칸에서 멈추고, 처음엔 이름을 읽을 만한 빠르기로 시작해 끝으로 갈수록 느려진다.
+  const st=app.querySelector('#select-status');
+  slots.forEach((s,i)=>{s.classList.add('deal-in');s.style.animationDelay=`${i*70}ms`;});
+  if(st)st.textContent=`${slots.length}명 가운데 한 명을 뽑아요`;
+  const total=slots.length+end;
+  let step=0;
   const tick=()=>{
     if(view!=='select')return;
-    slots.forEach(s=>s.classList.remove('on'));
-    slots[step%slots.length].classList.add('on');
+    const s=slots[step%slots.length];
+    slots.forEach(x=>x.classList.remove('on'));
+    s.classList.add('on');
+    if(st)st.textContent=`${cases[step%slots.length].name} · ${cases[step%slots.length].country}`;
     if(step>=total){land();return;}
-    step++;if(total-step<8)delay+=50;
-    setTimeout(tick,delay);
+    const p=step/total;step++;
+    setTimeout(tick,120+480*p*p*p);
   };
-  tick();
+  setTimeout(tick,slots.length*70+1400);
 }
 
 function intro(c){const i=cases.indexOf(c);return `<section class="profile">
