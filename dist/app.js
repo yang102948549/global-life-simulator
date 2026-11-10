@@ -604,34 +604,60 @@ function plan(c){const f=fields(),fm=fmtOf();return `<div class="game">${epiArt(
 
 /* ---------- 완성: 고른 형식의 서식으로 보여 주고 갤러리에 제출 ---------- */
 const paras=t=>String(t||'').split(/\n+/).map(s=>s.trim()).filter(Boolean).map(s=>`<p>${esc(s)}</p>`).join('')||'<p>(작성하지 않음)</p>';
-const dateText=f=>f._date||new Date(state.run?.finishedAt||Date.now()).toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',timeZone:'Asia/Seoul'});
-const factBox=c=>`<ul>${c.facts.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><p class="doc-src">${c.sources.map(s=>`${esc(s.title)} (${esc(s.date)})`).join(' · ')}</p>`;
-const fictionNote=c=>`<p class="doc-note">${esc(c.name)}의 이야기와 장면은 실제 자료를 바탕으로 꾸민 학습용 가상 시뮬레이션입니다.</p>`;
+// 서식 공통 조각
+const firstSentence=t=>{const s=String(t||'').trim().split(/\n+/)[0]||'';const m=s.match(/^.+?[.!?](?=\s|$)/);return (m?m[0]:s).trim();};
+const longDate=f=>{const d=f._ts?new Date(f._ts):new Date(state.run?.finishedAt||Date.now());return d.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long',timeZone:'Asia/Seoul'});};
+const docNo=f=>{const d=f._ts?new Date(f._ts):new Date(state.run?.finishedAt||Date.now());const p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`;};
+const factBox=c=>`<ul>${c.facts.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><p class="doc-src">출처 · ${c.sources.map(s=>`${esc(s.title)} (${esc(s.date)})`).join(' · ')}</p>`;
+const fictionNote=c=>`<p class="doc-note">이 글은 중학교 도덕 수업 ‘다른 곳의 하루’에서 학생이 쓴 학습 결과물입니다. ${esc(c.name)}의 이야기와 장면은 실제 자료를 바탕으로 꾸민 가상 시뮬레이션입니다.</p>`;
+
+// 신문 기사: 일간지 1면처럼 가운데 제호 → 발행 정보 띠 → 섹션 머리 → 제목 → 바이라인 → 리드 → 사진과 설명 → 2단 본문 → 해설 → 팩트 체크
 function docArticle(c,f){return `<article class="doc doc-article">
-  <header class="np-head"><span class="np-name">지구촌 탐구 신문</span><span class="np-meta">${dateText(f)} · ${esc(c.country)}</span></header>
+  <header class="np-mast"><p class="np-name">지구촌 탐구 신문</p>
+    <p class="np-issue"><span>제1호</span><span>${longDate(f)}</span><span>국제</span></p></header>
+  <p class="np-kicker">국제 <b>${esc(c.country)}</b> · ${esc(c.theme)}</p>
   <h1 class="np-title">${esc(f.a_title||'제목 없음')}</h1>
-  <p class="np-byline">글 · ${esc(f.nickname||'익명')} 기자 &nbsp;|&nbsp; ${esc(c.country)} ${esc(c.region)}</p>
+  <p class="np-byline"><b>${esc(f.nickname||'익명')} 기자</b><span>${esc(c.region)}</span></p>
   <div class="np-lead">${paras(f.a_lead)}</div>
-  <div class="np-cols">${paras(f.a_body)}<blockquote class="np-quote">“${esc(c.wish)}”<cite>${esc(c.name)} · 이야기 속 인물</cite></blockquote><h3>함께 생각해 볼 것</h3>${paras(f.a_end)}</div>
-  <aside class="np-box"><h4>확인된 사실</h4>${factBox(c)}</aside>
-  ${fictionNote(c)}
+  <div class="np-cols">
+    <figure class="np-photo"><img src="${artSrc(c.id)}" alt="" loading="lazy"><figcaption>이야기 속 인물 ${esc(c.name)}(${esc(c.role)}). 실제 자료를 바탕으로 만든 가상 인물의 일러스트다.</figcaption></figure>
+    ${paras(f.a_body)}
+    <blockquote class="np-quote">“${esc(c.wish)}”<cite>— ${esc(c.name)}(가상 인물)의 바람</cite></blockquote>
+    <section class="np-opinion"><h3>함께 생각해 볼 것</h3>${paras(f.a_end)}</section>
+  </div>
+  <aside class="np-box"><h4>팩트 체크</h4>${factBox(c)}</aside>
+  <footer class="np-foot">지구촌 탐구 신문 · 학생 기자가 직접 조사해 쓴 학습 신문입니다. ${fictionNote(c)}</footer>
 </article>`;}
+
+// 정책 제안서: 정책 보고서처럼 제안 번호 → 제목 → 핵심 요약 → 수신·발신 표 → Ⅰ~Ⅳ 장 → 맺음
 function docPolicy(c,f){return `<article class="doc doc-policy">
-  <header class="pb-head"><span class="pb-kind">정책 제안서</span><h1>${esc(f.p_title||'제안 이름 없음')}</h1></header>
-  <dl class="pb-meta"><div><dt>제안한 사람</dt><dd>${esc(f.nickname||'익명')}</dd></div><div><dt>대상 지역</dt><dd>${esc(c.country)} · ${esc(c.region)}</dd></div><div><dt>작성일</dt><dd>${dateText(f)}</dd></div><div><dt>관련 주체</dt><dd>${esc(c.actors)}</dd></div></dl>
-  <section class="pb-sec"><h2><span>1</span>문제</h2>${paras(f.p_problem)}</section>
-  <section class="pb-sec"><h2><span>2</span>제안 내용</h2>${paras(f.p_plan)}</section>
-  <section class="pb-sec"><h2><span>3</span>예상되는 어려움과 보완</h2>${paras(f.p_limit)}</section>
-  <section class="pb-sec pb-ref"><h2><span>※</span>근거 자료</h2>${factBox(c)}</section>
-  ${fictionNote(c)}
+  <header class="pb-band"><span>정책 제안서 <i>POLICY PROPOSAL</i></span><span>제안 번호 ${docNo(f)}</span></header>
+  <h1 class="pb-title">${esc(f.p_title||'제안 이름 없음')}</h1>
+  <section class="pb-summary"><h2>핵심 요약</h2><ul>
+    <li><b>문제</b>${esc(firstSentence(f.p_problem))}</li>
+    <li><b>제안</b>${esc(firstSentence(f.p_plan))}</li>
+    <li><b>보완</b>${esc(firstSentence(f.p_limit))}</li></ul></section>
+  <table class="pb-meta"><tbody>
+    <tr><th>수신</th><td>${esc(c.actors)}</td></tr>
+    <tr><th>제안자</th><td>${esc(f.nickname||'익명')}</td></tr>
+    <tr><th>대상 지역</th><td>${esc(c.country)} · ${esc(c.region)}</td></tr>
+    <tr><th>작성일</th><td>${longDate(f)}</td></tr>
+  </tbody></table>
+  <section class="pb-sec"><h2><span>Ⅰ</span>현황과 문제</h2>${paras(f.p_problem)}</section>
+  <section class="pb-sec"><h2><span>Ⅱ</span>정책 제안</h2>${paras(f.p_plan)}</section>
+  <section class="pb-sec"><h2><span>Ⅲ</span>예상 쟁점과 보완 방안</h2>${paras(f.p_limit)}</section>
+  <section class="pb-sec pb-ref"><h2><span>Ⅳ</span>근거 자료</h2>${factBox(c)}</section>
+  <footer class="pb-foot">${fictionNote(c)}</footer>
 </article>`;}
+
+// 편지: 받는 분 → 본문 → 날짜 → 보내는 사람. 오른쪽 위에 캐릭터 우표.
 function docLetter(c,f){return `<article class="doc doc-letter">
-  <p class="lt-date">${dateText(f)}</p>
+  <div class="lt-stamp" aria-hidden="true"><img src="${artSrc(c.id,'face')}" alt=""><span>${esc(c.country)}</span></div>
   <p class="lt-to">${esc(f.l_to||'받는 분께')}</p>
   <div class="lt-body">${paras(f.l_learned)}${paras(f.l_ask)}${paras(f.l_me)}</div>
+  <p class="lt-date">${longDate(f)}</p>
   <p class="lt-from">${esc(f.nickname||'')} 드림</p>
-  <p class="lt-ps">덧붙임 · 이 편지는 ${esc(c.country)} ${esc(c.region)}의 상황을 다룬 학습 활동에서 썼습니다. 제가 읽은 자료: ${c.sources.map(s=>esc(s.title)).join(', ')}</p>
-  ${fictionNote(c)}
+  <footer class="lt-ps"><p>덧붙임 · 이 편지는 ${esc(c.country)} ${esc(c.region)}의 상황을 다룬 수업에서 썼습니다. 제가 읽은 자료: ${c.sources.map(s=>esc(s.title)).join(', ')}</p>${fictionNote(c)}</footer>
 </article>`;}
 const DOCS={article:docArticle,policy:docPolicy,letter:docLetter};
 function appendix(c){const r=state.run,f=fields(),row=(l,t)=>`<div class="ap-row"><h3>${esc(l)}</h3>${paras(t)}</div>`;return `<section class="appendix">
@@ -710,9 +736,9 @@ function galleryView(){
     <select data-gfilter="cls" aria-label="학년·반"><option value="">모든 반</option>${classes.map(k=>`<option value="${k}"${F.cls===k?' selected':''}>${k.replace('-','학년 ')}반</option>`).join('')}</select>
     <select data-gfilter="format" aria-label="형식"><option value="">모든 형식</option>${Object.entries(FORMATS).map(([k,x])=>`<option value="${k}"${F.format===k?' selected':''}>${x.name}</option>`).join('')}</select>
     <select data-gfilter="cid" aria-label="캐릭터"><option value="">모든 캐릭터</option>${cases.map(c=>`<option value="${c.id}"${F.cid===c.id?' selected':''}>${esc(c.name)} · ${esc(c.country)}</option>`).join('')}</select>
-    <button class="btn ghost small" data-action="gallery-reload">새로고침</button>
-    <span class="g-count">${gallery.loading?'불러오는 중…':`${shown.length}장`}</span>
+    <button class="btn ghost" data-action="gallery-reload" aria-label="갤러리 새로고침"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>새로고침</button>
   </div>
+  <p class="g-count">${gallery.loading?'불러오는 중…':`${shown.length}장`}</p>
   ${gallery.error?`<p class="msg error">${esc(gallery.error)}</p>`:''}
   ${!gallery.loading&&!shown.length&&!gallery.error?'<p class="g-empty">아직 올라온 결과물이 없어요.</p>':''}
   <div class="board">${shown.map(card).join('')}</div>
@@ -720,7 +746,7 @@ function galleryView(){
 }
 function openWork(key){
   const it=(gallery.items||[]).find(x=>x.key===key),c=it&&cases.find(x=>x.id===it.cid);if(!c)return;
-  const f={...it.data,format:it.format,nickname:`${it.grade}학년 ${it.cls}반 ${it.name}`,_date:new Date(it.updated).toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',timeZone:'Asia/Seoul'})};
+  const f={...it.data,format:it.format,nickname:`${it.grade}학년 ${it.cls}반 ${it.name}`,_ts:it.updated};
   const m=document.querySelector('#modal');
   m.setAttribute('aria-label',`${who(it)}의 ${FORMATS[it.format]?.name||'결과물'}`);
   m.innerHTML=`<div class="modal-box work-view" style="--tone:${TONE[c.id]}"><div class="work-bar"><span>${esc(who(it))} · ${esc(c.name)}의 하루</span><button class="btn ghost small" data-action="ai-skip">닫기</button></div>${DOCS[it.format](c,f)}<div class="work-research"><h3>나의 질문</h3>${paras(f.question)}<h3>알게 된 것과 근거</h3>${paras(f.notes)}</div></div>`;
