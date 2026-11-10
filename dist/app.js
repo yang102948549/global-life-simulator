@@ -100,16 +100,15 @@ const MOSAIC=[['p','bangladesh','p1'],['t','gaza','t1'],['p','tuvalu','p2'],['t'
 function home(){const r=state.run,c=current();return `<section class="title-screen">
   <div class="mosaic" aria-hidden="true">${MOSAIC.map(([k,id,area])=>k==='p'?`<div class="m-cell a-${area}" style="grid-area:${area}">${art(cases.find(x=>x.id===id),'card')}</div>`:`<div class="m-cell m-tile a-${area}" style="grid-area:${area};background:${TONE[id]}"></div>`).join('')}</div>
   <div class="title-body">
+    <p class="title-kicker">중학교 도덕 · 지구촌 문제 수업</p>
+    <h1><span class="line"><span>다른 곳의</span></span><span class="line"><span>하루</span></span></h1>
     <p class="title-sub">지구촌 어딘가에 사는 또래가 되어, 대화하며 아침부터 저녁까지 하루를 살아 보는 도덕 수업 게임입니다.</p>
-    <div class="title-main">
-      <h1><span class="line"><span>다른 곳의</span></span><span class="line"><span>하루</span></span></h1>
-      <div class="title-actions">
-        <button class="btn big" data-action="random">게임 시작</button>
-        ${r&&c?`<button class="btn big ghost" data-action="resume">이어하기 · ${esc(c.name)}</button>`:''}
-        <button class="link" data-nav="atlas">캐릭터 직접 고르기</button>
-      </div>
-      <p class="title-note">실제 자료를 바탕으로 만든 이야기입니다. 인물과 대화는 꾸민 것입니다.${!storageOK?' 이 브라우저는 저장을 쓸 수 없으니 끝난 뒤 기록을 내려받아 주세요.':''}</p>
+    <div class="title-actions">
+      <button class="btn big" data-action="random">게임 시작</button>
+      ${r&&c?`<button class="btn big ghost" data-action="resume">이어하기 · ${esc(c.name)}</button>`:''}
+      <button class="link" data-nav="atlas">캐릭터 직접 고르기</button>
     </div>
+    <p class="title-note">실제 자료를 바탕으로 만든 이야기입니다. 인물과 대화는 꾸민 것입니다.${!storageOK?' 이 브라우저는 저장을 쓸 수 없어 새로고침하면 진행이 사라질 수 있어요.':''}</p>
   </div>
 </section>`;}
 
