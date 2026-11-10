@@ -518,16 +518,14 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
 .m-cell{position:relative;overflow:hidden;min-height:0}
 .m-cell .art{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;border-radius:0}
 .m-cell .art img{object-position:50% 22%;animation:drift 18s ease-in-out infinite alternate}
-/* 제목 위계: '다른 곳의'는 작은 명조로 얹고, '하루'를 크고 굵게. 아래 짧은 띠 셋은 모자이크와 같은 키 컬러. */
+/* 제목 위계: '다른 곳의'는 작게 얹고, '하루'를 크고 굵게(둘 다 프리텐다드). */
 .title-body h1{font-family:var(--sans);font-size:clamp(84px,min(10.5vw,19vh),176px);line-height:.9;letter-spacing:-.06em;font-weight:800;margin:0}
-.title-body h1 .t-small{font-family:var(--serif);font-weight:700;font-size:.3em;line-height:1.2;letter-spacing:-.01em;color:var(--ink-2);margin-bottom:.08em;padding-left:.08em}
+.title-body h1 .t-small{font-family:var(--sans);font-weight:700;font-size:.3em;line-height:1.2;letter-spacing:-.04em;color:var(--ink-2);margin-bottom:.08em;padding-left:.08em}
 .title-body h1 .t-big{line-height:.92}
-.title-keys{display:flex;gap:6px;margin-top:clamp(14px,2.4vh,22px);animation:fadeUp .6s .2s ease-out both}
-.title-keys i{display:block;width:clamp(28px,2.6vw,40px);height:6px}
 .title-body h1 .line{display:block;overflow:hidden;padding-bottom:.04em}
 .title-body h1 .line>span{display:block;animation:rise .9s cubic-bezier(.2,.8,.2,1) both}
 .title-body h1 .line:nth-child(2)>span{animation-delay:.11s}
-.title-sub{font-family:var(--serif);font-size:clamp(15px,1.15vw,17px);line-height:1.8;max-width:34ch;color:var(--ink-2);margin-top:clamp(16px,2.6vh,24px);animation:fadeUp .6s .3s ease-out both}
+.title-sub{font-family:var(--serif);font-size:clamp(15px,1.15vw,17px);line-height:1.8;max-width:34ch;color:var(--ink-2);margin-top:clamp(18px,3vh,28px);animation:fadeUp .6s .3s ease-out both}
 .title-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:clamp(20px,4vh,36px);animation:fadeUp .6s .5s ease-out both}
 .title-note{margin-top:16px;font-size:13px;color:var(--muted)}
 @keyframes rise{from{transform:translateY(105%)}to{transform:none}}

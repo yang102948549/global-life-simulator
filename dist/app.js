@@ -102,7 +102,6 @@ function home(){const r=state.run,c=current();return `<section class="title-scre
   <div class="mosaic" aria-hidden="true">${MOSAIC.map(([k,id,area])=>k==='p'?`<div class="m-cell a-${area}" style="grid-area:${area}">${art(cases.find(x=>x.id===id),'card')}</div>`:`<div class="m-cell m-tile a-${area}" style="grid-area:${area};background:${TONE[id]}"></div>`).join('')}</div>
   <div class="title-body">
     <h1 class="title-h"><span class="line t-small"><span>다른 곳의</span></span><span class="line t-big"><span>하루</span></span></h1>
-    <p class="title-keys" aria-hidden="true">${['somalia','tuvalu','congo'].map(id=>`<i style="background:${TONE[id]}"></i>`).join('')}</p>
     <p class="title-sub">같은 하늘 아래, 전혀 다른 하루.<br>지구 어딘가에 사는 누군가의 아침과 저녁을 <span class="keep">함께 걸어 봅니다.</span></p>
     <div class="title-actions">
       <button class="btn big" data-action="random">게임 시작</button>
