@@ -514,8 +514,7 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
    휴대폰: 낮은 그림 띠 아래 제목·버튼. */
 .title-screen{display:grid;grid-template-columns:minmax(440px,46%) 1fr;width:100vw;margin:-24px 0 -24px calc(50% - 50vw);height:calc(100dvh - var(--topbar));min-height:520px}
 .title-body{grid-column:1;grid-row:1;display:flex;flex-direction:column;justify-content:center;padding:clamp(28px,6vh,72px) clamp(24px,4vw,64px)}
-.mosaic{grid-column:2;grid-row:1;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);grid-template-areas:"p1 p1 t1" "t3 p4 p2" "p5 p5 p3";height:100%;min-height:0}
-.mosaic .a-t2,.mosaic .a-t4{display:none}
+.mosaic{grid-column:2;grid-row:1;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);grid-template-areas:"p1 p1 t1" "t3 p4 p2" "p5 p5 t2";height:100%;min-height:0}
 .m-cell{position:relative;overflow:hidden;min-height:0}
 .m-cell .art{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;border-radius:0}
 .m-cell .art img{object-position:50% 22%;animation:drift 18s ease-in-out infinite alternate}
@@ -532,8 +531,8 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
 @keyframes drift{from{transform:scale(1)}to{transform:scale(1.06)}}
 @media (max-width:900px){
   .title-screen{display:flex;flex-direction:column;height:auto;min-height:calc(100dvh - var(--topbar))}
-  .mosaic{order:-1;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);grid-template-areas:"p1 p1 t1" "t3 p4 t1";height:clamp(170px,30dvh,400px);flex:none}
-  .mosaic .m-cell:not(.a-p1):not(.a-t1):not(.a-t3):not(.a-p4){display:none}
+  .mosaic{order:-1;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);grid-template-areas:"p1 p1 t1" "t3 p4 t2";height:clamp(170px,30dvh,400px);flex:none}
+  .mosaic .m-cell:not(.a-p1):not(.a-t1):not(.a-t2):not(.a-t3):not(.a-p4){display:none}
   .title-body{justify-content:flex-start;padding:24px var(--gutter) 32px}
   .title-kicker{font-size:13px}
   .title-body h1{font-size:clamp(44px,13vw,72px);margin-top:8px}
