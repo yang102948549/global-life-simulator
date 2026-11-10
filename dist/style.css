@@ -518,12 +518,16 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
 .m-cell{position:relative;overflow:hidden;min-height:0}
 .m-cell .art{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;border-radius:0}
 .m-cell .art img{object-position:50% 22%;animation:drift 18s ease-in-out infinite alternate}
-.title-kicker{font-size:14px;font-weight:700;letter-spacing:.04em;color:var(--muted);animation:fadeUp .6s ease-out both}
-.title-body h1{font-family:var(--sans);font-size:clamp(56px,min(7vw,13vh),112px);line-height:.98;letter-spacing:-.06em;font-weight:800;margin:14px 0 0}
+/* 제목 위계: '다른 곳의'는 작은 명조로 얹고, '하루'를 크고 굵게. 아래 짧은 띠 셋은 모자이크와 같은 키 컬러. */
+.title-body h1{font-family:var(--sans);font-size:clamp(84px,min(10.5vw,19vh),176px);line-height:.9;letter-spacing:-.06em;font-weight:800;margin:0}
+.title-body h1 .t-small{font-family:var(--serif);font-weight:700;font-size:.3em;line-height:1.2;letter-spacing:-.01em;color:var(--ink-2);margin-bottom:.08em;padding-left:.08em}
+.title-body h1 .t-big{line-height:.92}
+.title-keys{display:flex;gap:6px;margin-top:clamp(14px,2.4vh,22px);animation:fadeUp .6s .2s ease-out both}
+.title-keys i{display:block;width:clamp(28px,2.6vw,40px);height:6px}
 .title-body h1 .line{display:block;overflow:hidden;padding-bottom:.04em}
 .title-body h1 .line>span{display:block;animation:rise .9s cubic-bezier(.2,.8,.2,1) both}
 .title-body h1 .line:nth-child(2)>span{animation-delay:.11s}
-.title-sub{font-size:clamp(17px,1.4vw,20px);line-height:1.6;max-width:30ch;color:var(--ink-2);margin-top:clamp(16px,3vh,28px);animation:fadeUp .6s .3s ease-out both}
+.title-sub{font-family:var(--serif);font-size:clamp(15px,1.15vw,17px);line-height:1.8;max-width:34ch;color:var(--ink-2);margin-top:clamp(16px,2.6vh,24px);animation:fadeUp .6s .3s ease-out both}
 .title-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:clamp(20px,4vh,36px);animation:fadeUp .6s .5s ease-out both}
 .title-note{margin-top:16px;font-size:13px;color:var(--muted)}
 @keyframes rise{from{transform:translateY(105%)}to{transform:none}}
@@ -534,9 +538,8 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
   .mosaic{order:-1;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);grid-template-areas:"p1 p1 t1" "t3 p4 t2";height:clamp(170px,30dvh,400px);flex:none}
   .mosaic .m-cell:not(.a-p1):not(.a-t1):not(.a-t2):not(.a-t3):not(.a-p4){display:none}
   .title-body{justify-content:flex-start;padding:24px var(--gutter) 32px}
-  .title-kicker{font-size:13px}
-  .title-body h1{font-size:clamp(44px,13vw,72px);margin-top:8px}
-  .title-sub{font-size:16px;margin-top:14px;max-width:none}
+  .title-body h1{font-size:clamp(72px,24vw,128px)}
+  .title-sub{font-size:15px;margin-top:14px;max-width:none}
   .title-actions{margin-top:20px}
   .title-actions .btn.big{padding:14px 22px}
 }
@@ -812,3 +815,4 @@ select:focus-visible{outline:2px solid var(--tone);outline-offset:2px}
   /* 직접 쓰는 동안에는 칩을 접어 키보드 위로 대화가 보이게 */
   .card-foot.talk:has(#say:focus) .chips,.card-foot.talk:has(#say:focus) .small-ask{display:none}
 }
+.title-sub .keep{white-space:nowrap}
