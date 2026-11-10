@@ -399,6 +399,8 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
   .tile .art img{transition:none}
   .sky .arm{animation:none;transform:rotate(90deg)}
   .slot,.choice,.tile,.btn{transition:none}
+  .slot.deal-in{animation:none}
+  .slot.on,.slot.picked{transform:none}
 }
 @media print{
   body{font-size:11pt;background:#fff}

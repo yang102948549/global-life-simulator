@@ -143,9 +143,9 @@ function roulette(target){
   const land=()=>{
     slots.forEach(s=>s.classList.remove('on'));slots[end].classList.add('on','picked');
     const st=app.querySelector('#select-status');if(st)st.innerHTML=`<strong>${esc(target.name)}</strong> · ${esc(target.country)}`;
-    setTimeout(()=>{if(view==='select')begin(target);},reduceMotion?300:1800);
+    setTimeout(()=>{if(view==='select')begin(target);},1800);
   };
-  if(reduceMotion){land();return;}
+  // '동작 줄이기'(Windows 애니메이션 효과 끔, 학교 PC에 흔함)에서도 뽑기는 보여 준다. 이때는 칸이 움직이지 않고 테두리 불빛만 옮겨 간다(style.css).
   // 먼저 카드를 하나씩 펼쳐 누가 있는지 보여 준 뒤 돌린다.
   // 한 바퀴 돈 뒤 목표 칸에서 멈추고, 처음엔 이름을 읽을 만한 빠르기로 시작해 끝으로 갈수록 느려진다.
   const st=app.querySelector('#select-status');
