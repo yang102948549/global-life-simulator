@@ -14,6 +14,7 @@
 - onischool.net 사이트 저장소(`yang102948549/onischool`, 로컬 `codex/OniSchool/onischool-release`)의 `anotherday/` 폴더로 들어가고, Cloudflare Pages가 배포합니다.
 - AI 키는 서버 함수 `functions/anotherday/api/chat.js`(onischool 저장소)가 Cloudflare 비밀값 `GEMINI_API_KEY`로 사용합니다. 학생 기기에는 키가 가지 않고, 키 입력 없이 바로 AI와 대화할 수 있습니다.
 - 키 등록: Cloudflare 대시보드 → Workers & Pages → onischool.net을 배포하는 Pages 프로젝트 → Settings → Variables and Secrets → Production에 `GEMINI_API_KEY`(Secret) 추가 → 다시 배포.
+- **Gemini 호출은 미국 고정 중계 Worker를 거칩니다.** 한국 학교망은 Cloudflare 홍콩(HKG) 서버로 연결되는 일이 많고, Gemini API는 홍콩에서 온 요청을 `User location is not supported`로 막습니다. 그래서 서버 함수는 `relay/`의 Worker(`anotherday-gemini-relay`)로 요청을 넘기고, 이 Worker가 미국 동부에 고정된 Durable Object 안에서 Gemini를 부릅니다. 자세한 내용은 `HANDOFF.md` 5절을 보세요.
 - 고친 뒤 반영하기:
 
 ```

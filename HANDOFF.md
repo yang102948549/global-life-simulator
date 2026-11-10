@@ -28,6 +28,7 @@
 - `design/reference-analysis.md` — 참고 사이트(앰네스티 불편실험) 분석
 - `validate.cjs` — 시나리오·문법 검사 (`node validate.cjs`)
 - `sync-onischool.cjs` — `dist`를 onischool 저장소의 `anotherday/`로 복사
+- `relay/` — Gemini 중계 Cloudflare Worker(`worker.js`, `wrangler.toml`). 사이트와 따로 배포합니다(5절 참고).
 - `art-source/` — 캐릭터 그림 원본 PNG(약 94MB). **git에서 제외**되어 GitHub에는 없습니다. OneDrive로 동기화되거나 이 PC에만 있습니다.
 
 ### onischool 저장소에 추가한 것
@@ -87,8 +88,23 @@ git commit --allow-empty -m "Redeploy" && git push origin main
 ```
 
 - 학교 네트워크에서는 보안 장비가 인증서를 바꿔 끼워 wrangler가 실패합니다. 명령 앞에 `NODE_OPTIONS=--use-system-ca`를 붙이면 됩니다. 집 등 다른 네트워크에서는 없어도 됩니다.
-- 확인: https://onischool.net/anotherday/api/chat 이 `{"ok":true,"configured":true}`면 서버 키가 적용된 것입니다.
-- **인계 시점 상태:** `wrangler pages secret put`이 입력칸 없이 바로 성공으로 끝나서, **키가 빈 값으로 저장됐을 가능성**이 있습니다. 다시 배포한 뒤 위 주소가 `configured:false`로 남아 있으면, Cloudflare 대시보드(Workers & Pages → oni-school → Settings → Variables and Secrets)에서 `GEMINI_API_KEY`를 직접 다시 넣고 다시 배포하세요.
+- 확인: https://onischool.net/anotherday/api/chat 이 `{"ok":true,"configured":true,"relay":true}`면 서버 키와 중계 설정이 모두 적용된 것입니다(2026-11-10 확인).
+- `wrangler ... secret put`은 입력칸 없이 바로 끝나면 **빈 값이 저장**될 수 있습니다. 값은 `printf %s "값" | npx wrangler ...`처럼 파이프로 넘기세요. Claude Code의 `!` 명령은 bash로 실행되므로 PowerShell 문법(`$env:...`)은 쓰지 마세요.
+
+### Gemini 중계 Worker (`relay/`)
+
+- **왜 필요한가:** Pages 함수는 접속한 곳에서 가까운 Cloudflare 서버에서 돕니다. 학교망(청주, 교육용 공공망)은 홍콩(HKG) 서버로 연결되고(`https://onischool.net/cdn-cgi/trace`의 `colo=HKG`), Gemini API는 홍콩에서 온 요청을 `User location is not supported for the API use.`로 막습니다. 같은 키라도 학생 기기에서 Google을 직접 부르는 다른 앱은 한국 IP로 보여서 됩니다.
+- **흐름:** 학생 브라우저 → `functions/anotherday/api/chat.js`(검사) → 중계 Worker `https://anotherday-gemini-relay.yang4u4u4u4u.workers.dev` → 미국 동부(`enam`)에 고정된 Durable Object → Gemini.
+- **비밀값:** Worker에 `RELAY_TOKEN`, Pages(`oni-school`)에 `RELAY_TOKEN`(같은 값)과 `GEMINI_RELAY_URL`. API 키는 Pages 함수가 요청마다 헤더로 넘기고, Worker는 저장하지 않습니다. 둘 중 하나라도 없으면 서버 함수는 예전처럼 Google로 직접 보냅니다.
+- **Worker 고쳐서 다시 배포:** `cd relay && NODE_OPTIONS=--use-system-ca npx wrangler deploy`
+- **토큰 바꾸기**(저장소 루트에서, 양쪽에 같은 값):
+
+```bash
+export NODE_OPTIONS=--use-system-ca; T=$(node -e "console.log(require('crypto').randomBytes(24).toString('hex'))") && printf %s "$T" | npx wrangler secret put RELAY_TOKEN --config relay/wrangler.toml && printf %s "$T" | npx wrangler pages secret put RELAY_TOKEN --project-name oni-school
+# Pages 비밀값은 새 배포부터 적용 → onischool-release에서 빈 커밋을 올려 다시 배포
+```
+
+- **실행 위치 확인:** 토큰을 붙여 GET으로 부르면 Durable Object가 도는 데이터센터를 알려 줍니다. `curl -H "x-relay-token: <토큰>" https://anotherday-gemini-relay.yang4u4u4u4u.workers.dev` → `{"colo":"IAD","loc":"US"}`처럼 미국이면 정상.
 - Google AI Studio에서 이 키의 사용량 상한을 정해 두길 권합니다.
 
 ### 서버 함수가 지키는 것 (`functions/anotherday/api/chat.js`)
