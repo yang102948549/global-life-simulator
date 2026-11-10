@@ -2,7 +2,8 @@
 const cases=window.SCENARIOS,AI=window.AI,app=document.querySelector('#app'),KEY='global-life-lab-v1';
 const RUN_VIEWS=['intro','chat','reflect','lab','plan','report'];
 const FREE_VIEWS=['home','atlas','guide','select'];
-const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+// 학교 PC는 Windows '애니메이션 효과'가 꺼진 경우가 많아 OS의 '동작 줄이기' 요청을 따르지 않는다.
+const reduceMotion=false;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // 캐릭터마다 그림 속 옷·소품 색에서 고른 포인트 색
 const TONE={tuvalu:'#1f7f7c',pakistan:'#2d6b63',bangladesh:'#3e6399',somalia:'#b06d12',gaza:'#3f74a8',haiti:'#a86a14',ghana:'#86552a',sudan:'#76589f',rohingya:'#71519c',afghanistan:'#a3303d',congo:'#ad2843',qatar:'#66750f'};
@@ -291,9 +292,9 @@ async function dayPass(c,from,to){
   el.className=`daypass from-${PHASE[fromT]||'morning'} to-${PHASE[toT]||'night'}`;
   el.setAttribute('role','status');el.setAttribute('aria-live','polite');
   el.style.setProperty('--dur',dur+'ms');
-  el.innerHTML=`<div class="dp-sky dp-from"></div><div class="dp-sky dp-to"></div><div class="dp-stars" aria-hidden="true"></div><div class="dp-sun" aria-hidden="true"></div>
+  el.innerHTML=`<div class="dp-sky dp-from"></div><div class="dp-sky dp-to"></div><div class="dp-orbit" aria-hidden="true"><div class="dp-sun"></div></div>
     <div class="dp-card">
-      <p class="dp-phase"><span>${esc(fromT)}</span><span class="dp-bar" aria-hidden="true"><i></i></span><span>${esc(toT)}</span></p>
+      <p class="dp-phase"><span>${esc(fromT)}</span><span class="dp-arc" aria-hidden="true"><span class="arm"><i></i></span></span><span>${esc(toT)}</span></p>
       <ol class="dp-list">${items.map((x,i)=>`<li style="--i:${i}">${x.when?`<b>${esc(x.when)}</b>`:''}${esc(x.text)}</li>`).join('')}</ol>
       <p class="dp-next" style="--i:${items.length}">${to<3?`${esc(toT)} · ${esc(c.scenes[to].title)}`:`${esc(c.name)}의 하루가 저문다`}</p>
     </div>`;

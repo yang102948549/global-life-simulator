@@ -307,7 +307,6 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
 .pop-head strong{font-size:14px}
 .pop-head span{font-size:12px;color:var(--muted)}
 .pop-body{padding:14px 16px 16px;max-height:320px;overflow:auto;white-space:pre-wrap;font-size:14px;line-height:1.7;color:var(--ink-2)}
-@media (prefers-reduced-motion:reduce){.prompt-pop{animation:none}}
 .review{list-style:none;padding:0;margin:20px 0 0}
 .review li{position:relative;padding:6px 0 6px 24px;color:var(--muted)}
 .review li::before{content:'';position:absolute;left:0;top:13px;width:12px;height:12px;background:var(--paper-2)}
@@ -394,14 +393,6 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
   .say-box .icon{width:36px}
   .split .side .art{max-width:180px}
 }
-@media (prefers-reduced-motion:reduce){
-  .msg.typing i,.scene-card,.paper-card{animation:none}
-  .tile .art img{transition:none}
-  .sky .arm{animation:none;transform:rotate(90deg)}
-  .slot,.choice,.tile,.btn{transition:none}
-  .slot.deal-in{animation:none}
-  .slot.on,.slot.picked{transform:none}
-}
 @media print{
   body{font-size:11pt;background:#fff}
   .topbar,body > footer,.no-print,#toast,.modal,.stage-art{display:none!important}
@@ -445,7 +436,6 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
 .gain-loss dd{margin:0;font-size:15px;line-height:1.5}
 .btn:disabled{opacity:.45;cursor:default}
 @media (max-width:480px){.gain-loss{grid-template-columns:1fr}}
-@media (prefers-reduced-motion:reduce){.modal-box.join,.shake{animation:none}}
 
 /* ---------- 마무리 단계 이동: 왼쪽 ← 이전(테두리), 오른쪽 다음 →(색) ---------- */
 .paper-card .card-foot.step-nav{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch}
@@ -459,8 +449,8 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
   .profile .actions .btn{max-width:none}
 }
 
-/* ---------- 장면 전환: 창 전체가 하루의 하늘로 바뀐다 ----------
-   지금 시간대 하늘(dp-from) 위로 다음 시간대 하늘(dp-to)이 번지고, 해가 그 시간의 자리로 옮겨 간다. */
+/* ---------- 장면 전환: 하루가 흐르는 화면 ---------- */
+/* 재스타일 전 모습 그대로: 하늘이 그라데이션으로 바뀌고, 빛나는 해, 흐린 유리 카드 */
 .daypass{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:16px;overflow:hidden;transition:opacity .45s}
 .daypass.out{opacity:0}
 .dp-sky{position:absolute;inset:0}
@@ -470,31 +460,29 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
 .from-noon .dp-from,.to-noon .dp-to{background:linear-gradient(180deg,#6fbdf0 0%,#bfe3fa 60%,#f3f9fd 100%)}
 .from-evening .dp-from,.to-evening .dp-to{background:linear-gradient(180deg,#5e4a8c 0%,#c9688a 55%,#f6a56c 100%)}
 .from-night .dp-from,.to-night .dp-to{background:linear-gradient(180deg,#121a38 0%,#262c58 60%,#3d3f6c 100%)}
-/* 해의 자리: 아침은 왼쪽 낮게, 낮은 한가운데 높이, 저녁은 오른쪽 낮게, 밤은 지평선 아래 */
-.from-morning{--x0:12%;--y0:24%}.from-noon{--x0:50%;--y0:11%}.from-evening{--x0:88%;--y0:24%}
-.to-noon{--x1:50%;--y1:11%}.to-evening{--x1:88%;--y1:24%}.to-night{--x1:94%;--y1:112%}
-.dp-sun{position:absolute;left:var(--x0);top:var(--y0);width:68px;height:68px;margin:-34px 0 0 -34px;border-radius:50%;background:#ffd55e;box-shadow:0 0 70px 24px rgba(255,205,90,.55);transition:left var(--dur) ease-in-out,top var(--dur) ease-in-out,background var(--dur),box-shadow var(--dur)} /* taste-skill-ignore: 해의 빛 번짐 */
-.daypass.go .dp-sun{left:var(--x1);top:var(--y1)}
-.from-evening .dp-sun{background:#ff9c5a;box-shadow:0 0 70px 24px rgba(255,140,80,.5)}
-.to-evening.go .dp-sun{background:#ff9c5a;box-shadow:0 0 70px 24px rgba(255,140,80,.5)}
-/* 밤으로 넘어갈 때만 별이 돋는다 */
-.dp-stars{position:absolute;inset:0 0 40% 0;opacity:0;transition:opacity var(--dur) ease-in;background-image:radial-gradient(1.5px 1.5px at 12% 18%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 27% 34%,#fff 50%,transparent 51%),radial-gradient(1.5px 1.5px at 41% 12%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 58% 26%,#fff 50%,transparent 51%),radial-gradient(1.5px 1.5px at 71% 9%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 83% 31%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 92% 15%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 6% 42%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 49% 44%,#fff 50%,transparent 51%)}
-.to-night.go .dp-stars{opacity:.85}
-.dp-card{position:relative;width:min(440px,100%);background:rgba(255,255,255,.9);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-radius:var(--radius);padding:26px 24px 24px;color:var(--ink)}
-.dp-phase{display:flex;align-items:center;gap:12px;font-family:var(--serif);font-size:18px;font-weight:700;margin:0 0 18px}
-.dp-bar{flex:1;height:6px;background:rgba(17,17,17,.12);overflow:hidden}
-.dp-bar i{display:block;width:0;height:100%;background:var(--tone);transition:width var(--dur) ease-in-out}
-.daypass.go .dp-bar i{width:100%}
+/* 해는 하늘에 호를 그린다: 0도=왼쪽 지평선(아침), 90도=꼭대기(낮), 180도=오른쪽 지평선(저녁), 그 아래=밤 */
+.from-morning{--a0:18deg}.from-noon{--a0:90deg}.from-evening{--a0:162deg}
+.to-noon{--a1:90deg}.to-evening{--a1:162deg}.to-night{--a1:212deg}
+.daypass{--r:min(40vw,30vh)}
+.dp-orbit{position:absolute;left:50%;top:32%;width:0;height:0;transform:rotate(var(--a0));transition:transform var(--dur) cubic-bezier(.45,0,.3,1)}
+.daypass.go .dp-orbit{transform:rotate(var(--a1))}
+.dp-sun{position:absolute;left:calc(-1 * var(--r));top:0;width:68px;height:68px;margin:-34px 0 0 -34px;border-radius:50%;background:#ffd55e;box-shadow:0 0 70px 24px rgba(255,205,90,.55);transition:background var(--dur),opacity var(--dur)}
+.to-evening.go .dp-sun{background:#ff9c5a}
+.to-night.go .dp-sun{background:#ff8a4c;opacity:.35}
+.dp-card{position:relative;width:min(420px,100%);background:rgba(255,250,240,.88);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border-radius:22px;padding:24px 22px 22px;box-shadow:0 24px 50px -24px rgba(20,15,40,.55);color:var(--ink)}
+.dp-phase{display:flex;align-items:center;gap:12px;font-family:var(--serif);font-size:18px;font-weight:700;margin-bottom:16px}
+.dp-phase{align-items:flex-end}
+.dp-arc{position:relative;flex:1;max-width:150px;height:74px;margin:0 auto;overflow:hidden}
+.dp-arc::before{content:'';position:absolute;left:50%;top:8px;width:130px;height:130px;margin-left:-65px;border:2px dashed rgba(60,40,20,.28);border-radius:50%;box-sizing:border-box}
+.dp-arc .arm{position:absolute;left:50%;top:73px;width:130px;height:4px;margin:-2px 0 0 -65px;transform:rotate(var(--a0));transition:transform var(--dur) cubic-bezier(.45,0,.3,1)}
+.daypass.go .dp-arc .arm{transform:rotate(var(--a1))}
+.dp-arc .arm i{position:absolute;left:-9px;top:-7px;width:18px;height:18px;border-radius:50%;background:var(--tone);box-shadow:0 0 14px color-mix(in srgb,var(--tone) 60%,transparent)}
 .dp-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}
 .dp-list li,.dp-next{opacity:0;transform:translateY(8px);animation:dpIn .5s ease-out forwards;animation-delay:calc(.5s + var(--i) * 1.1s)}
 .dp-list li{font-size:16px;line-height:1.55;padding-left:14px;border-left:3px solid var(--tone)}
 .dp-list b{display:block;font-size:12px;color:var(--tone);margin-bottom:1px}
-.dp-next{margin:20px 0 0;text-align:center;font-family:var(--serif);font-size:21px;font-weight:700}
+.dp-next{margin-top:18px;text-align:center;font-family:var(--serif);font-size:21px;font-weight:700}
 @keyframes dpIn{to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){
-  .dp-to,.dp-sun,.dp-bar i,.dp-stars{transition:none}
-  .dp-list li,.dp-next{animation:none;opacity:1;transform:none}
-}
 
 /* ---------- 알림·확인 팝업(브라우저 기본 창 대신) ---------- */
 .modal.dialog{z-index:70;animation:fadeIn .15s ease-out}
@@ -506,7 +494,6 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
 .dialog-actions .btn{flex:1;max-width:180px;background:var(--tone);border-color:var(--tone)}
 .dialog-actions .btn.ghost{background:transparent;color:var(--ink);border-color:var(--ink)}
 @keyframes fadeIn{from{opacity:0}}
-@media (prefers-reduced-motion:reduce){.modal.dialog,.dialog-box{animation:none}}
 
 /* ---------- 소개 화면: 그림과 정보 높이를 맞추고, 시작 버튼을 그림 아래 끝선에 맞춘다 ---------- */
 @media (min-width:901px){
@@ -553,9 +540,6 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
   .title-actions{order:3;margin-top:24px}
   .title-note{order:4}
 }
-@media (prefers-reduced-motion:reduce){
-  .title-main h1 .line>span,.title-actions,.m-cell .art img{animation:none}
-}
 html,body{overflow-x:clip} /* 홈 모자이크를 화면 끝까지 펼칠 때 가로 스크롤이 생기지 않게 */
 
 /* ---------- 명조와 고딕: 제목·이야기·대사는 명조(따뜻한 이야기책 느낌), 화면 조작과 설명은 고딕 ---------- */
@@ -577,7 +561,6 @@ h1,h2,.brand,.portrait figcaption strong,.tile strong,.join h2,.life h2{font-wei
 .chip-wait:nth-child(2){width:min(220px,60%);animation-delay:.15s}
 .chip-wait:nth-child(3){width:min(180px,50%);animation-delay:.3s}
 @keyframes chipWait{from{opacity:.45}to{opacity:1}}
-@media (prefers-reduced-motion:reduce){.chip-wait{animation:none}}
 
 /* 답 칩은 말이든 행동이든 같은 서체로(행동 표시 *…*도 기울이지 않는다) */
 .chips .chip i{font-style:normal}
