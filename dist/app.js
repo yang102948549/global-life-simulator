@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const cases=window.SCENARIOS,AI=window.AI,app=document.querySelector('#app'),KEY='global-life-lab-v1';
 const RUN_VIEWS=['intro','chat','reflect','lab','plan','report'];
-const FREE_VIEWS=['home','atlas','guide','select'];
+const FREE_VIEWS=['home','atlas','guide','select','gallery'];
 // 학교 PC는 Windows '애니메이션 효과'가 꺼진 경우가 많아 OS의 '동작 줄이기' 요청을 따르지 않는다.
 const reduceMotion=false;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -23,6 +23,7 @@ try{
       if(!Array.isArray(r.chats)||r.chats.length!==3||!r.chats.every(x=>x&&Array.isArray(x.log)&&Array.isArray(x.api)))r.chats=emptyChats();
       state.run=r;
     }
+    if(saved.me&&typeof saved.me==='object')state.me=saved.me;
   }
 }catch{storageOK=false;}
 
@@ -121,7 +122,7 @@ function guide(){return `<div class="page-head"><h1>체험에서 공감으로,<b
 <div class="grid3">
   <article class="cell"><p class="label">1차시 · 45분</p><h3>캐릭터와 대화하기</h3><p>도입·뽑기 10분 → 세 장면 대화 20분 → 돌아보기 15분. 다른 선택의 결과도 비교해 봅니다.</p></article>
   <article class="cell"><p class="label">2차시 · 45분</p><h3>질문하고 조사하기</h3><p>질문 하나 정하기 10분 → 앱 안의 AI 조사 도우미와 원문 자료로 알아보기 25분 → 알게 된 것과 근거 정리 10분.</p></article>
-  <article class="cell"><p class="label">3차시 · 45분</p><h3>해결책을 글로 내놓기</h3><p>신문 기사·정책 제안서·편지 가운데 하나 고르기 5분 → 쓰기 20분 → 이야기 속 인물·선생님과 피드백 대화하며 고치기 15분 → PDF로 저장해 제출 5분.</p></article>
+  <article class="cell"><p class="label">3차시 · 45분</p><h3>해결책을 글로 내놓기</h3><p>신문 기사·정책 제안서·편지 가운데 하나 고르기 5분 → 쓰기 20분 → 이야기 속 인물·선생님과 피드백 대화하며 고치기 15분 → 갤러리에 제출 5분.</p></article>
 </div>
 <div class="grid2">
   <article class="cell"><h3>AI 대화 설정</h3><p>onischool.net에서는 학교 서버가 AI 키를 갖고 있어 학생은 키 입력 없이 바로 대화합니다. 키는 학생 기기로 가지 않습니다. AI가 연결되면 선택지 버튼은 보이지 않고, 학생은 답 칩을 누르거나 직접 말하며 대화하다가 세 번째 말부터 나오는 결정 칩(→)이나 직접 쓴 결정으로 장면을 마칩니다. AI를 쓸 수 없을 때는 선택 버튼으로 진행됩니다.</p></article>
@@ -541,7 +542,7 @@ function lab(c){return `<div class="game">${epiArt(c,1)}<div class="stage-main">
   <footer class="card-foot step-nav"><button class="btn ghost back" data-nav="reflect">← 돌아보기</button><button class="btn big" data-action="to-plan">결과물 만들기 →</button></footer>
 </article></div></div>`;}
 
-// 결과물: 조사한 것을 어떤 글로 내놓을지 고르고, 그 형식에 맞는 네 칸을 채운다. 완성 화면과 PDF는 이 형식의 서식으로 나온다.
+// 결과물: 조사한 것을 어떤 글로 내놓을지 고르고, 그 형식에 맞는 네 칸을 채운다. 완성 화면과 갤러리는 이 형식의 서식으로 나온다.
 const FORMATS={
   article:{name:'신문 기사',desc:'알게 된 사실을 많은 사람에게 알려요.',fields:[
     ['a_title','제목','예: 물은 있지만 마실 수 없는 마을','문제가 한눈에 보이게 짧게.'],
@@ -593,7 +594,7 @@ function plan(c){const f=fields(),fm=fmtOf();return `<div class="game">${epiArt(
   <header class="card-head"><p class="label">마무리 3/4 · 결과물 만들기</p><h1>알게 된 것을, 세상에 내놓을 글로.</h1></header>
   <form id="plan-form">
     <div class="card-body">
-      ${sec('① 어떤 글로 만들까',`<div class="formats" role="radiogroup" aria-label="결과물 형식">${Object.entries(FORMATS).map(([k,x])=>`<button type="button" class="format${f.format===k?' on':''}" role="radio" aria-checked="${f.format===k}" data-format="${k}"><span class="thumb thumb-${k}" aria-hidden="true"><i></i><i></i><i></i><i></i></span><strong>${x.name}</strong><span>${x.desc}</span></button>`).join('')}</div>`,'완성하면 고른 형식의 서식으로 PDF를 만들 수 있어요.')}
+      ${sec('① 어떤 글로 만들까',`<div class="formats" role="radiogroup" aria-label="결과물 형식">${Object.entries(FORMATS).map(([k,x])=>`<button type="button" class="format${f.format===k?' on':''}" role="radio" aria-checked="${f.format===k}" data-format="${k}"><span class="thumb thumb-${k}" aria-hidden="true"><i></i><i></i><i></i><i></i></span><strong>${x.name}</strong><span>${x.desc}</span></button>`).join('')}</div>`,'완성하면 고른 형식의 서식으로 갤러리에 올라가요.')}
       ${fm?sec(`② ${fm.name} 쓰기`,`<div class="my-research"><p><strong>나의 질문</strong>${esc(f.question||'')}</p><p><strong>알게 된 것</strong>${esc(f.notes||'')}</p></div>`+fm.fields.map(([n,l,p,h])=>field(n,l,p,true,h||'')).join('')):''}
       ${fm?sec('③ 피드백 대화',`<div id="rv-panel" class="rv-panel">${reviewPanel(c)}</div>`,'AI는 글을 대신 써 주지 않아요. 대화를 보고 고칠지는 내가 정해요.'):''}
     </div>
@@ -601,13 +602,13 @@ function plan(c){const f=fields(),fm=fmtOf();return `<div class="game">${epiArt(
   </form>
 </article></div></div>`;}
 
-/* ---------- 완성: 고른 형식의 서식으로 보여 주고 PDF로 저장 ---------- */
+/* ---------- 완성: 고른 형식의 서식으로 보여 주고 갤러리에 제출 ---------- */
 const paras=t=>String(t||'').split(/\n+/).map(s=>s.trim()).filter(Boolean).map(s=>`<p>${esc(s)}</p>`).join('')||'<p>(작성하지 않음)</p>';
-const today=()=>new Date(state.run.finishedAt||Date.now()).toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',timeZone:'Asia/Seoul'});
+const dateText=f=>f._date||new Date(state.run?.finishedAt||Date.now()).toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',timeZone:'Asia/Seoul'});
 const factBox=c=>`<ul>${c.facts.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><p class="doc-src">${c.sources.map(s=>`${esc(s.title)} (${esc(s.date)})`).join(' · ')}</p>`;
 const fictionNote=c=>`<p class="doc-note">${esc(c.name)}의 이야기와 장면은 실제 자료를 바탕으로 꾸민 학습용 가상 시뮬레이션입니다.</p>`;
 function docArticle(c,f){return `<article class="doc doc-article">
-  <header class="np-head"><span class="np-name">지구촌 탐구 신문</span><span class="np-meta">${today()} · ${esc(c.country)}</span></header>
+  <header class="np-head"><span class="np-name">지구촌 탐구 신문</span><span class="np-meta">${dateText(f)} · ${esc(c.country)}</span></header>
   <h1 class="np-title">${esc(f.a_title||'제목 없음')}</h1>
   <p class="np-byline">글 · ${esc(f.nickname||'익명')} 기자 &nbsp;|&nbsp; ${esc(c.country)} ${esc(c.region)}</p>
   <div class="np-lead">${paras(f.a_lead)}</div>
@@ -617,7 +618,7 @@ function docArticle(c,f){return `<article class="doc doc-article">
 </article>`;}
 function docPolicy(c,f){return `<article class="doc doc-policy">
   <header class="pb-head"><span class="pb-kind">정책 제안서</span><h1>${esc(f.p_title||'제안 이름 없음')}</h1></header>
-  <dl class="pb-meta"><div><dt>제안한 사람</dt><dd>${esc(f.nickname||'익명')}</dd></div><div><dt>대상 지역</dt><dd>${esc(c.country)} · ${esc(c.region)}</dd></div><div><dt>작성일</dt><dd>${today()}</dd></div><div><dt>관련 주체</dt><dd>${esc(c.actors)}</dd></div></dl>
+  <dl class="pb-meta"><div><dt>제안한 사람</dt><dd>${esc(f.nickname||'익명')}</dd></div><div><dt>대상 지역</dt><dd>${esc(c.country)} · ${esc(c.region)}</dd></div><div><dt>작성일</dt><dd>${dateText(f)}</dd></div><div><dt>관련 주체</dt><dd>${esc(c.actors)}</dd></div></dl>
   <section class="pb-sec"><h2><span>1</span>문제</h2>${paras(f.p_problem)}</section>
   <section class="pb-sec"><h2><span>2</span>제안 내용</h2>${paras(f.p_plan)}</section>
   <section class="pb-sec"><h2><span>3</span>예상되는 어려움과 보완</h2>${paras(f.p_limit)}</section>
@@ -625,7 +626,7 @@ function docPolicy(c,f){return `<article class="doc doc-policy">
   ${fictionNote(c)}
 </article>`;}
 function docLetter(c,f){return `<article class="doc doc-letter">
-  <p class="lt-date">${today()}</p>
+  <p class="lt-date">${dateText(f)}</p>
   <p class="lt-to">${esc(f.l_to||'받는 분께')}</p>
   <div class="lt-body">${paras(f.l_learned)}${paras(f.l_ask)}${paras(f.l_me)}</div>
   <p class="lt-from">${esc(f.nickname||'')} 드림</p>
@@ -641,12 +642,96 @@ function appendix(c){const r=state.run,f=fields(),row=(l,t)=>`<div class="ap-row
 </section>`;}
 function report(c){const f=fields(),fm=fmtOf();
   const side=`<div class="clear-badge">하루를 마쳤어요</div>
-  <div class="side-actions no-print"><button class="btn big" data-action="print">PDF로 저장</button><button class="link" data-nav="plan">← ${esc(fm.name)} 고치기</button></div>`;
+  <div class="side-actions no-print"><button class="link" data-nav="plan">← ${esc(fm.name)} 고치기</button></div>`;
   return `<div class="game">${epiArt(c,4,side)}<div class="stage-main"><article class="paper-card report">
-  <header class="card-head no-print"><p class="label">마무리 4/4 · 완성</p><h1>나의 ${esc(fm.name)}가 완성됐어요.</h1><p class="muted">‘PDF로 저장’을 누르고, 인쇄 창에서 대상을 ‘PDF로 저장’으로 고르세요.</p></header>
-  <div class="card-body">${DOCS[f.format](c,f)}${appendix(c)}</div>
-  <footer class="card-foot no-print"><button class="btn big" data-action="print">PDF로 저장</button><button class="btn ghost" data-action="random">다른 캐릭터 뽑기</button><p class="sec-note">새 캐릭터를 시작하면 지금 기록이 바뀝니다. 먼저 PDF로 저장해 두세요.</p></footer>
+  <header class="card-head no-print"><p class="label">마무리 4/4 · 완성</p><h1>나의 ${esc(fm.name)}가 완성됐어요.</h1><p class="muted">아래에서 확인하고, 맨 아래에서 제출하세요.</p></header>
+  <div class="card-body">${DOCS[f.format](c,f)}${appendix(c)}${submitBox()}</div>
+  <footer class="card-foot no-print"><button class="btn ghost" data-nav="gallery">갤러리 보기</button><button class="btn ghost" data-action="random">다른 캐릭터 뽑기</button><p class="sec-note">새 캐릭터를 시작하면 지금 기록이 바뀝니다. 먼저 제출해 두세요.</p></footer>
 </article></div></div>`;}
+
+/* ---------- 제출과 갤러리 ---------- */
+// 학년·반·번호·이름은 다음 캐릭터를 할 때도 다시 쓰도록 state.me에 둔다.
+const GALLERY_PATH='api/gallery';
+const meOf=()=>{if(!state.me||typeof state.me!=='object')state.me={grade:'',cls:'',num:'',name:''};return state.me;};
+let submitting=false;
+function submitBox(){
+  const me=meOf(),done=state.run.submittedAt;
+  const num=(k,l,max)=>`<label class="sub-field"><span>${l}</span><input type="number" inputmode="numeric" min="1" max="${max}" data-me="${k}" value="${esc(me[k])}"></label>`;
+  return `<form id="submit-form" class="submit-box no-print">
+    <h2>제출하기</h2>
+    <p class="sec-note">제출하면 결과물이 <strong>갤러리</strong>에 올라가 친구들과 함께 볼 수 있어요. 갤러리에는 이름 가운데 글자를 가려서 보여 줘요(예: 김*수). 다시 제출하면 최신 글로 바뀝니다.</p>
+    <div class="sub-row">${num('grade','학년',6)}${num('cls','반',30)}${num('num','번호',60)}<label class="sub-field name"><span>이름</span><input maxlength="10" autocomplete="off" data-me="name" value="${esc(me.name)}" placeholder="실명"></label></div>
+    <div class="sub-go"><button class="btn big" type="submit"${submitting?' disabled':''}>${submitting?'제출하는 중…':done?'다시 제출하기':'제출하기'}</button>${done?`<span class="sub-done">✓ ${new Date(done).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})}에 제출했어요</span><button type="button" class="btn ghost" data-nav="gallery">갤러리 보기</button>`:''}</div>
+  </form>`;
+}
+async function submitWork(c){
+  const me=meOf(),f=fields(),fm=fmtOf();
+  const grade=Number(me.grade),cls=Number(me.cls),num=Number(me.num),name=String(me.name||'').trim();
+  if(!grade||!cls||!num||!name){dialog({title:'학년·반·번호·이름을 모두 적어 주세요'});return;}
+  if(submitting)return;submitting=true;render();
+  const data=Object.fromEntries([...fm.fields.map(([n])=>n),'question','notes','feeling','constraint'].map(k=>[k,f[k]||'']));
+  data.choices=state.run.choices;
+  try{
+    const res=await fetch(GALLERY_PATH,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'submit',sub:{grade,cls,num,name,cid:c.id,format:f.format,data}})});
+    const out=await res.json().catch(()=>({}));
+    if(!res.ok)throw new Error({bad_number:'학년·반·번호를 확인해 주세요.',bad_name:'이름은 10자 안으로, 기호 없이 적어 주세요.',empty_field:'빈칸이 있어요. 결과물을 먼저 채워 주세요.',not_configured:'이 사이트에서는 갤러리를 쓸 수 없어요.',rate_limited:'잠시 뒤에 다시 제출해 주세요.'}[out?.error?.code]||'제출하지 못했어요. 잠시 뒤 다시 시도해 주세요.');
+    state.run.submittedAt=new Date().toISOString();gallery.items=null;toast(out.replaced?'다시 제출했어요. 갤러리의 글이 바뀌었어요.':'제출했어요! 갤러리에서 볼 수 있어요.');
+  }catch(err){dialog({title:'제출하지 못했어요',body:err.message});}
+  submitting=false;save();render();
+}
+
+const gallery={items:null,loading:false,error:'',filter:{cls:'',format:'',cid:''},admin:''};
+async function loadGallery(){
+  if(gallery.loading)return;gallery.loading=true;gallery.error='';
+  try{
+    const res=gallery.admin
+      ?await fetch(GALLERY_PATH,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'list',admin:gallery.admin})})
+      :await fetch(GALLERY_PATH,{cache:'no-store'});
+    const out=await res.json().catch(()=>({}));
+    if(!res.ok){if(out?.error?.code==='bad_admin'){gallery.admin='';throw new Error('교사 비밀번호가 맞지 않아요.');}throw new Error(out?.error?.code==='not_configured'?'이 사이트에서는 갤러리를 쓸 수 없어요.':'갤러리를 불러오지 못했어요.');}
+    gallery.items=Array.isArray(out.items)?out.items:[];
+  }catch(err){gallery.error=err.message;if(!gallery.items)gallery.items=[];}
+  gallery.loading=false;if(view==='gallery')render();
+}
+const who=it=>`${it.grade}학년 ${it.cls}반 ${it.num}번 ${it.name}`;
+const titleOf=it=>({article:it.data.a_title,policy:it.data.p_title,letter:it.data.l_to})[it.format]||'';
+const gistOf=it=>({article:it.data.a_lead,policy:it.data.p_problem,letter:it.data.l_ask})[it.format]||'';
+function galleryView(){
+  if(!gallery.items&&!gallery.loading)loadGallery();
+  const items=gallery.items||[],F=gallery.filter;
+  const classes=[...new Set(items.map(it=>`${it.grade}-${it.cls}`))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+  const shown=items.filter(it=>(!F.cls||`${it.grade}-${it.cls}`===F.cls)&&(!F.format||it.format===F.format)&&(!F.cid||it.cid===F.cid));
+  const card=it=>{const c=cases.find(x=>x.id===it.cid);if(!c)return '';return `<article class="gcard" style="--tone:${TONE[c.id]}">
+    <button class="gcard-open" data-open="${esc(it.key)}"><span class="gcard-kind">${esc(FORMATS[it.format]?.name||'')}</span><strong>${esc(titleOf(it))}</strong><span class="gcard-gist">${esc(gistOf(it).slice(0,110))}${gistOf(it).length>110?'…':''}</span>
+    <span class="gcard-foot"><span class="gcard-face">${art(c,'face')}</span><span><b>${esc(c.name)}</b> · ${esc(c.country)}<br>${esc(who(it))}</span></span></button>
+    ${gallery.admin?`<button class="gcard-del" data-del="${esc(it.key)}" aria-label="${esc(who(it))}의 결과물 지우기">지우기</button>`:''}</article>`;};
+  return `<div class="page-head"><h1>결과물 갤러리</h1><p class="muted">‘다른 곳의 하루’를 마친 친구들이 낸 신문 기사·정책 제안서·편지입니다. 카드를 누르면 크게 볼 수 있어요.</p></div>
+  <div class="g-filters">
+    <select data-gfilter="cls" aria-label="학년·반"><option value="">모든 반</option>${classes.map(k=>`<option value="${k}"${F.cls===k?' selected':''}>${k.replace('-','학년 ')}반</option>`).join('')}</select>
+    <select data-gfilter="format" aria-label="형식"><option value="">모든 형식</option>${Object.entries(FORMATS).map(([k,x])=>`<option value="${k}"${F.format===k?' selected':''}>${x.name}</option>`).join('')}</select>
+    <select data-gfilter="cid" aria-label="캐릭터"><option value="">모든 캐릭터</option>${cases.map(c=>`<option value="${c.id}"${F.cid===c.id?' selected':''}>${esc(c.name)} · ${esc(c.country)}</option>`).join('')}</select>
+    <button class="btn ghost small" data-action="gallery-reload">새로고침</button>
+    <span class="g-count">${gallery.loading?'불러오는 중…':`${shown.length}장`}</span>
+  </div>
+  ${gallery.error?`<p class="msg error">${esc(gallery.error)}</p>`:''}
+  ${!gallery.loading&&!shown.length&&!gallery.error?'<p class="g-empty">아직 올라온 결과물이 없어요.</p>':''}
+  <div class="board">${shown.map(card).join('')}</div>
+  <p class="g-admin">${gallery.admin?'관리 모드 · 전체 이름이 보이고 지울 수 있어요. <button class="link" data-action="gallery-admin-off">관리 모드 끄기</button>':'<button class="link" data-action="gallery-admin">선생님 관리 모드</button>'}</p>`;
+}
+function openWork(key){
+  const it=(gallery.items||[]).find(x=>x.key===key),c=it&&cases.find(x=>x.id===it.cid);if(!c)return;
+  const f={...it.data,format:it.format,nickname:`${it.grade}학년 ${it.cls}반 ${it.name}`,_date:new Date(it.updated).toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',timeZone:'Asia/Seoul'})};
+  const m=document.querySelector('#modal');
+  m.setAttribute('aria-label',`${who(it)}의 ${FORMATS[it.format]?.name||'결과물'}`);
+  m.innerHTML=`<div class="modal-box work-view" style="--tone:${TONE[c.id]}"><div class="work-bar"><span>${esc(who(it))} · ${esc(c.name)}의 하루</span><button class="btn ghost small" data-action="ai-skip">닫기</button></div>${DOCS[it.format](c,f)}<div class="work-research"><h3>나의 질문</h3>${paras(f.question)}<h3>알게 된 것과 근거</h3>${paras(f.notes)}</div></div>`;
+  m.hidden=false;openAiModal.then=null;m.querySelector('.work-view').scrollTop=0;
+}
+
+function openAdmin(){
+  const m=document.querySelector('#modal');m.setAttribute('aria-label','선생님 관리 모드');
+  m.innerHTML=`<form class="modal-box" id="admin-form"><p class="label">선생님 관리 모드</p><h2>교사 비밀번호</h2><p class="muted small">전체 이름을 보고, 부적절한 결과물을 지울 수 있어요.</p><label class="field"><span>비밀번호</span><input id="admin-pw" type="password" autocomplete="off"></label><div class="actions"><button class="btn">켜기</button><button type="button" class="btn ghost" data-action="ai-skip">닫기</button></div></form>`;
+  m.hidden=false;openAiModal.then=null;setTimeout(()=>m.querySelector('#admin-pw')?.focus(),50);
+}
 
 /* ---------- 그리기 ---------- */
 function render(){
@@ -654,7 +739,7 @@ function render(){
   if(!c&&!FREE_VIEWS.includes(view))view='home';
   if(view==='chat'){openScene(c);ensureBrief(c);}
   if(view==='report'&&!FORMATS[fields().format])view='plan';
-  const pages={home,atlas,guide,select,intro:()=>intro(c),chat:()=>chat(c),reflect:()=>reflect(c),lab:()=>lab(c),plan:()=>plan(c),report:()=>report(c)};
+  const pages={home,atlas,guide,select,gallery:galleryView,intro:()=>intro(c),chat:()=>chat(c),reflect:()=>reflect(c),lab:()=>lab(c),plan:()=>plan(c),report:()=>report(c)};
   app.innerHTML=(pages[view]||home)();
   document.body.classList.toggle('is-game',['home','select','intro','chat','reflect','lab','plan','report'].includes(view));
   document.querySelector('#resume').hidden=!state.run||RUN_VIEWS.includes(view)||view==='select';
@@ -671,7 +756,8 @@ function render(){
 /* ---------- 입력 처리 ---------- */
 document.addEventListener('input',e=>{const el=e.target;
   // 대화 입력칸은 쓰는 만큼 늘어난다(최대 약 5줄)
-  if(el.id==='say'){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,140)+'px';}if(el.dataset.field&&state.run){state.run.fields[el.dataset.field]=el.type==='checkbox'?el.checked:el.value;save();}});
+  if(el.id==='say'){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,140)+'px';}if(el.dataset.me!==undefined){meOf()[el.dataset.me]=el.value;save();return;}if(el.dataset.field&&state.run){state.run.fields[el.dataset.field]=el.type==='checkbox'?el.checked:el.value;save();}});
+document.addEventListener('change',e=>{const el=e.target;if(el.dataset.gfilter!==undefined){gallery.filter[el.dataset.gfilter]=el.value;render();}});
 document.addEventListener('click',async e=>{
   const el=e.target.closest('button,a#brand');if(!el)return;
   if(el.id==='brand'){e.preventDefault();navigate('home');return;}
@@ -679,6 +765,14 @@ document.addEventListener('click',async e=>{
   if(el.dataset.nav){navigate(el.dataset.nav);return;}
   if(el.dataset.start){start(el.dataset.start);return;}
   if(el.dataset.filter){filter=el.dataset.filter;render();return;}
+  if(el.dataset.open){openWork(el.dataset.open);return;}
+  if(el.dataset.del){
+    const it=(gallery.items||[]).find(x=>x.key===el.dataset.del);if(!it)return;
+    const ok=await dialog({title:'이 결과물을 지울까요?',body:who(it)+'의 결과물이 갤러리에서 지워져요. 되돌릴 수 없어요.',ok:'지우기',cancel:'그만두기',icon:'?'});if(!ok)return;
+    try{const res=await fetch(GALLERY_PATH,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'delete',admin:gallery.admin,key:it.key})});if(!res.ok)throw 0;gallery.items=gallery.items.filter(x=>x.key!==it.key);render();toast('지웠어요.');}
+    catch{dialog({title:'지우지 못했어요'});}
+    return;
+  }
   const c=current();
   if(el.dataset.chip!==undefined){
     const ch=chatOf(state.run.step),x=ch.chips?.[Number(el.dataset.chip)];
@@ -722,7 +816,9 @@ document.addEventListener('click',async e=>{
   }
   if(a==='prev-scene'){state.run.step=Math.max(0,state.run.step-1);save();navigate('chat');}
   if(a==='to-plan'){const miss=['question','notes'].filter(k=>!fields()[k]?.trim());if(miss.length){dialog({title:miss[0]==='question'?'질문을 먼저 정해 주세요':'알게 된 것을 적어 주세요',body:'비어 있는 칸으로 안내할게요.'}).then(()=>focusEmpty(miss));return;}navigate('plan');}
-  if(a==='print')window.print();
+  if(a==='gallery-reload'){gallery.items=null;render();}
+  if(a==='gallery-admin')openAdmin();
+  if(a==='gallery-admin-off'){gallery.admin='';gallery.items=null;render();}
   if(a==='clear')dialog({title:'이 브라우저의 기록을 지울까요?',body:'지금 이야기와 완료 목록이 지워져요. 이미 내려받은 파일은 그대로 남아요.',ok:'지우기',cancel:'그만두기',icon:'?'}).then(ok=>{if(!ok)return;state={run:null,completed:[]};save();navigate('home');toast('이 브라우저의 기록을 지웠어요.');});
 });
 document.addEventListener('submit',async e=>{
@@ -732,6 +828,8 @@ document.addEventListener('submit',async e=>{
     if(!name){box.focus();box.classList.add('shake');setTimeout(()=>box.classList.remove('shake'),400);return;}
     state.run.fields.nickname=name;save();closeModal();navigate('chat');return;
   }
+  if(e.target.id==='submit-form'){e.preventDefault();submitWork(current());return;}
+  if(e.target.id==='admin-form'){e.preventDefault();const pw=document.querySelector('#admin-pw').value;if(!pw)return;gallery.admin=pw;gallery.items=null;closeModal();navigate('gallery');return;}
   if(e.target.id==='ask-form'){e.preventDefault();const box=document.querySelector('#ask');const t=box.value;box.value='';ask(current(),t);return;}
   if(e.target.id==='say-form'){e.preventDefault();const box=document.querySelector('#say');say(current(),box.value);return;}
   if(e.target.id==='ai-form'){

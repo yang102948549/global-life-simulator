@@ -4,7 +4,7 @@
 
 ## 1. 한눈에 보기
 
-- **무엇:** 중학교 도덕 「지구촌 문제」 수업용 대화형 시뮬레이션 게임. 학생이 12명 가운데 무작위로 뽑힌 또래 캐릭터가 되어 아침·낮·저녁 세 장면을 보내고, AI(Gemini)가 맡은 주변 인물과 자유롭게 대화한 뒤 A·B 중 하나를 직접 고릅니다. 이후 돌아보기 → 질문·조사(앱 안 AI 조사 도우미) → 결과물(기사·정책 제안서·편지 + AI 피드백 대화) → 완성(형식별 서식 PDF)으로 마무리합니다. 마무리는 개인 활동입니다.
+- **무엇:** 중학교 도덕 「지구촌 문제」 수업용 대화형 시뮬레이션 게임. 학생이 12명 가운데 무작위로 뽑힌 또래 캐릭터가 되어 아침·낮·저녁 세 장면을 보내고, AI(Gemini)가 맡은 주변 인물과 자유롭게 대화한 뒤 A·B 중 하나를 직접 고릅니다. 이후 돌아보기 → 질문·조사(앱 안 AI 조사 도우미) → 결과물(기사·정책 제안서·편지 + AI 피드백 대화) → 완성(형식별 서식, 학년·반·번호·이름으로 제출) → 갤러리(패들렛식 카드 보드)로 마무리합니다. 마무리는 개인 활동입니다.
 - **수업용 주소:** https://onischool.net/anotherday/
 - **예비 주소:** https://yang102948549.github.io/global-life-simulator/ (서버가 없어 교사가 'AI 연결'에 키를 직접 넣는 방식)
 - **기기:** 학생은 휴대폰·태블릿으로 접속합니다. 반응형으로 만들었습니다.
@@ -106,6 +106,20 @@ export NODE_OPTIONS=--use-system-ca; T=$(node -e "console.log(require('crypto').
 
 - **실행 위치 확인:** 토큰을 붙여 GET으로 부르면 Durable Object가 도는 데이터센터를 알려 줍니다. `curl -H "x-relay-token: <토큰>" https://anotherday-gemini-relay.yang4u4u4u4u.workers.dev` → `{"colo":"IAD","loc":"US"}`처럼 미국이면 정상.
 - Google AI Studio에서 이 키의 사용량 상한을 정해 두길 권합니다.
+
+### 결과물 갤러리 (`functions/anotherday/api/gallery.js` + 중계 Worker의 `GalleryStore`)
+
+- 저장은 중계 Worker 안의 Durable Object `GalleryStore`(SQLite, 아시아·태평양 `apac`)가 합니다. 대시보드 설정 없이 `relay/`에서 `wrangler deploy`로 함께 배포됩니다.
+- 사이트 함수 `gallery.js`가 출처·크기·형식·학년(1~6)·반(1~30)·번호(1~60)·이름(10자)을 검사하고, `RELAY_TOKEN`을 붙여 Worker의 `/gallery/list|submit|delete`로 넘깁니다.
+- 한 학생(학년-반-번호)은 한 장만 저장됩니다. 다시 내면 덮어씁니다.
+- 공개 목록은 이름 가운데 글자를 가립니다. **관리 모드**는 Pages 비밀값 `GALLERY_ADMIN`(교사 비밀번호)과 같아야 열리고, 전체 이름 보기·지우기가 됩니다. 비밀번호 설정(저장소 루트에서):
+
+```bash
+export NODE_OPTIONS=--use-system-ca; printf %s "원하는비밀번호" | npx wrangler pages secret put GALLERY_ADMIN --project-name oni-school
+# 새 배포부터 적용 → onischool-release에서 빈 커밋을 올려 다시 배포
+```
+
+- 학생이 쓴 글은 AI 필터를 거치지 않고 올라갑니다. 수업 중 갤러리를 살펴보고 필요하면 관리 모드에서 지워 주세요.
 
 ### 서버 함수가 지키는 것 (`functions/anotherday/api/chat.js`)
 
