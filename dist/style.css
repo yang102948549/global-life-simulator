@@ -779,3 +779,33 @@ select:focus-visible{outline:2px solid var(--tone);outline-offset:2px}
   .g-filters select[data-gfilter="cid"]{grid-column:1/-1;order:3}
   .g-filters .btn{order:4;grid-column:1/-1}
 }
+
+/* ---------- 대화 화면: 상황 다시 보기 ---------- */
+.scene-card .card-head{position:relative}
+.sit{position:absolute;top:20px;right:20px}
+.sit summary{list-style:none;cursor:pointer;font-size:13px;font-weight:700;color:var(--tone);background:var(--paper);padding:6px 12px;border-radius:var(--radius)}
+.sit summary::-webkit-details-marker{display:none}
+.sit summary::after{content:' ▾'}
+.sit[open] summary::after{content:' ▴'}
+.sit p{position:absolute;right:0;top:calc(100% + 6px);z-index:6;width:min(420px,80vw);max-height:45vh;overflow:auto;background:var(--paper);padding:14px 16px;font-family:var(--serif);font-size:16px;line-height:1.75;color:var(--ink-2);box-shadow:0 18px 40px -16px rgba(0,0,0,.35)} /* taste-skill-ignore: 펼친 상황 설명 */
+.scene-card .card-head h1{padding-right:84px}
+
+/* ---------- 휴대폰 대화: 대화가 넓게 보이도록 아래 입력 영역을 얇게 ---------- */
+@media (max-width:640px){
+  /* 장면 제목 줄은 위에 붙어 지금 어떤 장면인지 늘 보인다 */
+  .game.play .scene-card:not(.result) .card-head{position:sticky;top:var(--topbar);z-index:6;background:var(--card);padding-top:10px;padding-bottom:10px;box-shadow:0 8px 16px -14px rgba(0,0,0,.35)} /* taste-skill-ignore: 위에 붙은 장면 제목 */
+  .game.play .scene-card:not(.result) .card-head .label{margin:0;font-size:12px}
+  .game.play .scene-card:not(.result) .card-head h1{font-size:18px;line-height:1.35}
+  .sit{top:12px;right:14px}
+  .sit p{width:calc(100vw - 32px);right:-4px}
+  /* 칩은 가로 한 줄: 옆으로 밀어 보고, 다음 칩이 살짝 보인다 */
+  .card-foot.talk{padding-top:10px}
+  .card-foot.talk .chips{flex-wrap:nowrap;overflow-x:auto;scroll-snap-type:x proximity;margin:0 -12px 8px;padding:0 28px 2px 12px;scrollbar-width:none;-webkit-overflow-scrolling:touch;-webkit-mask-image:linear-gradient(90deg,#000 82%,transparent);mask-image:linear-gradient(90deg,#000 82%,transparent)}
+  .card-foot.talk .chips::-webkit-scrollbar{display:none}
+  .card-foot.talk .chips .chip{flex:0 0 auto;width:min(236px,68vw);scroll-snap-align:start;font-size:14px;padding:9px 12px;align-items:center;white-space:normal}
+  .card-foot.talk .say-box{margin-top:0;padding:6px 6px 6px 12px}
+  .card-foot.talk .small-ask{margin:8px 0 0;font-size:12px}
+  .card-foot.talk .small-ask.later{display:none}
+  /* 직접 쓰는 동안에는 칩을 접어 키보드 위로 대화가 보이게 */
+  .card-foot.talk:has(#say:focus) .chips,.card-foot.talk:has(#say:focus) .small-ask{display:none}
+}

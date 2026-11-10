@@ -341,7 +341,8 @@ function chat(c){
   }
   return `<div class="game play">${stageArt(c,step,false)}<div class="stage-main">
   <article class="scene-card">
-    <header class="card-head"><p class="label">${esc(s.time)} · 장면 ${step+1}/3</p><h1>${esc(s.title)}</h1></header>
+    <header class="card-head"><p class="label">${esc(s.time)} · 장면 ${step+1}/3</p><h1>${esc(s.title)}</h1>
+      <details class="sit"><summary>상황</summary><p>${esc(ch.log.find(e=>e.k==='narr')?.text||s.story)}</p></details></header>
     <div class="card-body" id="log" aria-live="polite">${ch.log.map(e=>entry(e,c,s)).join('')}${pending?passing(c,step,opening):''}</div>
     <footer class="card-foot${AI.ready?' talk':''}">
       ${AI.ready?talkFoot(c,s,ch):`<p class="ask">${esc(c.name)}(이)라면, 어떻게 할까요?</p>${choiceRow(s)}
@@ -366,7 +367,7 @@ function talkFoot(c,s,ch){
     <textarea id="say" rows="1" maxlength="500" placeholder="직접 써서 말해 보세요" ${pending?'disabled':''}></textarea>
     <button class="btn small" ${pending?'disabled':''}>보내기</button>
   </form>
-  <p class="small-ask">${talked?`말을 고르거나 직접 써 보세요. ${esc(c.name)}(이)가 어떻게 할지 정하면 장면이 이어져요`:`말을 고르거나 직접 써서 주변 사람에게 말을 걸어 보세요`}</p>${stuck}`;
+  <p class="small-ask${talked?' later':''}">${talked?`말을 고르거나 직접 써 보세요. ${esc(c.name)}(이)가 어떻게 할지 정하면 장면이 이어져요`:`말을 고르거나 직접 써서 주변 사람에게 말을 걸어 보세요`}</p>${stuck}`;
 }
 function lock(c,n){
   state.run.choices[state.run.step]=n;
@@ -784,6 +785,8 @@ document.addEventListener('input',e=>{const el=e.target;
   // 대화 입력칸은 쓰는 만큼 늘어난다(최대 약 5줄)
   if(el.id==='say'){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,140)+'px';}if(el.dataset.me!==undefined){meOf()[el.dataset.me]=el.value;save();return;}if(el.dataset.field&&state.run){state.run.fields[el.dataset.field]=el.type==='checkbox'?el.checked:el.value;save();}});
 document.addEventListener('change',e=>{const el=e.target;if(el.dataset.gfilter!==undefined){gallery.filter[el.dataset.gfilter]=el.value;render();}});
+// 펼친 '상황'은 바깥을 누르면 접는다.
+document.addEventListener('click',e=>{document.querySelectorAll('details.sit[open]').forEach(d=>{if(!d.contains(e.target))d.open=false;});});
 document.addEventListener('click',async e=>{
   const el=e.target.closest('button,a#brand');if(!el)return;
   if(el.id==='brand'){e.preventDefault();navigate('home');return;}
