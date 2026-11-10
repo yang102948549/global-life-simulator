@@ -810,8 +810,8 @@ select:focus-visible{outline:2px solid var(--tone);outline-offset:2px}
   /* 칩은 세로로 한 줄에 하나씩: 낮고 작은 글씨로 촘촘하게 */
   .card-foot.talk{padding-top:10px}
   .card-foot.talk .chips{flex-direction:column;align-items:stretch;gap:6px;margin-bottom:8px}
-  .card-foot.talk .chips .chip{justify-content:space-between;width:100%;min-height:40px;font-size:14px;line-height:1.35;padding:7px 12px}
-  .card-foot.talk .chips .chip-wait{height:36px}
+  .card-foot.talk .chips .chip{justify-content:space-between;width:100%;min-height:34px;font-size:14px;line-height:1.35;padding:5px 14px;border-radius:10px}
+  .card-foot.talk .chips .chip-wait{height:32px;border-radius:10px}
   .card-foot.talk .say-box{margin-top:0;padding:6px 6px 6px 12px}
   .card-foot.talk .small-ask{margin:8px 0 0;font-size:12px}
   .card-foot.talk .small-ask.later{display:none}
