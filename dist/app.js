@@ -292,7 +292,7 @@ async function dayPass(c,from,to){
   el.className=`daypass from-${PHASE[fromT]||'morning'} to-${PHASE[toT]||'night'}`;
   el.setAttribute('role','status');el.setAttribute('aria-live','polite');
   el.style.setProperty('--dur',dur+'ms');
-  el.innerHTML=`<div class="dp-sky dp-from"></div><div class="dp-sky dp-to"></div><div class="dp-orbit" aria-hidden="true"><div class="dp-sun"></div></div>
+  el.innerHTML=`<div class="dp-sky dp-from"></div><div class="dp-sky dp-to"></div>
     <div class="dp-card">
       <p class="dp-phase"><span>${esc(fromT)}</span><span class="dp-arc" aria-hidden="true"><span class="arm"><i></i></span></span><span>${esc(toT)}</span></p>
       <ol class="dp-list">${items.map((x,i)=>`<li style="--i:${i}">${x.when?`<b>${esc(x.when)}</b>`:''}${esc(x.text)}</li>`).join('')}</ol>

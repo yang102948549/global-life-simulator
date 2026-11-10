@@ -463,12 +463,6 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
 /* 해는 하늘에 호를 그린다: 0도=왼쪽 지평선(아침), 90도=꼭대기(낮), 180도=오른쪽 지평선(저녁), 그 아래=밤 */
 .from-morning{--a0:18deg}.from-noon{--a0:90deg}.from-evening{--a0:162deg}
 .to-noon{--a1:90deg}.to-evening{--a1:162deg}.to-night{--a1:212deg}
-.daypass{--r:min(40vw,30vh)}
-.dp-orbit{position:absolute;left:50%;top:32%;width:0;height:0;transform:rotate(var(--a0));transition:transform var(--dur) cubic-bezier(.45,0,.3,1)}
-.daypass.go .dp-orbit{transform:rotate(var(--a1))}
-.dp-sun{position:absolute;left:calc(-1 * var(--r));top:0;width:68px;height:68px;margin:-34px 0 0 -34px;border-radius:50%;background:#ffd55e;box-shadow:0 0 70px 24px rgba(255,205,90,.55);transition:background var(--dur),opacity var(--dur)}
-.to-evening.go .dp-sun{background:#ff9c5a}
-.to-night.go .dp-sun{background:#ff8a4c;opacity:.35}
 .dp-card{position:relative;width:min(420px,100%);background:rgba(255,250,240,.88);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border-radius:22px;padding:24px 22px 22px;box-shadow:0 24px 50px -24px rgba(20,15,40,.55);color:var(--ink)}
 .dp-phase{display:flex;align-items:center;gap:12px;font-family:var(--serif);font-size:18px;font-weight:700;margin-bottom:16px}
 .dp-phase{align-items:flex-end}
@@ -476,7 +470,10 @@ textarea:focus,input:focus,select:focus{border-color:var(--tone);outline:none}
 .dp-arc::before{content:'';position:absolute;left:50%;top:8px;width:130px;height:130px;margin-left:-65px;border:2px dashed rgba(60,40,20,.28);border-radius:50%;box-sizing:border-box}
 .dp-arc .arm{position:absolute;left:50%;top:73px;width:130px;height:4px;margin:-2px 0 0 -65px;transform:rotate(var(--a0));transition:transform var(--dur) cubic-bezier(.45,0,.3,1)}
 .daypass.go .dp-arc .arm{transform:rotate(var(--a1))}
-.dp-arc .arm i{position:absolute;left:-9px;top:-7px;width:18px;height:18px;border-radius:50%;background:var(--tone);box-shadow:0 0 14px color-mix(in srgb,var(--tone) 60%,transparent)}
+/* 호를 따라 움직이는 원이 곧 해다. 저녁이 되면 주황빛, 밤으로 넘어가면 지평선 아래로 지며 흐려진다. */
+.dp-arc .arm i{position:absolute;left:-11px;top:-9px;width:22px;height:22px;border-radius:50%;background:#ffd55e;box-shadow:0 0 16px 4px rgba(255,205,90,.6);transition:background var(--dur),box-shadow var(--dur),opacity var(--dur)}
+.from-evening .dp-arc .arm i,.to-evening.go .dp-arc .arm i{background:#ff9c5a;box-shadow:0 0 16px 4px rgba(255,140,80,.55)}
+.to-night.go .dp-arc .arm i{background:#ff8a4c;opacity:.35}
 .dp-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}
 .dp-list li,.dp-next{opacity:0;transform:translateY(8px);animation:dpIn .5s ease-out forwards;animation-delay:calc(.5s + var(--i) * 1.1s)}
 .dp-list li{font-size:16px;line-height:1.55;padding-left:14px;border-left:3px solid var(--tone)}
