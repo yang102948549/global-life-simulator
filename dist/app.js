@@ -119,17 +119,17 @@ function atlas(){const shown=filter==='전체'?cases:cases.filter(c=>c.theme===f
 
 function guide(){return `<div class="page-head"><h1>체험에서 공감으로,<br>공감에서 책임으로.</h1><p class="muted">중학교 도덕 · 지구촌 문제 해결 수업. 모든 사례는 자료 시점의 특정 지역 상황이며 나라 전체를 대표하지 않습니다.</p></div>
 <div class="grid3">
-  <article class="cell"><p class="label">1차시 · 45분</p><h3>캐릭터와 대화하기</h3><p>도입·뽑기 10분 → 세 장면 대화 20분 → 개인 성찰과 모둠 대화 15분. 다른 선택의 결과도 비교해 봅니다.</p></article>
-  <article class="cell"><p class="label">2차시 · 45분</p><h3>질문과 근거 검토</h3><p>질문 고치기 10분 → AI 또는 원문 조사 20분 → 출처 대조·빠진 관점 검토 15분.</p></article>
-  <article class="cell"><p class="label">3차시 · 45분</p><h3>함께 바꿀 계획</h3><p>해결 계획 20분 → 모둠끼리 교차 검토 15분 → 고치기·기록 제출 10분.</p></article>
+  <article class="cell"><p class="label">1차시 · 45분</p><h3>캐릭터와 대화하기</h3><p>도입·뽑기 10분 → 세 장면 대화 20분 → 돌아보기 15분. 다른 선택의 결과도 비교해 봅니다.</p></article>
+  <article class="cell"><p class="label">2차시 · 45분</p><h3>질문하고 조사하기</h3><p>질문 하나 정하기 10분 → 앱 안의 AI 조사 도우미와 원문 자료로 알아보기 25분 → 알게 된 것과 근거 정리 10분.</p></article>
+  <article class="cell"><p class="label">3차시 · 45분</p><h3>해결책을 글로 내놓기</h3><p>신문 기사·정책 제안서·편지 가운데 하나 고르기 5분 → 쓰기 20분 → 이야기 속 인물·선생님과 피드백 대화하며 고치기 15분 → PDF로 저장해 제출 5분.</p></article>
 </div>
 <div class="grid2">
   <article class="cell"><h3>AI 대화 설정</h3><p>onischool.net에서는 학교 서버가 AI 키를 갖고 있어 학생은 키 입력 없이 바로 대화합니다. 키는 학생 기기로 가지 않습니다. AI가 연결되면 선택지 버튼은 보이지 않고, 학생은 답 칩을 누르거나 직접 말하며 대화하다가 세 번째 말부터 나오는 결정 칩(→)이나 직접 쓴 결정으로 장면을 마칩니다. AI를 쓸 수 없을 때는 선택 버튼으로 진행됩니다.</p></article>
   <article class="cell"><h3>AI 대화의 안전장치</h3><p>대화는 Google 쪽에 저장되지 않게 보냅니다. 괴롭힘·혐오·성적·위험 내용 필터를 켜 두었고, 잔인한 묘사·연애 묘사·개인정보 요청을 막는 지침을 넣었습니다. 그래도 AI는 실수할 수 있으니 수업 중 화면을 살펴 주세요. 학생에게 실명·학교·연락처를 쓰지 않도록 안내해 주세요.</p></article>
-  <article class="cell"><h3>12명을 모두 다루려면</h3><p>12개 모둠, 또는 6개 모둠×2회로 운영하세요. 무작위 뽑기는 이 브라우저에서 마치지 않은 캐릭터를 먼저 고릅니다. 기기 사이의 중복은 자동으로 조정되지 않으니 ‘캐릭터’ 목록에서 직접 나눠 줄 수 있습니다.</p></article>
+  <article class="cell"><h3>12명을 모두 다루려면</h3><p>학생마다 무작위로 한 명씩 뽑아 개인 활동으로 진행합니다. 무작위 뽑기는 이 브라우저에서 마치지 않은 캐릭터를 먼저 고릅니다. 기기 사이의 중복은 자동으로 조정되지 않으니 ‘캐릭터’ 목록에서 직접 나눠 줄 수 있습니다.</p></article>
   <article class="cell"><h3>공감을 다루는 방법</h3><p>생존 점수, 빈곤 순위, 사망 결말은 없습니다. 모든 선택에는 얻는 것과 잃는 것이 있습니다. 불편한 장면은 다른 캐릭터로 바꾸거나 자료 읽기로 대신해도 됩니다.</p></article>
 </div>
-<p class="notice"><strong>평가 관점</strong> · 문제와 당사자 이해 / 질문 고치기 / 출처와 시점 확인 / 개인과 제도의 책임 구분 / 당사자 참여와 부작용 고려 / 실행과 확인 계획</p>
+<p class="notice"><strong>평가 관점</strong> · 문제와 당사자 이해 / 스스로 정한 질문 / 출처와 시점 확인 / 개인과 제도의 책임 구분 / 형식에 맞는 글쓰기 / 피드백을 반영한 고치기</p>
 <div class="actions"><button class="btn" data-nav="atlas">캐릭터 나눠 주기</button><button class="btn ghost" data-action="clear">이 브라우저의 기록 지우기</button></div>`;}
 
 /* ---------- 뽑기 · 소개 ---------- */
@@ -449,7 +449,7 @@ function renderStatus(){}
 AI.serverCheck.then(ok=>{if(!ok)return;renderStatus();if(view==='chat')render();});
 
 /* ---------- 돌아보기 이후: 게임 화면과 같은 틀(왼쪽 그림, 오른쪽 종이 카드) ---------- */
-const EPI=['돌아보기','질문·조사','계획','기록'];
+const EPI=['돌아보기','질문·조사','결과물','완성'];
 function epiArt(c,active,extra=''){return `<aside class="stage-art">
   <figure class="portrait">${art(c,'card')}<figcaption><strong>${esc(c.name)}</strong>${esc(c.country)} · ${esc(c.region)}${playerTag()}</figcaption></figure>
   <ol class="pips" aria-label="마무리 단계">${EPI.map((t,i)=>`<li class="${i<active?'done':i===active?'now':''}"${i===active?' aria-current="step"':''}>${t}</li>`).join('')}</ol>
@@ -464,13 +464,11 @@ function reflect(c){return `<div class="game">${epiArt(c,0)}<div class="stage-ma
   <form id="reflection-form">
     <div class="card-body">
       ${sec('나의 하루',recap(c),'세 장면에서 내가 고른 것입니다. ‘선택을 넘어’를 펼쳐 다시 읽어 보세요.')}
-      ${sec('생각해 보기',field('feeling','이 사람에게 가장 중요했던 것은 무엇일까?','“불쌍하다”는 말 대신, 지키고 싶었던 일상과 권리를 생각해 보세요.',true)+field('constraint','내 선택만으로 바꾸기 어려웠던 조건은?','시설, 제도, 소득, 안전, 차별 가운데 구체적으로 적어 보세요.',true)+field('unknown','체험만으로는 알 수 없는 것은?','당사자에게 더 듣고 싶은 이야기나 자료로 확인할 내용을 적어 보세요.',true))}
+      ${sec('생각해 보기',field('feeling',`${c.name}에게 가장 중요했던 것은?`,'한두 문장이면 충분해요. 예: 친구와 함께 학교에 다니는 평범한 하루',true)+field('constraint','내 선택만으로는 바꾸기 어려웠던 것은?','예: 물을 길으러 가야 하는 거리, 일꾼을 쓸 수 없는 형편',true,'시설·돈·제도·안전 가운데 떠오르는 것을 적어 보세요.'))}
     </div>
     <footer class="card-foot step-nav"><button class="btn ghost back" type="button" data-nav="chat">← 대화로</button><button class="btn big" type="submit">질문 만들고 조사하기 →</button></footer>
   </form>
 </article></div></div>`;}
-
-function promptText(){const c=current(),f=fields();return `나는 중학교 도덕 수업에서 ${c.country}, ${c.region}의 ${c.role}의 관점으로 진행한 가상 시뮬레이션을 했습니다. 인물과 장면은 가상이며 실제 체험이나 증언이 아닙니다.\n\n확인된 배경:\n${c.facts.map(x=>'- '+x).join('\n')}\n출처와 시점:\n${c.sources.map(s=>`${s.title} (${s.date}) ${s.url}`).join('\n')}\n\n내가 발견한 조건: ${f.constraint||'(아직 작성하지 않음)'}\n처음 질문: ${f.firstQuestion||c.question}\n더 구체화한 질문: ${f.betterQuestion||c.question}\n\n위 질문에 대해 ①당사자의 요구와 이미 하는 노력 ②즉시 지원과 장기적 변화 ③주민·정부·기업·국제사회의 역할 ④부작용·비용·실행 조건을 구분해 설명해 주세요. 확인된 사실과 추론을 구분하고 근거의 발행일과 원문 링크를 제시해 주세요. 원문을 확인할 수 없거나 최신 상황을 모르면 모른다고 말해 주세요. 가상의 당사자 발언이나 통계는 만들지 마세요. 결론을 대신 정하지 말고 내가 확인해야 할 질문도 제안해 주세요.`;}
 
 // 조사하기: 처음에 본 확인된 사실과 원문 출처, 그리고 나라·주제별로 더 찾아볼 수 있는 공신력 있는 사이트.
 const ISO={tuvalu:['tuv'],pakistan:['pak'],bangladesh:['bgd'],somalia:['som'],gaza:['pse'],haiti:['hti'],ghana:['gha'],sudan:['sdn','tcd'],rohingya:['mmr','bgd'],afghanistan:['afg'],congo:['cod'],qatar:['qat']};
@@ -484,64 +482,170 @@ const THEME_SITE={
 };
 const host=u=>{try{return new URL(u).hostname.replace(/^www\./,'');}catch{return '';}};
 const linkCard=(kind,title,meta,url)=>`<a class="src-card" href="${esc(url)}" target="_blank" rel="noopener noreferrer"><span class="src-kind">${esc(kind)}</span><strong>${esc(title)}</strong><span class="src-meta">${esc(meta)}</span><span class="src-go" aria-hidden="true">↗</span></a>`;
-function research(c){
-  const more=[...(ISO[c.id]||[]).map(k=>linkCard('현지 소식',`ReliefWeb · ${ISO_NAME[k]}`,'유엔이 모은 최신 상황 보고서 · reliefweb.int',`https://reliefweb.int/country/${k}`)),
-    ...(THEME_SITE[c.theme]?[THEME_SITE[c.theme]].map(t=>linkCard('통계·자료',t.title,`${t.desc} · ${host(t.url)}`,t.url)):[])];
-  return `<div class="research">
-    <div class="research-part"><h3>이 이야기의 바탕 자료</h3><p class="sec-note">처음에 본 ‘실제로 확인된 사실’입니다. 원문을 열어 맞는지 직접 확인해 보세요.</p>${facts(c)}
-      <div class="src-grid">${c.sources.map(x=>linkCard('원문 출처',x.title,`${x.date} · ${host(x.url)}`,x.url)).join('')}</div></div>
-    <div class="research-part"><h3>더 찾아볼 곳</h3><p class="sec-note">영어 사이트는 브라우저의 번역 기능을 켜고 읽어도 됩니다. 자료의 날짜를 꼭 확인하세요.</p>
-      <div class="src-grid">${more.join('')}</div></div>
-  </div>`;
+// 학생 화면에 링크가 있는 자료 전부. AI 조사 도우미도 이 목록 안에서만 자료를 가리킨다.
+function refs(c){return [
+  ...c.sources.map(x=>({kind:'원문 출처',title:x.title,meta:`${x.date} · ${host(x.url)}`,url:x.url})),
+  ...(ISO[c.id]||[]).map(k=>({kind:'현지 소식',title:`ReliefWeb · ${ISO_NAME[k]}`,meta:'유엔이 모은 최신 상황 보고서 · reliefweb.int',url:`https://reliefweb.int/country/${k}`})),
+  ...(THEME_SITE[c.theme]?[THEME_SITE[c.theme]].map(t=>({kind:'통계·자료',title:t.title,meta:`${t.desc} · ${host(t.url)}`,url:t.url})):[]),
+];}
+function sourcesPanel(c){
+  const all=refs(c),card=r=>linkCard(r.kind,r.title,r.meta,r.url);
+  return `<details class="src-fold"><summary>자료 열어 보기 <span>${all.length}곳</span></summary>
+    <p class="sec-note">‘실제로 확인된 사실’과 그 원문입니다. 영어 사이트는 브라우저 번역을 켜고 읽어도 돼요. 자료의 날짜를 꼭 확인하세요.</p>${facts(c)}
+    <div class="src-grid">${all.map(card).join('')}</div></details>`;
 }
+
+// 질문을 처음부터 쓰기 막막하지 않게: 출발 질문과 빈칸 틀을 눌러서 시작한다.
+const frames=c=>[
+  c.question,
+  `${c.name} 같은 사람이 ____하려면 누가 무엇을 해야 할까?`,
+  `왜 ${c.region}에서는 ____이(가) 어려울까?`,
+  `____을(를) 돕는 방법에는 어떤 한계나 부작용이 있을까?`,
+];
+const QUICK=[['내 질문에 답해 줘','mine'],['왜 이런 일이 생기는지 쉽게 설명해 줘'],['이미 누가 어떤 노력을 하고 있어?'],['정부·기업·국제사회는 각각 어떻게 볼까?']];
+const labOf=()=>{const r=state.run;if(!r.lab||!Array.isArray(r.lab.log)||!Array.isArray(r.lab.api))r.lab={log:[],api:[]};return r.lab;};
+let asking=false;
+function askEntry(e,i){
+  if(e.k==='me')return `<div class="ask-me">${esc(e.text)}</div>`;
+  if(e.k==='error')return `<div class="msg error">${esc(e.text)}</div>`;
+  return `<div class="ask-a">${e.answer.split(/\n+/).map(p=>`<p>${esc(p)}</p>`).join('')}
+    ${e.check?`<p class="ask-check">직접 확인해 볼 자료 · <strong>${esc(e.check)}</strong></p>`:''}
+    ${e.point?`<button class="btn ghost small" data-take="${i}"${e.taken?' disabled':''}>${e.taken?'메모에 담았어요':'핵심을 메모에 담기'}</button>`:''}</div>`;
+}
+function askPanel(){
+  const lab=labOf(),last=[...lab.log].reverse().find(e=>e.k==='ai');
+  if(!AI.ready)return `<div class="ask-off"><p>AI가 연결되어 있지 않아요. 자료를 직접 읽고 메모해도 됩니다.</p><button class="btn ghost" data-action="ai-settings">AI 연결하기</button></div>`;
+  const quick=last?.followups?.length?last.followups.map(t=>[t]):QUICK;
+  return `<div class="ask-log" id="ask-log" aria-live="polite">${lab.log.length?lab.log.map(askEntry).join(''):'<p class="ask-empty">궁금한 것을 물어보세요. AI 답은 틀릴 수 있으니, 함께 알려 주는 자료에서 직접 확인해요.</p>'}${asking?'<div class="msg typing" aria-label="답을 쓰는 중"><i></i><i></i><i></i></div>':''}</div>
+    <div class="chips">${quick.map(([t,k])=>`<button class="chip" data-ask="${esc(k||t)}"${asking?' disabled':''}>${esc(t)}</button>`).join('')}</div>
+    <form id="ask-form" class="ask-form"><textarea id="ask" rows="1" maxlength="600" placeholder="AI에게 직접 물어보기"${asking?' disabled':''}></textarea><button class="btn" type="submit"${asking?' disabled':''}>묻기</button></form>`;
+}
+function renderAsk(){const p=document.querySelector('#ask-panel');if(!p)return;p.innerHTML=askPanel();const log=p.querySelector('#ask-log');if(log)log.scrollTop=log.scrollHeight;}
+async function ask(c,text){
+  text=String(text||'').trim();if(!text||asking)return;
+  const lab=labOf();lab.log.push({k:'me',text});asking=true;save();renderAsk();
+  try{
+    const {reply,history}=await AI.research({c,fields:fields(),refs:refs(c),history:lab.api,text});
+    lab.api=history;lab.log.push({k:'ai',...reply});
+  }catch(err){lab.log.push({k:'error',text:err.message});}
+  asking=false;save();renderAsk();
+}
+
 function lab(c){return `<div class="game">${epiArt(c,1)}<div class="stage-main"><article class="paper-card">
-  <header class="card-head"><p class="label">마무리 2/4 · 질문·조사</p><h1>답을 받기 전에, 질문을 더 깊게.</h1></header>
+  <header class="card-head"><p class="label">마무리 2/4 · 질문·조사</p><h1>궁금한 것 하나를 골라, 깊이 알아봐요.</h1></header>
   <div class="card-body">
-    <div class="callout"><strong>이 이야기의 출발 질문</strong><p>${esc(c.question)}</p></div>
-    ${sec('① 질문 다듬기',field('firstQuestion','나의 첫 질문','예: 이 지역의 문제를 어떻게 해결할 수 있을까?')+field('betterQuestion','더 구체적으로 바꾼 질문','누가 겪는 어떤 어려움인가요? 실행 조건과 책임질 주체까지 넣어 보세요.')+`<p class="sec-note">질문에 넣어 볼 주체: ${esc(c.actors)}</p>`)}
-    ${sec('② 조사하기',research(c)+`<div class="tool-row"><button class="btn ghost" data-action="copy-prompt">AI 질문 복사</button><button class="btn ghost" data-action="show-prompt" aria-expanded="false" aria-controls="prompt-preview">질문 미리보기 <svg class="ico caret" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></div>
-    <div id="prompt-preview" class="prompt-pop" hidden><div class="pop-head"><strong>AI에게 보낼 질문</strong><span>이 내용이 그대로 복사됩니다</span></div><div class="pop-body"></div></div>`+field('answer','AI 답변 또는 원문 조사 내용','읽은 자료를 요약하거나 AI 답변을 붙여 넣으세요. 개인정보는 넣지 마세요.'),'아래 원문 자료를 직접 열어 읽거나, 질문을 복사해 <strong>학교에서 허용한 AI</strong>에 넣어 보세요.')}
-    ${sec('③ 근거 확인하기',field('evidence','어떤 주장을 어디에서 확인했나요?','주장 / 기관 / 자료 제목·날짜 / 원문 주소 / 일치 여부','','AI가 준 링크도 직접 열어 그 주장을 뒷받침하는지 확인하세요.')+field('revision','받아들이지 않거나 고친 내용은?','근거가 없던 주장, 빠진 사람의 입장, 지역에 맞지 않는 제안을 적어 보세요.'))}
+    ${sec('① 나의 질문',`<div class="frames">${frames(c).map((t,i)=>`<button class="chip" data-frame="${i}">${i===0?'출발 질문 · ':''}${esc(t)}</button>`).join('')}</div>`+field('question','내가 알아볼 질문','위의 틀을 누르고 빈칸을 채우거나, 직접 써 보세요.',true),'하나만 정하면 돼요. 눌러서 시작하고 내 말로 고쳐 보세요.')}
+    ${sec('② 알아보기',`${sourcesPanel(c)}<div id="ask-panel" class="ask-panel">${askPanel()}</div>`,'AI에게 묻고, 자료에서 직접 확인해 보세요.')}
+    ${sec('③ 알게 된 것',field('notes','알게 된 것과 근거','예: 해안 지역은 지하수에 바닷물이 섞여 마시기 어렵다 (유니세프 자료)',true,'‘핵심을 메모에 담기’로 옮긴 뒤 내 말로 고쳐도 돼요. 어디서 확인했는지 괄호에 적어 주세요.'))}
   </div>
-  <footer class="card-foot step-nav"><button class="btn ghost back" data-nav="reflect">← 돌아보기</button><button class="btn big" data-action="to-plan">해결 계획 세우기 →</button></footer>
+  <footer class="card-foot step-nav"><button class="btn ghost back" data-nav="reflect">← 돌아보기</button><button class="btn big" data-action="to-plan">결과물 만들기 →</button></footer>
 </article></div></div>`;}
 
-const planFields=[['problem','우리가 해결할 구체적인 문제','누가 어느 지역에서 어떤 권리를 누리지 못하고 있나요?'],['immediate','지금 필요한 지원','당장 필요한 변화와 그것을 실행할 주체를 적어 보세요.'],['longterm','문제를 되풀이하게 만드는 조건을 바꿀 방법','제도·시설·소득·차별 등 원인에 맞서는 방법을 적어 보세요.'],['roles','누가 무엇을 책임져야 하나요?','당사자·정부·기업·국제사회 가운데 관련 주체와 역할을 나눠 보세요.'],['participation','현지 사람들의 의견과 노력을 어떻게 반영할까요?','당사자의 동의·참여와 이미 하고 있는 노력을 생각해 보세요.'],['tradeoff','비용·한계·부작용은 무엇인가요?','누가 부담을 지는지, 필요한 자원, 예상하지 못한 피해를 적으세요.'],['action','우리 모둠이 할 수 있는 구체적인 행동','누구에게, 무엇을, 언제까지 할까요? 문제의 원인과 어떻게 이어지나요?'],['measure','변화를 어떻게 확인할까요?','모금액이나 홍보 횟수 말고, 당사자의 생활이 나아졌는지 확인할 기준을 적으세요.']];
-
-function plan(c){const pf=keys=>planFields.filter(([k])=>keys.includes(k)).map(([n,l,p])=>field(n,l,p,true)).join('');return `<div class="game">${epiArt(c,2)}<div class="stage-main"><article class="paper-card">
-  <header class="card-head"><p class="label">마무리 3/4 · 해결 계획</p><h1>좋은 마음을, 실행할 수 있는 계획으로.</h1></header>
+// 결과물: 조사한 것을 어떤 글로 내놓을지 고르고, 그 형식에 맞는 네 칸을 채운다. 완성 화면과 PDF는 이 형식의 서식으로 나온다.
+const FORMATS={
+  article:{name:'신문 기사',desc:'알게 된 사실을 많은 사람에게 알려요.',fields:[
+    ['a_title','제목','예: 물은 있지만 마실 수 없는 마을','문제가 한눈에 보이게 짧게.'],
+    ['a_lead','첫 문단 · 누구에게 무슨 일이','어디에서, 누가, 어떤 어려움을 겪고 있나요? 두세 문장으로.'],
+    ['a_body','왜 그럴까 · 원인과 근거','조사에서 알게 된 사실을 쓰고, 어디서 확인했는지 밝혀 주세요.'],
+    ['a_end','맺음 · 독자에게','읽는 사람이 함께 생각해 볼 질문이나 할 수 있는 일.'],
+  ]},
+  policy:{name:'정책 제안서',desc:'정부나 기관에 해결 방법을 제안해요.',fields:[
+    ['p_title','제안 이름','예: 해안 마을 정수 시설 관리비 지원','무엇을 하자는 제안인지 한 줄로.'],
+    ['p_problem','문제','누가 어떤 권리를 누리지 못하고 있나요? 근거와 함께.'],
+    ['p_plan','제안 내용','누가(정부·기업·국제기구·주민) 무엇을 하면 될까요?'],
+    ['p_limit','예상되는 어려움과 보완','비용이나 부작용은? 현지 사람들의 의견은 어떻게 들을까요?'],
+  ]},
+  letter:{name:'편지',desc:'책임 있는 곳이나 이야기 속 인물에게 내 목소리를 전해요.',fields:[
+    ['l_to','받는 사람','예: 초콜릿 회사 대표님 / 유니세프 담당자님 / 코피에게','누구에게 쓰는지에 따라 부탁도 달라져요.'],
+    ['l_learned','내가 알게 된 것','체험과 조사에서 알게 된 사실을 전해 주세요.'],
+    ['l_ask','부탁하거나 제안하는 것','받는 사람이 실제로 할 수 있는 일을 구체적으로.'],
+    ['l_me','나도 할 일','내가 할 수 있는 작은 행동 한 가지.'],
+  ]},
+};
+const fmtOf=()=>FORMATS[fields().format];
+// 피드백 대화: 이야기 속 인물과 선생님이 내 글을 읽고 말하고, 나는 칩이나 직접 쓴 말로 대답한다(시뮬레이션과 같은 방식).
+let reviewing=false;
+const reviewOf=()=>{const r=state.run;if(!r.review||!Array.isArray(r.review.log)||!Array.isArray(r.review.api))r.review={log:[],api:[]};return r.review;};
+const draftParts=()=>{const f=fields(),fm=fmtOf();return fm.fields.map(([n,l])=>[l,f[n]||'']);};
+function reviewPanel(c){
+  const rv=reviewOf(),last=[...rv.log].reverse().find(e=>e.k==='say');
+  if(!AI.ready)return `<div class="ask-off"><p>AI가 연결되어 있지 않아 피드백 대화는 쓸 수 없어요.</p><button type="button" class="btn ghost" data-action="ai-settings">AI 연결하기</button></div>`;
+  if(!rv.log.length)return `<div class="tool-row"><button type="button" class="btn" data-action="review-start"${reviewing?' disabled':''}>${esc(c.name)}와 선생님에게 보여 주기</button><span class="sec-note">${esc(c.name)}는 당사자로서, 선생님은 글과 해결책을 보고 이야기해 줘요.</span></div>${reviewing?'<div class="msg typing" aria-label="읽는 중"><i></i><i></i><i></i></div>':''}`;
+  const line=e=>e.k==='me'?`<div class="msg me">${esc(e.text)}</div>`:e.k==='error'?`<div class="msg error">${esc(e.text)}</div>`:e.k==='mark'?`<p class="rv-mark">${esc(e.text)}</p>`:`<div class="msg say"><b>${esc(e.speaker)}</b> ${esc(e.text)}</div>`;
+  return `<div class="rv-log" id="rv-log" aria-live="polite">${rv.log.map(line).join('')}${reviewing?'<div class="msg typing" aria-label="답을 쓰는 중"><i></i><i></i><i></i></div>':''}</div>
+    ${!reviewing&&last?.chips?.length?`<div class="chips">${last.chips.map((t,i)=>`<button type="button" class="chip" data-rv="${i}">${esc(t)}</button>`).join('')}</div>`:''}
+    <div class="rv-form"><textarea id="rv-say" rows="1" maxlength="600" placeholder="직접 대답하기"${reviewing?' disabled':''}></textarea><button type="button" class="btn" data-action="rv-send"${reviewing?' disabled':''}>보내기</button></div>
+    <div class="tool-row"><button type="button" class="btn ghost small" data-action="review-again"${reviewing?' disabled':''}>고친 글 다시 보여 주기</button></div>`;
+}
+function renderReview(c){const p=document.querySelector('#rv-panel');if(!p)return;p.innerHTML=reviewPanel(c);const log=p.querySelector('#rv-log');if(log)log.scrollTop=log.scrollHeight;}
+async function reviewSay(c,text,mark){
+  text=String(text||'').trim();if(!text||reviewing)return;
+  const rv=reviewOf();
+  if(mark)rv.log.push({k:'mark',text:mark});else rv.log.push({k:'me',text});
+  reviewing=true;save();renderReview(c);
+  try{
+    const {reply,history}=await AI.review({c,fields:fields(),kind:fmtOf().name,parts:draftParts(),history:rv.api,text});
+    rv.api=history;rv.log.push({k:'say',...reply});
+  }catch(err){rv.log.push({k:'error',text:err.message});}
+  reviewing=false;save();renderReview(c);
+}
+function plan(c){const f=fields(),fm=fmtOf();return `<div class="game">${epiArt(c,2)}<div class="stage-main"><article class="paper-card">
+  <header class="card-head"><p class="label">마무리 3/4 · 결과물 만들기</p><h1>알게 된 것을, 세상에 내놓을 글로.</h1></header>
   <form id="plan-form">
     <div class="card-body">
-      <p class="sec-note">개인의 노력과 공동체·제도의 변화를 이어 보세요. 정답 하나를 찾기보다 근거와 한계를 드러내는 제안을 만듭니다.</p>
-      ${sec('① 무엇을 바꿀까',pf(['problem','immediate','longterm']))}
-      ${sec('② 누가 함께할까',pf(['roles','participation']))}
-      ${sec('③ 어떻게 할까',pf(['tradeoff','action','measure']))}
-      ${sec('마지막 점검',`<div class="checks">${[['checkedSource','원문 자료와 시점을 확인했다.'],['checkedFiction','실제 사실과 시뮬레이션의 가정을 구분했다.'],['checkedVoice','당사자의 의견과 참여를 고려했다.']].map(([n,l])=>`<label><input type="checkbox" data-field="${n}" ${fields()[n]?'checked':''}>${l}</label>`).join('')}</div><div id="plan-review" aria-live="polite"></div>`,'빈칸 점검은 칸이 채워졌는지만 봅니다. 사실이 맞는지, 해결책이 타당한지는 판단하지 않습니다.')}
+      ${sec('① 어떤 글로 만들까',`<div class="formats" role="radiogroup" aria-label="결과물 형식">${Object.entries(FORMATS).map(([k,x])=>`<button type="button" class="format${f.format===k?' on':''}" role="radio" aria-checked="${f.format===k}" data-format="${k}"><span class="thumb thumb-${k}" aria-hidden="true"><i></i><i></i><i></i><i></i></span><strong>${x.name}</strong><span>${x.desc}</span></button>`).join('')}</div>`,'완성하면 고른 형식의 서식으로 PDF를 만들 수 있어요.')}
+      ${fm?sec(`② ${fm.name} 쓰기`,`<div class="my-research"><p><strong>나의 질문</strong>${esc(f.question||'')}</p><p><strong>알게 된 것</strong>${esc(f.notes||'')}</p></div>`+fm.fields.map(([n,l,p,h])=>field(n,l,p,true,h||'')).join('')):''}
+      ${fm?sec('③ 피드백 대화',`<div id="rv-panel" class="rv-panel">${reviewPanel(c)}</div>`,'AI는 글을 대신 써 주지 않아요. 대화를 보고 고칠지는 내가 정해요.'):''}
     </div>
-    <footer class="card-foot step-nav"><button type="button" class="btn ghost back" data-nav="lab">← 질문·조사</button><button type="button" class="btn ghost" data-action="review">빈칸 점검</button><button class="btn big" type="submit">탐구 기록 완성 →</button></footer>
+    <footer class="card-foot step-nav"><button type="button" class="btn ghost back" data-nav="lab">← 질문·조사</button><button class="btn big" type="submit"${fm?'':' disabled'}>완성하기 →</button></footer>
   </form>
 </article></div></div>`;}
 
-function review(){const f=fields(),checks=[...planFields.map(([n,l])=>[l,typeof f[n]==='string'&&f[n].trim().length>0]),['자료 검토 기록',!!f.evidence?.trim()],['원문·시점 확인 표시',!!f.checkedSource],['사실과 가정 구분 표시',!!f.checkedFiction],['당사자 참여 검토 표시',!!f.checkedVoice]];return `<ul class="review">${checks.map(([l,ok])=>`<li class="${ok?'ok':''}">${esc(l)}</li>`).join('')}</ul>`;}
-
-function reportText(){const c=current(),r=state.run,f=fields();return `다른 곳의 하루 · 지구촌 탐구 기록\n활동 이름: ${f.nickname||'미입력'}\n캐릭터: ${c.name} (${c.role})\n지역: ${c.country} / ${c.region}\n완료 시각: ${new Date(r.finishedAt).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})} KST\n\n※ 실제 체험·증언이 아닌 학습용 가상 시뮬레이션입니다.\n\n[하루의 선택]\n${c.scenes.map((s,i)=>`${s.time}: ${s.options[r.choices[i]]?.text||'미선택'}\n결과(가정): ${r.chats[i].brief?.mine?.story||s.options[r.choices[i]]?.result||''}`).join('\n\n')}\n\n[돌아보기]\n중요했던 것: ${f.feeling||''}\n바꾸기 어려운 조건: ${f.constraint||''}\n더 알아볼 것: ${f.unknown||''}\n\n[질문과 검토]\n첫 질문: ${f.firstQuestion||'미작성'}\n개선 질문: ${f.betterQuestion||'미작성'}\nAI 답변/원문 조사: ${f.answer||'미작성'}\n근거 대조: ${f.evidence||'미작성'}\n수정·보류한 내용: ${f.revision||'미작성'}\n\n[해결 계획]\n${planFields.map(([n,l])=>`${l}\n${f[n]||'미작성'}`).join('\n\n')}\n\n[자가 확인]\n원문·시점: ${f.checkedSource?'확인 표시':'미확인'}\n사실·가정 구분: ${f.checkedFiction?'확인 표시':'미확인'}\n당사자 참여: ${f.checkedVoice?'확인 표시':'미확인'}\n\n[자료]\n${c.sources.map(s=>`${s.title}\n${s.date}\n${s.url}`).join('\n\n')}\n\n선택 결과는 예측이나 통계가 아닙니다. 기관의 승인·감수를 받은 자료는 아닙니다.`;}
-
-function report(c){const r=state.run,f=fields();
-  const block=(l,n)=>`<div class="report-block"><h3>${esc(l)}</h3><p>${esc(f[n]||'작성하지 않음')}</p></div>`;
+/* ---------- 완성: 고른 형식의 서식으로 보여 주고 PDF로 저장 ---------- */
+const paras=t=>String(t||'').split(/\n+/).map(s=>s.trim()).filter(Boolean).map(s=>`<p>${esc(s)}</p>`).join('')||'<p>(작성하지 않음)</p>';
+const today=()=>new Date(state.run.finishedAt||Date.now()).toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',timeZone:'Asia/Seoul'});
+const factBox=c=>`<ul>${c.facts.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><p class="doc-src">${c.sources.map(s=>`${esc(s.title)} (${esc(s.date)})`).join(' · ')}</p>`;
+const fictionNote=c=>`<p class="doc-note">${esc(c.name)}의 이야기와 장면은 실제 자료를 바탕으로 꾸민 학습용 가상 시뮬레이션입니다.</p>`;
+function docArticle(c,f){return `<article class="doc doc-article">
+  <header class="np-head"><span class="np-name">지구촌 탐구 신문</span><span class="np-meta">${today()} · ${esc(c.country)}</span></header>
+  <h1 class="np-title">${esc(f.a_title||'제목 없음')}</h1>
+  <p class="np-byline">글 · ${esc(f.nickname||'익명')} 기자 &nbsp;|&nbsp; ${esc(c.country)} ${esc(c.region)}</p>
+  <div class="np-lead">${paras(f.a_lead)}</div>
+  <div class="np-cols">${paras(f.a_body)}<blockquote class="np-quote">“${esc(c.wish)}”<cite>${esc(c.name)} · 이야기 속 인물</cite></blockquote><h3>함께 생각해 볼 것</h3>${paras(f.a_end)}</div>
+  <aside class="np-box"><h4>확인된 사실</h4>${factBox(c)}</aside>
+  ${fictionNote(c)}
+</article>`;}
+function docPolicy(c,f){return `<article class="doc doc-policy">
+  <header class="pb-head"><span class="pb-kind">정책 제안서</span><h1>${esc(f.p_title||'제안 이름 없음')}</h1></header>
+  <dl class="pb-meta"><div><dt>제안한 사람</dt><dd>${esc(f.nickname||'익명')}</dd></div><div><dt>대상 지역</dt><dd>${esc(c.country)} · ${esc(c.region)}</dd></div><div><dt>작성일</dt><dd>${today()}</dd></div><div><dt>관련 주체</dt><dd>${esc(c.actors)}</dd></div></dl>
+  <section class="pb-sec"><h2><span>1</span>문제</h2>${paras(f.p_problem)}</section>
+  <section class="pb-sec"><h2><span>2</span>제안 내용</h2>${paras(f.p_plan)}</section>
+  <section class="pb-sec"><h2><span>3</span>예상되는 어려움과 보완</h2>${paras(f.p_limit)}</section>
+  <section class="pb-sec pb-ref"><h2><span>※</span>근거 자료</h2>${factBox(c)}</section>
+  ${fictionNote(c)}
+</article>`;}
+function docLetter(c,f){return `<article class="doc doc-letter">
+  <p class="lt-date">${today()}</p>
+  <p class="lt-to">${esc(f.l_to||'받는 분께')}</p>
+  <div class="lt-body">${paras(f.l_learned)}${paras(f.l_ask)}${paras(f.l_me)}</div>
+  <p class="lt-from">${esc(f.nickname||'')} 드림</p>
+  <p class="lt-ps">덧붙임 · 이 편지는 ${esc(c.country)} ${esc(c.region)}의 상황을 다룬 학습 활동에서 썼습니다. 제가 읽은 자료: ${c.sources.map(s=>esc(s.title)).join(', ')}</p>
+  ${fictionNote(c)}
+</article>`;}
+const DOCS={article:docArticle,policy:docPolicy,letter:docLetter};
+function appendix(c){const r=state.run,f=fields(),row=(l,t)=>`<div class="ap-row"><h3>${esc(l)}</h3>${paras(t)}</div>`;return `<section class="appendix">
+  <h2>탐구 과정</h2>
+  <div class="ap-row"><h3>${esc(c.name)}의 하루에서 내가 고른 것</h3><ol>${c.scenes.map((s,i)=>`<li><strong>${esc(s.time)}</strong> ${esc(s.options[r.choices[i]]?.text||'고르지 않음')}</li>`).join('')}</ol></div>
+  ${row('가장 중요했던 것',f.feeling)}${row('내 선택만으로 바꾸기 어려웠던 것',f.constraint)}${row('나의 질문',f.question)}${row('알게 된 것과 근거',f.notes)}
+  <div class="ap-row"><h3>참고 자료</h3>${sourceList(c)}</div>
+</section>`;}
+function report(c){const f=fields(),fm=fmtOf();
   const side=`<div class="clear-badge">하루를 마쳤어요</div>
-  <div class="side-actions no-print"><button class="btn big" data-action="download">기록 내려받기</button><button class="btn ghost" data-action="print">인쇄 / PDF</button><button class="link" data-nav="plan">← 계획 고치기</button></div>`;
+  <div class="side-actions no-print"><button class="btn big" data-action="print">PDF로 저장</button><button class="link" data-nav="plan">← ${esc(fm.name)} 고치기</button></div>`;
   return `<div class="game">${epiArt(c,4,side)}<div class="stage-main"><article class="paper-card report">
-  <header class="card-head"><p class="label">마무리 4/4 · 탐구 기록</p><h1>다른 곳의 하루에서, 함께 바꿀 내일로.</h1><p class="muted">${esc(f.nickname||'나의 탐구 기록')} · ${esc(c.name)} · ${esc(c.country)} / ${esc(c.region)}</p></header>
-  <div class="card-body">
-    <p class="notice">이 체험으로 한 사람의 삶을 다 이해했다고 말할 수는 없습니다. 아래 기록은 자동 평가나 AI의 검증을 거친 결과가 아닙니다.</p>
-    ${sec('내가 만난 삶',`<p class="story">“${esc(c.wish)}”</p><p class="sec-note">${esc(c.role)}</p>${facts(c)}`)}
-    ${sec('하루의 선택과 남은 어려움',c.scenes.map((s,i)=>{const o=s.options[r.choices[i]];return `<div class="report-block"><h3>${esc(s.time)} · ${esc(o?.text||'미선택')}</h3><p>결과(가정): ${esc(r.chats[i].brief?.mine?.story||o?.result||'')}\n선택을 넘어: ${esc(s.barrier)}</p></div>`;}).join(''))}
-    ${sec('돌아보기',block('지키고 싶었던 일상과 권리','feeling')+block('내 선택만으로 바꾸기 어려운 조건','constraint')+block('아직 모르는 것','unknown'))}
-    ${sec('질문과 검토',block('첫 질문','firstQuestion')+block('고친 질문','betterQuestion')+block('AI 답변 또는 원문 조사','answer')+block('근거 확인 기록','evidence')+block('고치거나 보류한 내용','revision'))}
-    ${sec('해결 계획',planFields.map(([n,l])=>block(l,n)).join('')+`<div class="report-block"><h3>자가 확인</h3><p>원문·시점: ${f.checkedSource?'확인':'미확인'} / 사실·가정 구분: ${f.checkedFiction?'확인':'미확인'} / 당사자 참여: ${f.checkedVoice?'확인':'미확인'}</p></div>`)}
-    ${sec('참고 자료와 시점',sourceList(c)+'<p class="sec-note">장면·인물·대화·선택 결과는 가상입니다. 해당 기관의 승인이나 감수를 받은 콘텐츠가 아닙니다.</p>')}
-  </div>
-  <footer class="card-foot no-print"><button class="btn big" data-action="random">다른 캐릭터 뽑기</button><button class="btn ghost" data-nav="atlas">캐릭터 목록</button><p class="sec-note">새 캐릭터를 시작하면 지금 기록이 바뀝니다. 먼저 내려받아 두세요.</p></footer>
+  <header class="card-head no-print"><p class="label">마무리 4/4 · 완성</p><h1>나의 ${esc(fm.name)}가 완성됐어요.</h1><p class="muted">‘PDF로 저장’을 누르고, 인쇄 창에서 대상을 ‘PDF로 저장’으로 고르세요.</p></header>
+  <div class="card-body">${DOCS[f.format](c,f)}${appendix(c)}</div>
+  <footer class="card-foot no-print"><button class="btn big" data-action="print">PDF로 저장</button><button class="btn ghost" data-action="random">다른 캐릭터 뽑기</button><p class="sec-note">새 캐릭터를 시작하면 지금 기록이 바뀝니다. 먼저 PDF로 저장해 두세요.</p></footer>
 </article></div></div>`;}
 
 /* ---------- 그리기 ---------- */
@@ -549,6 +653,7 @@ function render(){
   const c=current();
   if(!c&&!FREE_VIEWS.includes(view))view='home';
   if(view==='chat'){openScene(c);ensureBrief(c);}
+  if(view==='report'&&!FORMATS[fields().format])view='plan';
   const pages={home,atlas,guide,select,intro:()=>intro(c),chat:()=>chat(c),reflect:()=>reflect(c),lab:()=>lab(c),plan:()=>plan(c),report:()=>report(c)};
   app.innerHTML=(pages[view]||home)();
   document.body.classList.toggle('is-game',['home','select','intro','chat','reflect','lab','plan','report'].includes(view));
@@ -561,10 +666,6 @@ function render(){
     if(box&&chat.draft){box.value=chat.draft;chat.draft='';}
     const log=document.querySelector('#log');if(log)log.scrollTop=log.scrollHeight;
   }
-}
-async function copy(text){
-  try{await navigator.clipboard.writeText(text);toast('질문을 복사했어요. 허용된 AI에 붙여 넣어 주세요.');}
-  catch{const p=document.querySelector('#prompt-preview');if(p){p.hidden=false;p.textContent=text;const range=document.createRange();range.selectNodeContents(p);const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);}dialog({title:'자동 복사가 안 돼요',body:'아래에 표시된 질문을 길게 눌러 직접 복사해 주세요.'});}
 }
 
 /* ---------- 입력 처리 ---------- */
@@ -594,7 +695,14 @@ document.addEventListener('click',async e=>{
     chatOf(state.run.step).log.push({k:'me',text:o.text});lock(c,n);
     return;
   }
+  if(el.dataset.frame!==undefined){const t=frames(c)[Number(el.dataset.frame)],box=document.querySelector('[data-field="question"]');if(t&&box){box.value=t;state.run.fields.question=t;save();box.focus();const i=t.indexOf('____');if(i>=0)box.setSelectionRange(i,i+4);}return;}
+  if(el.dataset.ask!==undefined){const k=el.dataset.ask;if(k==='mine'){const q=fields().question?.trim();if(!q){dialog({title:'질문을 먼저 써 주세요',body:'"내가 알아볼 질문" 칸을 채우면 AI에게 물어볼 수 있어요.'}).then(()=>focusEmpty(['question']));return;}ask(c,'내 질문: '+q);}else ask(c,k);return;}
+  if(el.dataset.take!==undefined){const e=labOf().log[Number(el.dataset.take)];if(!e?.point)return;const line='• '+e.point+(e.check?' (확인: '+e.check+')':'');const box=document.querySelector('[data-field="notes"]');const v=(fields().notes||'').trim();state.run.fields.notes=(v?v+'\n':'')+line;if(box)box.value=state.run.fields.notes;e.taken=true;save();renderAsk();toast('메모에 담았어요. 내 말로 고쳐 써 보세요.');return;}
+  if(el.dataset.format){state.run.fields.format=el.dataset.format;save();render();document.querySelector('.formats')?.scrollIntoView({block:'start',behavior:'smooth'});return;}
+  if(el.dataset.rv!==undefined){const last=[...reviewOf().log].reverse().find(x=>x.k==='say');const t=last?.chips?.[Number(el.dataset.rv)];if(t)reviewSay(c,t);return;}
   const a=el.dataset.action;
+  if(a==='review-start'||a==='review-again'){const miss=fmtOf().fields.find(([n])=>!fields()[n]?.trim());if(miss){dialog({title:'빈칸을 먼저 채워 주세요',body:'네 칸을 모두 쓰면 보여 줄 수 있어요.'}).then(()=>focusEmpty(fmtOf().fields.map(([n])=>n)));return;}reviewSay(c,a==='review-start'?'제가 쓴 글이에요. 읽어 봐 주세요.':'글을 고쳤어요. 다시 읽어 봐 주세요.',a==='review-start'?'':'— 고친 글을 다시 보여 줬어요 —');return;}
+  if(a==='rv-send'){const box=document.querySelector('#rv-say');if(box?.value.trim()){const t=box.value;box.value='';reviewSay(c,t);}return;}
   if(a==='random')draw();
   if(a==='redraw')draw(c.id);
   if(a==='resume')navigate(state.run?.view||'home');
@@ -613,11 +721,7 @@ document.addEventListener('click',async e=>{
     else{navigate('reflect');dayPass(c,from,3);}
   }
   if(a==='prev-scene'){state.run.step=Math.max(0,state.run.step-1);save();navigate('chat');}
-  if(a==='copy-prompt')copy(promptText());
-  if(a==='show-prompt'){const p=document.querySelector('#prompt-preview');p.hidden=!p.hidden;el.setAttribute('aria-expanded',String(!p.hidden));p.querySelector('.pop-body').textContent=promptText();const b=el.getBoundingClientRect(),r=p.getBoundingClientRect();p.style.setProperty('--arrow',Math.round(b.left+b.width/2-r.left)+'px');}
-  if(a==='to-plan'){if(!fields().betterQuestion?.trim()){dialog({title:'질문을 먼저 다듬어 주세요',body:'"더 구체적으로 바꾼 질문" 칸을 채우면 다음으로 넘어갈 수 있어요.'}).then(()=>focusEmpty(['betterQuestion']));return;}navigate('plan');}
-  if(a==='review'){const box=document.querySelector('#plan-review');box.innerHTML=review();box.scrollIntoView({behavior:'smooth',block:'center'});}
-  if(a==='download'){const blob=new Blob(['﻿'+reportText()],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`지구촌탐구_${c.id}.txt`;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('탐구 기록을 내려받기 시작했어요.');}
+  if(a==='to-plan'){const miss=['question','notes'].filter(k=>!fields()[k]?.trim());if(miss.length){dialog({title:miss[0]==='question'?'질문을 먼저 정해 주세요':'알게 된 것을 적어 주세요',body:'비어 있는 칸으로 안내할게요.'}).then(()=>focusEmpty(miss));return;}navigate('plan');}
   if(a==='print')window.print();
   if(a==='clear')dialog({title:'이 브라우저의 기록을 지울까요?',body:'지금 이야기와 완료 목록이 지워져요. 이미 내려받은 파일은 그대로 남아요.',ok:'지우기',cancel:'그만두기',icon:'?'}).then(ok=>{if(!ok)return;state={run:null,completed:[]};save();navigate('home');toast('이 브라우저의 기록을 지웠어요.');});
 });
@@ -628,6 +732,7 @@ document.addEventListener('submit',async e=>{
     if(!name){box.focus();box.classList.add('shake');setTimeout(()=>box.classList.remove('shake'),400);return;}
     state.run.fields.nickname=name;save();closeModal();navigate('chat');return;
   }
+  if(e.target.id==='ask-form'){e.preventDefault();const box=document.querySelector('#ask');const t=box.value;box.value='';ask(current(),t);return;}
   if(e.target.id==='say-form'){e.preventDefault();const box=document.querySelector('#say');say(current(),box.value);return;}
   if(e.target.id==='ai-form'){
     e.preventDefault();
@@ -639,11 +744,12 @@ document.addEventListener('submit',async e=>{
     catch(err){AI.clear();msg.textContent=err.message;btn.disabled=false;}
     return;
   }
-  if(e.target.id==='reflection-form'){e.preventDefault();if(['feeling','constraint','unknown'].some(k=>!fields()[k]?.trim())){dialog({title:'돌아보기 세 칸을 모두 적어 주세요',body:'비어 있는 칸으로 안내할게요.'}).then(()=>focusEmpty(['feeling','constraint','unknown']));return;}navigate('lab');}
-  if(e.target.id==='plan-form'){e.preventDefault();if(planFields.some(([n])=>!fields()[n]?.trim())){dialog({title:'계획의 필수 칸을 모두 적어 주세요',body:'비어 있는 칸으로 안내할게요.'}).then(()=>focusEmpty(planFields.map(([n])=>n)));return;}state.run.finishedAt=new Date().toISOString();if(!state.completed.includes(state.run.id))state.completed.push(state.run.id);save();navigate('report');}
+  if(e.target.id==='reflection-form'){e.preventDefault();if(['feeling','constraint'].some(k=>!fields()[k]?.trim())){dialog({title:'돌아보기 두 칸을 모두 적어 주세요',body:'비어 있는 칸으로 안내할게요.'}).then(()=>focusEmpty(['feeling','constraint']));return;}navigate('lab');}
+  if(e.target.id==='plan-form'){e.preventDefault();const fm=fmtOf();if(!fm)return;const names=fm.fields.map(([n])=>n);if(names.some(n=>!fields()[n]?.trim())){dialog({title:fm.name+'의 네 칸을 모두 적어 주세요',body:'비어 있는 칸으로 안내할게요.'}).then(()=>focusEmpty(names));return;}state.run.finishedAt=new Date().toISOString();if(!state.completed.includes(state.run.id))state.completed.push(state.run.id);save();navigate('report');}
 });
 document.addEventListener('keydown',e=>{
   // 대화창: Enter로 보내고 Shift+Enter로 줄을 바꾼다.
+  if((e.target.id==='rv-say'||e.target.id==='ask')&&e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();if(e.target.id==='ask'){const t=e.target.value;e.target.value='';ask(current(),t);}else{const t=e.target.value;e.target.value='';reviewSay(current(),t);}return;}
   if(e.target.id==='say'&&e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();say(current(),e.target.value);}
   if(e.key==='Escape'&&!document.querySelector('#modal').hidden)closeModal();
 });

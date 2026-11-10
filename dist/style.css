@@ -561,3 +561,121 @@ h1,h2,.brand,.portrait figcaption strong,.tile strong,.join h2,.life h2{font-wei
 
 /* 답 칩은 말이든 행동이든 같은 서체로(행동 표시 *…*도 기울이지 않는다) */
 .chips .chip i{font-style:normal}
+
+/* ---------- 마무리: 질문 틀, 자료 접기, AI 조사 도우미 ---------- */
+.frames{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.frames .chip{background:var(--paper);text-align:left;line-height:1.4;padding:10px 14px}
+.frames .chip:hover{background:color-mix(in srgb,var(--tone) 14%,var(--paper))}
+.src-fold{margin-top:14px;background:var(--paper);padding:0 16px}
+.src-fold summary{cursor:pointer;padding:14px 0;font-weight:700}
+.src-fold summary span{font-weight:500;color:var(--muted);margin-left:6px}
+.src-fold[open]{padding-bottom:16px}
+.src-fold .src-card{background:var(--card)}
+.ask-panel,.rv-panel{margin-top:14px}
+.ask-log,.rv-log{display:flex;flex-direction:column;gap:12px;max-height:420px;overflow:auto;background:var(--paper);padding:16px;margin-bottom:10px}
+.ask-empty{color:var(--muted);font-size:15px}
+.ask-me{align-self:flex-end;max-width:85%;background:color-mix(in srgb,var(--tone) 16%,var(--paper));padding:10px 16px}
+.ask-a{max-width:92%;border-left:3px solid var(--tone);padding:2px 0 2px 14px}
+.ask-a p+p{margin-top:8px}
+.ask-check{font-size:14px;color:var(--muted);margin-top:8px}
+.ask-a .btn{margin-top:10px}
+.ask-off{background:var(--paper);padding:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.ask-form,.rv-form{display:flex;gap:8px;align-items:flex-end}
+.ask-form textarea,.rv-form textarea{flex:1;min-height:48px;max-height:140px;resize:vertical;border:2px solid var(--line);background:var(--paper);padding:11px 14px;border-radius:var(--radius)}
+.ask-form textarea:focus,.rv-form textarea:focus{border-color:var(--tone);outline:0}
+.rv-mark{align-self:center;font-size:13px;color:var(--muted)}
+
+/* ---------- 결과물 고르기 ---------- */
+.formats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.format{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;background:var(--paper);border:2px solid transparent;padding:14px;border-radius:var(--radius);transition:border-color .15s,background .15s}
+.format:hover{background:color-mix(in srgb,var(--tone) 8%,var(--paper))}
+.format.on{border-color:var(--tone);background:color-mix(in srgb,var(--tone) 10%,var(--paper))}
+.format strong{font-size:17px}
+.format span:not(.thumb){font-size:14px;color:var(--muted);line-height:1.5}
+/* 서식 축소 모양: 막대 네 개로 신문·제안서·편지의 생김새를 흉내 낸다 */
+.thumb{display:grid;width:64px;height:48px;padding:6px;background:var(--card);gap:3px;margin-bottom:6px}
+.thumb i{display:block;background:var(--line)}
+.thumb-article{grid-template-columns:1fr 1fr;grid-template-rows:6px 1fr 1fr}
+.thumb-article i:first-child{grid-column:1/3;background:var(--ink)}
+.thumb-article i:nth-child(2){grid-column:1/3;background:var(--tone)}
+.thumb-policy{grid-template-rows:8px 1fr 1fr 1fr}
+.thumb-policy i:first-child{background:var(--tone)}
+.thumb-letter{grid-template-rows:4px 1fr 1fr 4px;justify-items:start}
+.thumb-letter i{width:100%}
+.thumb-letter i:first-child{width:40%;justify-self:end}
+.thumb-letter i:last-child{width:40%;justify-self:end;background:var(--tone)}
+.my-research{background:var(--paper);padding:14px 16px;margin-top:14px;font-size:15px}
+.my-research p{white-space:pre-wrap}
+.my-research p+p{margin-top:8px}
+.my-research strong{display:block;font-size:13px;color:var(--tone)}
+
+/* ---------- 완성: 형식별 서식 ---------- */
+.doc{background:var(--white);color:var(--ink);padding:clamp(20px,4vw,44px);margin-top:4px}
+.doc p{white-space:normal}
+.doc p+p{margin-top:10px}
+.doc-note{margin-top:24px!important;font-size:12px;color:var(--muted)}
+.doc-src{font-size:12px;color:var(--muted);margin-top:8px}
+/* 신문 기사 */
+.np-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-bottom:3px double var(--ink);padding-bottom:8px}
+.np-name{font-family:var(--serif);font-size:22px;font-weight:700;letter-spacing:.02em}
+.np-meta{font-size:13px;color:var(--muted)}
+.np-title{font-family:var(--serif);font-size:clamp(28px,4.2vw,40px);line-height:1.2;margin-top:22px;letter-spacing:-.02em}
+.np-byline{font-size:13px;color:var(--muted);margin-top:10px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.np-lead{font-size:18px;font-weight:600;line-height:1.7;margin-top:16px}
+.np-cols{column-count:2;column-gap:28px;margin-top:18px;font-size:15.5px;line-height:1.8}
+.np-cols h3{font-size:15px;margin-top:14px;break-after:avoid}
+.np-quote{break-inside:avoid;margin:16px 0;padding:12px 0;border-top:3px solid var(--tone);border-bottom:1px solid var(--line);font-family:var(--serif);font-size:18px;line-height:1.5;color:var(--ink)}
+.np-quote cite{display:block;margin-top:6px;font-family:var(--sans);font-size:12px;font-style:normal;color:var(--muted)}
+.np-box{margin-top:22px;background:var(--card);padding:16px 18px;font-size:14px;break-inside:avoid}
+.np-box h4{font-size:14px;margin-bottom:6px}
+.np-box ul{margin:0;padding-left:18px}
+/* 정책 제안서 */
+.pb-head{background:var(--tone);color:var(--white);margin:calc(-1 * clamp(20px,4vw,44px)) calc(-1 * clamp(20px,4vw,44px)) 0;padding:22px clamp(20px,4vw,44px)}
+.pb-kind{font-size:13px;font-weight:700;letter-spacing:.12em;opacity:.85}
+.pb-head h1{font-size:clamp(24px,3.4vw,32px);margin-top:6px;color:var(--white)}
+.pb-meta{display:grid;grid-template-columns:repeat(2,1fr);margin:0;border:1px solid var(--line);border-top:0}
+.pb-meta div{display:flex;gap:10px;padding:10px 14px;border-top:1px solid var(--line);font-size:14px}
+.pb-meta div:nth-child(odd){border-right:1px solid var(--line)}
+.pb-meta dt{flex:none;width:76px;font-weight:700;color:var(--muted)}
+.pb-meta dd{margin:0}
+.pb-sec{margin-top:24px;break-inside:avoid}
+.pb-sec h2{display:flex;align-items:center;gap:10px;font-size:18px;padding-bottom:8px;border-bottom:2px solid var(--ink);margin-bottom:10px}
+.pb-sec h2 span{display:inline-grid;place-items:center;width:26px;height:26px;background:var(--tone);color:var(--white);font-size:14px}
+.pb-ref{font-size:14px}
+.pb-ref ul{margin:0;padding-left:18px}
+/* 편지 */
+.doc-letter{max-width:640px;margin:4px auto 0;padding:clamp(28px,5vw,56px);background:#fffdf8;border-top:6px solid var(--tone);box-shadow:inset 0 0 0 1px var(--line);font-family:var(--serif);font-size:17px;line-height:1.9}
+.doc-letter p+p{margin-top:0}
+.lt-date{text-align:right;color:var(--muted);font-size:15px}
+.lt-to{font-weight:700;font-size:19px;margin-top:16px!important}
+.lt-body{margin-top:16px}
+.lt-body p{text-indent:1em}
+.lt-body p+p{margin-top:16px}
+.lt-from{text-align:right;margin-top:24px!important;font-weight:700}
+.lt-ps{margin-top:28px!important;font-family:var(--sans);font-size:13px;line-height:1.6;color:var(--muted)}
+.doc-letter .doc-note{font-family:var(--sans);line-height:1.5}
+/* 탐구 과정 */
+.appendix{margin-top:28px;background:var(--paper);padding:clamp(20px,4vw,36px)}
+.appendix>h2{font-size:20px;padding-bottom:10px;border-bottom:2px solid var(--ink)}
+.ap-row{padding:14px 0;border-bottom:1px solid var(--line);break-inside:avoid}
+.ap-row h3{font-size:15px;color:var(--tone);margin-bottom:6px}
+.ap-row ol{margin:0;padding-left:20px}
+.ap-row p{white-space:pre-wrap}
+
+@media (max-width:640px){
+  .formats{grid-template-columns:1fr}
+  .np-cols{column-count:1}
+  .pb-meta{grid-template-columns:1fr}
+  .pb-meta div:nth-child(odd){border-right:0}
+}
+@media print{
+  @page{size:A4;margin:14mm}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .paper-card.report{background:none}
+  .paper-card.report .card-body{padding:0}
+  .doc{padding:0;margin:0}
+  .doc-letter{padding:12mm;max-width:none}
+  .pb-head{margin:0 0 0;padding:14px 18px}
+  .appendix{break-before:page;background:none;padding:0}
+  .np-cols{column-count:2}
+}

@@ -341,8 +341,127 @@ async function test(){
   return outputText(data).trim().length>0;
 }
 
+/* ---------- 하루가 끝난 뒤: 조사 도우미와 결과물 피드백 ---------- */
+// 서버 함수는 지시문이 PROMPT_HEAD로 시작해야 받아 주므로 같은 머리말을 쓴다.
+// refs: 학생 화면에 보이는 자료 목록 [{title,url}]. AI는 이 목록 밖의 링크나 자료 이름을 만들지 않는다.
+const RESEARCH_SCHEMA={type:'object',properties:{
+  answer:{type:'string',description:'학생 질문에 대한 답. 중학생이 읽기 쉬운 3~6문장.'},
+  point:{type:'string',description:'학생이 메모에 옮겨 적을 핵심 한 줄. 40자 안팎.'},
+  check:{type:'string',description:'이 내용을 직접 확인해 볼 자료의 제목. 반드시 [자료 목록]에 있는 제목 그대로. 맞는 것이 없으면 빈 문자열.'},
+  followups:{type:'array',description:'학생이 이어서 물어볼 만한 질문 2개. 학생의 말투로, 25자 안팎.',items:{type:'string'}},
+},required:['answer','point','check','followups']};
+
+function researchPrompt(c,f,refs){
+  return `${PROMPT_HEAD}. 시뮬레이션은 끝났고, 지금은 학생이 혼자 질문을 정해 조사하는 단계다. 너는 학생 옆의 조사 도우미다.
+
+${background(c)}
+주인공: ${c.name}(${c.role}) · 이야기의 출발 질문: ${c.question}
+관련 주체: ${c.actors}
+
+[자료 목록: 학생 화면에 링크가 있는 자료]
+${refs.map(r=>`- ${r.title}`).join('\n')}
+
+[학생이 쓴 것]
+가장 중요했던 것: ${f.feeling||'(아직 없음)'}
+바꾸기 어려운 조건: ${f.constraint||'(아직 없음)'}
+나의 질문: ${f.question||'(아직 없음)'}
+
+[답하는 법]
+- 중학생이 읽기 쉬운 말로 짧게 답하라. 어려운 말은 풀어 써라.
+- [확인된 사실]에 있는 내용과 일반적인 지식, 너의 추측을 구분해 말하라("자료에 따르면", "일반적으로", "~일 수 있다").
+- 숫자·통계·날짜·사람 이름·기관의 발언을 지어내지 마라. 모르면 모른다고 하고, 어디서 확인하면 되는지 [자료 목록]에서 골라 알려라.
+- 링크 주소는 쓰지 마라. 자료 이름은 [자료 목록]에 있는 것만 써라.
+- 자료가 만들어진 뒤의 최신 상황은 모른다고 밝혀라.
+- 학생의 결론이나 의견을 대신 정하지 마라. 여러 입장(당사자·정부·기업·국제사회)이 어떻게 볼지 보여 주고, 판단은 학생에게 맡겨라.
+- 이야기 속 인물과 장면은 가상이다. 실제 인물처럼 말하지 마라.
+- 질문이 이 주제와 상관없으면 짧게 답하고 조사 주제로 돌아오게 하라.
+
+${SAFETY_RULES}`;
+}
+// history: 지금까지 주고받은 step 배열(그대로 다시 보낸다).
+async function research({c,fields,refs,history,text}){
+  const input=[...history,{type:'user_input',content:text}].slice(-40);
+  const data=await call({
+    model,store:false,
+    system_instruction:researchPrompt(c,fields,refs),
+    input,
+    generation_config:{thinking_level:'low',max_output_tokens:2048},
+    safety_settings:SAFETY,
+    response_format:{type:'text',mime_type:'application/json',schema:RESEARCH_SCHEMA},
+  });
+  let r;try{r=JSON.parse(outputText(data));}catch{throw new Error('AI 답을 읽지 못했어요. 한 번 더 보내 주세요.');}
+  const titles=refs.map(x=>x.title);
+  const reply={
+    answer:String(r.answer||'').trim(),
+    point:String(r.point||'').trim().slice(0,120),
+    check:titles.includes(String(r.check||'').trim())?String(r.check).trim():'',
+    followups:(Array.isArray(r.followups)?r.followups:[]).map(x=>String(x||'').trim().slice(0,60)).filter(Boolean).slice(0,2),
+  };
+  if(!reply.answer)throw new Error('AI 답이 비어 있어요. 한 번 더 보내 주세요.');
+  return {reply,history:[...input,...(data.steps||[])]};
+}
+
+// 결과물 피드백 대화: 시뮬레이션처럼 한 사람이 말하고, 학생은 답 칩을 누르거나 직접 써서 대답한다.
+// 말하는 사람은 이야기 속 인물(당사자로서 글을 읽은 반응)과 선생님(형식·근거·실행 가능성 판단) 둘 중 하나.
+const reviewSchema=c=>({type:'object',properties:{
+  speaker:{type:'string',enum:[c.name,'선생님'],description:`말하는 사람. 당사자의 삶에 비춘 반응은 ${c.name}, 글의 형식·근거·실행 가능성에 대한 판단은 선생님.`},
+  text:{type:'string',description:'말하는 사람의 말. 따옴표 없이 2~4문장.'},
+  chips:{type:'array',description:'학생이 이어서 할 말 2~3개. 학생의 1인칭 말투, 25자 안팎. 서로 다른 방향(설명하기, 고칠 방향 묻기, 다른 사람 의견 듣기).',items:{type:'string'}},
+},required:['speaker','text','chips']});
+
+// kind: 결과물 이름(신문 기사·정책 제안서·편지), parts: [[칸 이름, 학생이 쓴 글]], history: 지금까지의 step 배열
+async function review({c,fields,kind,parts,history,text}){
+  const check=kind==='신문 기사'?'사실 중심인지, 누가·무엇을·왜가 분명한지, 출처를 밝혔는지'
+    :kind==='정책 제안서'?'문제와 제안이 이어지는지, 실행할 주체가 분명한지, 비용·부작용·당사자 의견을 생각했는지'
+    :'받는 사람이 실제로 할 수 있는 부탁인지, 근거가 있는지, 예의와 진심이 담겼는지';
+  const system=`${PROMPT_HEAD}. 시뮬레이션과 조사가 끝났고, 학생이 혼자 ${kind}를 써서 해결책을 내놓았다. 이제 학생과 짧은 대화를 나누며 해결책을 판단하고 피드백을 준다.
+
+${background(c)}
+주인공: ${c.name}(${c.role}) · 관련 주체: ${c.actors}
+
+[학생의 조사]
+나의 질문: ${fields.question||'(없음)'}
+알게 된 것과 근거: ${fields.notes||'(없음)'}
+
+[학생의 ${kind}]
+${parts.map(([l,t])=>`[${l}]\n${t||'(비어 있음)'}`).join('\n\n')}
+
+[대화하는 법]
+- 두 사람이 번갈아 말할 수 있다. 한 번에 한 사람만 말한다.
+  · ${c.name}: 이야기 속 당사자. 학생의 해결책이 자기 하루에 실제로 어떤 도움이 될지, 무엇이 걱정되는지(시간·돈·안전·가족·마을 사정) 솔직하게 말한다. 고마움만 말하지 말고 현실의 조건을 드러낸다.
+  · 선생님: ${kind}로서 잘 썼는지(${check}), 해결책이 실행될 수 있는지 판단한다. 잘한 점 하나와 더 생각해 볼 점 하나를 구체적으로 말한다.
+- 첫 말은 ${c.name}가 학생의 글을 읽은 반응으로 시작하라. 학생이 글쓰기·근거·형식을 물으면 선생님이 답하라.
+- 학생 글을 대신 써 주지 마라. 고친 문장을 통째로 주지 말고 무엇을 더 생각할지 질문과 방향으로 알려라.
+- [확인된 사실]과 어긋나거나 근거 없는 숫자가 있으면 선생님이 짚어라. 숫자·통계·기관 발언을 지어내지 마라.
+- 당사자를 불쌍하게만 그리거나 한 나라 전체를 하나로 묶은 표현은 부드럽게 짚어라.
+- 점수를 매기거나 정답을 정하지 마라. 판단의 이유를 말하고, 고칠지는 학생이 정하게 하라.
+- 학생이 고쳐 보겠다고 하면 응원하고, 위의 글 칸을 고친 뒤 다시 보여 달라고 하라.
+- 한국어로, 중학생이 읽기 쉬운 문장으로 짧게 써라.
+
+[답 칩(chips)]
+- 학생이 다음에 누를 말 2~3개. 방금 한 말에 딱 맞게, 서로 다른 방향으로(내 생각 설명하기, 어떻게 고치면 좋을지 묻기, 다른 사람의 의견 듣기 등).
+- 질문을 받았으면 적어도 하나는 그 질문에 대한 대답이어야 한다. 대본·대화에 없는 인물을 지어내지 마라.
+
+${SAFETY_RULES}`;
+  const input=[...history,{type:'user_input',content:text}].slice(-30);
+  const data=await call({
+    model,store:false,system_instruction:system,input,
+    generation_config:{thinking_level:'low',max_output_tokens:2048},
+    safety_settings:SAFETY,
+    response_format:{type:'text',mime_type:'application/json',schema:reviewSchema(c)},
+  });
+  let r;try{r=JSON.parse(outputText(data));}catch{throw new Error('AI 답을 읽지 못했어요. 한 번 더 보내 주세요.');}
+  const reply={
+    speaker:[c.name,'선생님'].includes(r.speaker)?r.speaker:'선생님',
+    text:String(r.text||'').trim().replace(/^["“]|["”]$/g,''),
+    chips:(Array.isArray(r.chips)?r.chips:[]).map(x=>String(x||'').trim().replace(/^["“'‘]+|["”'’]+$/g,'').slice(0,80)).filter(Boolean).slice(0,3),
+  };
+  if(!reply.text)throw new Error('AI 답이 비어 있어요. 한 번 더 보내 주세요.');
+  return {reply,history:[...input,...(data.steps||[])]};
+}
+
 return {
-  MODELS,MIN_TALK,
+  MODELS,MIN_TALK,research,review,
   serverCheck,
   get server(){return server;},
   get ready(){return server||!!key;},
