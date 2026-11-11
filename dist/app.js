@@ -304,6 +304,8 @@ async function dayPass(c,from,to){
   el.classList.add('out');await wait(450);el.remove();
 }
 // *행동* 표기를 기울임으로 보여 준다.
+// 이름 끝 글자에 받침이 있으면 with, 없으면 without을 붙인다(예: 람이라면, 시오네라면).
+const josa=(name,withB,withoutB)=>{const k=name.charCodeAt(name.length-1)-0xAC00;return name+(k>=0&&k<11172&&k%28?withB:withoutB);};
 const fmt=t=>esc(t).replace(/\*([^*\n]+)\*/g,'<i>$1</i>');
 function entry(e,c,s){
   // 예전 기록은 장면 설명을 narr로 저장했으므로 같은 문장이면 상황 문단으로 보여 준다.
@@ -319,6 +321,10 @@ function stageArt(c,step,decided){return `<aside class="stage-art">
   <figure class="portrait">${art(c,'card')}<figcaption><strong>${esc(c.name)}</strong>${esc(c.country)} · ${esc(c.region)}${playerTag()}</figcaption></figure>
   <ol class="pips" aria-label="장면 진행">${c.scenes.map((x,i)=>`<li class="${i<step||(i===step&&decided)?'done':i===step?'now':''}">${esc(x.time)}</li>`).join('')}</ol>
 </aside>`;}
+// 장면 머리말: 휴대폰에서는 왼쪽 그림 영역 대신 작은 얼굴이 제목 왼쪽에 붙는다(넓은 화면에서는 숨김).
+const cardHead=(c,label,title,extra='')=>`<header class="card-head"><div class="head-face">${art(c,'face')}</div><div class="head-text"><p class="label">${label}</p><h1>${esc(title)}</h1></div>${extra}</header>`;
+// 학생이 아직 말하지 않은 장면이면 글을 처음부터 읽도록 맨 위를 보여 준다.
+const fresh=ch=>!ch.log.some(e=>e.k==='me'||e.k==='error');
 function chat(c){
   const r=state.run,step=r.step,s=c.scenes[step],ch=chatOf(step),n=r.choices[step];
   const under=`<div class="card-under">${step>0?'<button class="link" data-action="prev-scene">← 이전 장면</button>':'<span></span>'}<span>인물과 대화는 자료를 바탕으로 꾸민 이야기입니다</span></div>`;
@@ -327,7 +333,7 @@ function chat(c){
     const waiting=ch.brief===undefined,b=ch.brief;
     return `<div class="game play">${stageArt(c,step,true)}<div class="stage-main">
     <article class="scene-card result" aria-live="polite">
-      <header class="card-head"><p class="label">${esc(s.time)} · 장면 ${step+1}/3 브리핑</p><h1>${esc(s.title)}</h1></header>
+      ${cardHead(c,`${esc(s.time)} · 장면 ${step+1}/3 브리핑`,s.title)}
       <div class="card-body">
         ${waiting?`<p class="msg typing" role="status" aria-label="브리핑을 만드는 중"><i></i><i></i><i></i></p>`:`
         ${lifeCard(c,b?.mine,o.text,o.result,'mine')}
@@ -340,11 +346,11 @@ function chat(c){
   }
   return `<div class="game play">${stageArt(c,step,false)}<div class="stage-main">
   <article class="scene-card">
-    <header class="card-head"><p class="label">${esc(s.time)} · 장면 ${step+1}/3</p><h1>${esc(s.title)}</h1>
-      <details class="sit"><summary>상황</summary><p>${esc(ch.log.find(e=>e.k==='narr')?.text||s.story)}</p></details></header>
+    ${cardHead(c,`${esc(s.time)} · 장면 ${step+1}/3`,s.title,`
+      <details class="sit"><summary>상황</summary><p>${esc(ch.log.find(e=>e.k==='narr')?.text||s.story)}</p></details>`)}
     <div class="card-body" id="log" aria-live="polite">${ch.log.map(e=>entry(e,c,s)).join('')}${pending?passing(c,step,opening):''}</div>
     <footer class="card-foot${AI.ready?' talk':''}">
-      ${AI.ready?talkFoot(c,s,ch):`<p class="ask">${esc(c.name)}(이)라면, 어떻게 할까요?</p>${choiceRow(s)}
+      ${AI.ready?talkFoot(c,s,ch):`<p class="ask">${esc(josa(c.name,'이라면','라면'))}, 어떻게 할까요?</p>${choiceRow(s)}
       <p class="hint">오른쪽 위 <b>AI 연결</b>을 하면 고르기 전에 주변 사람과 자유롭게 대화할 수 있어요.</p>`}
     </footer>
   </article>${under}</div></div>`;}
@@ -366,7 +372,7 @@ function talkFoot(c,s,ch){
     <textarea id="say" rows="1" maxlength="500" placeholder="직접 써서 말해 보세요" ${pending?'disabled':''}></textarea>
     <button class="btn small" ${pending?'disabled':''}>보내기</button>
   </form>
-  <p class="small-ask${talked?' later':''}">${talked?`말을 고르거나 직접 써 보세요. ${esc(c.name)}(이)가 어떻게 할지 정하면 장면이 이어져요`:`말을 고르거나 직접 써서 주변 사람에게 말을 걸어 보세요`}</p>${stuck}`;
+  <p class="small-ask${talked?' later':''}">${talked?`말을 고르거나 직접 써 보세요. ${esc(josa(c.name,'이','가'))} 어떻게 할지 정하면 장면이 이어져요`:`말을 고르거나 직접 써서 주변 사람에게 말을 걸어 보세요`}</p>${stuck}`;
 }
 function lock(c,n){
   state.run.choices[state.run.step]=n;
@@ -396,7 +402,7 @@ async function say(c,text){
 // 넓은 화면은 카드 안쪽이, 휴대폰·태블릿은 페이지 전체가 스크롤된다. 어느 쪽이든 마지막 말이 보이게 내린다.
 function scrollLog(){
   const log=document.querySelector('#log'),behavior=reduceMotion?'auto':'smooth';
-  if(!log)return;
+  if(!log||fresh(chatOf(state.run.step)))return;
   if(log.scrollHeight>log.clientHeight+4){log.scrollTo({top:log.scrollHeight,behavior});return;}
   // 휴대폰·태블릿: 페이지가 스크롤되고 입력 영역이 화면 아래에 붙어 있으므로, 마지막 말이 그 위에 오게 내린다.
   const last=log.lastElementChild;if(!last)return;
@@ -571,7 +577,7 @@ const draftParts=()=>{const f=fields(),fm=fmtOf();return fm.fields.map(([n,l])=>
 function reviewPanel(c){
   const rv=reviewOf(),last=[...rv.log].reverse().find(e=>e.k==='say');
   if(!AI.ready)return `<div class="ask-off"><p>AI가 연결되어 있지 않아 피드백 대화는 쓸 수 없어요.</p><button type="button" class="btn ghost" data-action="ai-settings">AI 연결하기</button></div>`;
-  if(!rv.log.length)return `<div class="tool-row"><button type="button" class="btn" data-action="review-start"${reviewing?' disabled':''}>${esc(c.name)}와 선생님에게 보여 주기</button><span class="sec-note">${esc(c.name)}는 당사자로서, 선생님은 글과 해결책을 보고 이야기해 줘요.</span></div>${reviewing?'<div class="msg typing" aria-label="읽는 중"><i></i><i></i><i></i></div>':''}`;
+  if(!rv.log.length)return `<div class="tool-row"><button type="button" class="btn" data-action="review-start"${reviewing?' disabled':''}>${esc(josa(c.name,'과','와'))} 선생님에게 보여 주기</button><span class="sec-note">${esc(josa(c.name,'은','는'))} 당사자로서, 선생님은 글과 해결책을 보고 이야기해 줘요.</span></div>${reviewing?'<div class="msg typing" aria-label="읽는 중"><i></i><i></i><i></i></div>':''}`;
   const line=e=>e.k==='me'?`<div class="msg me">${esc(e.text)}</div>`:e.k==='error'?`<div class="msg error">${esc(e.text)}</div>`:e.k==='mark'?`<p class="rv-mark">${esc(e.text)}</p>`:`<div class="msg say"><b>${esc(e.speaker)}</b> ${esc(e.text)}</div>`;
   return `<div class="rv-log" id="rv-log" aria-live="polite">${rv.log.map(line).join('')}${reviewing?'<div class="msg typing" aria-label="답을 쓰는 중"><i></i><i></i><i></i></div>':''}</div>
     ${!reviewing&&last?.chips?.length?`<div class="chips">${last.chips.map((t,i)=>`<button type="button" class="chip" data-rv="${i}">${esc(t)}</button>`).join('')}</div>`:''}
@@ -775,7 +781,7 @@ function render(){
   if(view==='chat'){
     const box=document.querySelector('#say');
     if(box&&chat.draft){box.value=chat.draft;chat.draft='';}
-    const log=document.querySelector('#log');if(log)log.scrollTop=log.scrollHeight;
+    const log=document.querySelector('#log');if(log)log.scrollTop=fresh(chatOf(state.run.step))?0:log.scrollHeight;
   }
 }
 
