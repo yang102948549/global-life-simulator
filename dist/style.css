@@ -781,15 +781,6 @@ select:focus-visible{outline:2px solid var(--tone);outline-offset:2px}
   .g-filters .btn{order:4;grid-column:1/-1}
 }
 
-/* ---------- 대화 화면: 상황 다시 보기 ---------- */
-.scene-card .card-head{position:relative}
-.sit{position:absolute;top:20px;right:20px}
-.sit summary{list-style:none;cursor:pointer;font-size:13px;font-weight:700;color:var(--tone);background:var(--paper);padding:6px 12px;border-radius:var(--radius)}
-.sit summary::-webkit-details-marker{display:none}
-.sit summary::after{content:' ▾'}
-.sit[open] summary::after{content:' ▴'}
-.sit p{position:absolute;right:0;top:calc(100% + 6px);z-index:6;width:min(420px,80vw);max-height:45vh;overflow:auto;background:var(--paper);padding:14px 16px;font-family:var(--serif);font-size:16px;line-height:1.75;color:var(--ink-2);box-shadow:0 18px 40px -16px rgba(0,0,0,.35)} /* taste-skill-ignore: 펼친 상황 설명 */
-.scene-card .card-head h1{padding-right:84px}
 
 /* ---------- 휴대폰 대화: 대화가 넓게 보이도록 아래 입력 영역을 얇게 ---------- */
 @media (max-width:640px){
@@ -797,8 +788,6 @@ select:focus-visible{outline:2px solid var(--tone);outline-offset:2px}
   .game.play .scene-card:not(.result) .card-head{position:sticky;top:var(--topbar);z-index:6;background:var(--card);padding-top:10px;padding-bottom:10px;box-shadow:0 8px 16px -14px rgba(0,0,0,.35)} /* taste-skill-ignore: 위에 붙은 장면 제목 */
   .game.play .scene-card:not(.result) .card-head .label{margin:0;font-size:12px}
   .game.play .scene-card:not(.result) .card-head h1{font-size:18px;line-height:1.35}
-  .sit{top:12px;right:14px}
-  .sit p{width:calc(100vw - 32px);right:-4px}
   /* 대화 글은 반 단계 작게, 줄 간격과 말 사이 간격도 조금 좁혀 한 화면에 더 보이게 */
   .game.play .scene-card .card-body{gap:10px;padding-top:10px}
   .game.play .story{font-size:16.5px;line-height:1.8}
@@ -846,3 +835,30 @@ select:focus-visible{outline:2px solid var(--tone);outline-offset:2px}
    선은 안쪽 그림자로 그려 크기가 바뀌지 않게 한다. 결정 칩(.go)은 이미 캐릭터 색으로 칠해져 있어 그대로 둔다. */
 .chips .chip:not(.go){box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tone) 40%,transparent)}
 .chips .chip:not(.go):hover{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tone) 70%,transparent)}
+
+/* ---------- 대화 입력줄: 낮게, 보내기 버튼은 작게 ---------- */
+.card-foot.talk .say-box{padding:4px 4px 4px 12px;align-items:center}
+.card-foot.talk .say-box textarea{padding:4px 0;line-height:1.5}
+.card-foot.talk .say-box .btn{min-height:32px;padding:5px 12px;font-size:14px}
+
+/* ---------- 이전 장면: 돌아가기 아이콘 ---------- */
+.back-link{display:inline-flex;align-items:center;gap:6px;border:0;padding:6px 12px 6px 9px;border-radius:999px;background:color-mix(in srgb,var(--tone) 10%,var(--paper));color:var(--tone);font-size:13px;font-weight:700;transition:background .15s}
+.back-link:hover{background:color-mix(in srgb,var(--tone) 18%,var(--paper))}
+.back-link .ico{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- 저작권: 첫 화면에만. 넓은 화면은 왼쪽 아래, 휴대폰·태블릿은 맨 아래 오른쪽 ---------- */
+.title-body{position:relative}
+.title-copy{position:absolute;left:clamp(24px,4vw,64px);bottom:20px;margin:0;font-size:11px;color:var(--muted);white-space:nowrap}
+@media (max-width:900px){
+  .title-body{flex:1}
+  .title-copy{position:static;order:9;margin-top:auto;padding-top:24px;text-align:right;font-size:10px}
+  /* 대화 화면: 아래 여백을 줄여 대화 카드를 넓힌다 */
+  main:has(.game.play){padding-bottom:4px}
+  .game.play .card-under{margin-top:6px}
+  .game.play .scene-card:not(.result) .card-foot{padding-top:8px;padding-bottom:max(8px,env(safe-area-inset-bottom))}
+  .game.play .scene-card:not(.result){min-height:calc(100vh - var(--topbar) - 70px)}
+}
+@supports (height:100dvh){
+  @media (max-width:900px){.game.play .scene-card:not(.result){min-height:calc(100dvh - var(--topbar) - 70px)}}
+}
+@media (pointer:coarse){.card-foot.talk .say-box .btn{min-height:36px}}

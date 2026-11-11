@@ -108,6 +108,7 @@ function home(){const r=state.run,c=current();return `<section class="title-scre
       ${r&&c?`<button class="btn big ghost" data-action="resume">이어하기 · ${esc(c.name)}</button>`:''}
       <button class="link" data-nav="atlas">캐릭터 직접 고르기</button>
     </div>
+    <p class="title-copy">© 2026 by Oniaby</p>
     <p class="title-note">실제 자료를 바탕으로 만든 이야기입니다. 인물과 대화는 꾸민 것입니다.${!storageOK?' 이 브라우저는 저장을 쓸 수 없어 새로고침하면 진행이 사라질 수 있어요.':''}</p>
   </div>
 </section>`;}
@@ -322,12 +323,12 @@ function stageArt(c,step,decided){return `<aside class="stage-art">
   <ol class="pips" aria-label="장면 진행">${c.scenes.map((x,i)=>`<li class="${i<step||(i===step&&decided)?'done':i===step?'now':''}">${esc(x.time)}</li>`).join('')}</ol>
 </aside>`;}
 // 장면 머리말: 휴대폰에서는 왼쪽 그림 영역 대신 작은 얼굴이 제목 왼쪽에 붙는다(넓은 화면에서는 숨김).
-const cardHead=(c,label,title,extra='')=>`<header class="card-head"><div class="head-face">${art(c,'face')}</div><div class="head-text"><p class="label">${label}</p><h1>${esc(title)}</h1></div>${extra}</header>`;
+const cardHead=(c,label,title)=>`<header class="card-head"><div class="head-face">${art(c,'face')}</div><div class="head-text"><p class="label">${label}</p><h1>${esc(title)}</h1></div></header>`;
 // 학생이 아직 말하지 않은 장면이면 글을 처음부터 읽도록 맨 위를 보여 준다.
 const fresh=ch=>!ch.log.some(e=>e.k==='me'||e.k==='error');
 function chat(c){
   const r=state.run,step=r.step,s=c.scenes[step],ch=chatOf(step),n=r.choices[step];
-  const under=`<div class="card-under">${step>0?'<button class="link" data-action="prev-scene">← 이전 장면</button>':'<span></span>'}<span>인물과 대화는 자료를 바탕으로 꾸민 이야기입니다</span></div>`;
+  const under=`<div class="card-under">${step>0?'<button class="back-link" data-action="prev-scene"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>이전 장면</button>':'<span></span>'}<span>인물과 대화는 자료를 바탕으로 꾸민 이야기입니다</span></div>`;
   if(n!==null){
     const o=s.options[n],other=s.options[1-n],talked=ch.log.some(e=>e.k==='me'||e.k==='say');
     const waiting=ch.brief===undefined,b=ch.brief;
@@ -346,8 +347,7 @@ function chat(c){
   }
   return `<div class="game play">${stageArt(c,step,false)}<div class="stage-main">
   <article class="scene-card">
-    ${cardHead(c,`${esc(s.time)} · 장면 ${step+1}/3`,s.title,`
-      <details class="sit"><summary>상황</summary><p>${esc(ch.log.find(e=>e.k==='narr')?.text||s.story)}</p></details>`)}
+    ${cardHead(c,`${esc(s.time)} · 장면 ${step+1}/3`,s.title)}
     <div class="card-body" id="log" aria-live="polite">${ch.log.map(e=>entry(e,c,s)).join('')}${pending?passing(c,step,opening):''}</div>
     <footer class="card-foot${AI.ready?' talk':''}">
       ${AI.ready?talkFoot(c,s,ch):`<p class="ask">${esc(josa(c.name,'이라면','라면'))}, 어떻게 할까요?</p>${choiceRow(s)}
@@ -790,8 +790,6 @@ document.addEventListener('input',e=>{const el=e.target;
   // 대화 입력칸은 쓰는 만큼 늘어난다(최대 약 5줄)
   if(el.id==='say'){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,140)+'px';}if(el.dataset.me!==undefined){meOf()[el.dataset.me]=el.value;save();return;}if(el.dataset.field&&state.run){state.run.fields[el.dataset.field]=el.type==='checkbox'?el.checked:el.value;save();}});
 document.addEventListener('change',e=>{const el=e.target;if(el.dataset.gfilter!==undefined){gallery.filter[el.dataset.gfilter]=el.value;render();}});
-// 펼친 '상황'은 바깥을 누르면 접는다.
-document.addEventListener('click',e=>{document.querySelectorAll('details.sit[open]').forEach(d=>{if(!d.contains(e.target))d.open=false;});});
 document.addEventListener('click',async e=>{
   const el=e.target.closest('button,a#brand');if(!el)return;
   if(el.id==='brand'){e.preventDefault();navigate('home');return;}
