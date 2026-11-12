@@ -842,9 +842,10 @@ select:focus-visible{outline:2px solid var(--tone);outline-offset:2px}
 .card-foot.talk .say-box .btn{min-height:32px;padding:5px 12px;font-size:14px}
 
 /* ---------- 이전 장면: 돌아가기 아이콘 ---------- */
-.back-link{display:inline-flex;align-items:center;gap:6px;border:0;padding:6px 12px 6px 9px;border-radius:999px;background:color-mix(in srgb,var(--tone) 10%,var(--paper));color:var(--tone);font-size:13px;font-weight:700;transition:background .15s}
-.back-link:hover{background:color-mix(in srgb,var(--tone) 18%,var(--paper))}
-.back-link .ico{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.back-link{display:inline-flex;align-items:center;gap:2px;flex:none;border:0;padding:8px 6px 8px 0;margin:-8px 0;background:none;color:var(--tone);font-size:12px;font-weight:700;white-space:nowrap}
+.back-link:hover{text-decoration:underline}
+.back-link .ico{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.card-under .under-note{min-width:0;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* ---------- 저작권: 첫 화면에만. 넓은 화면은 왼쪽 아래, 휴대폰·태블릿은 맨 아래 오른쪽 ---------- */
 .title-body{position:relative}

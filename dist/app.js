@@ -328,7 +328,7 @@ const cardHead=(c,label,title)=>`<header class="card-head"><div class="head-face
 const fresh=ch=>!ch.log.some(e=>e.k==='me'||e.k==='error');
 function chat(c){
   const r=state.run,step=r.step,s=c.scenes[step],ch=chatOf(step),n=r.choices[step];
-  const under=`<div class="card-under">${step>0?'<button class="back-link" data-action="prev-scene"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>이전 장면</button>':'<span></span>'}<span>인물과 대화는 자료를 바탕으로 꾸민 이야기입니다</span></div>`;
+  const under=`<div class="card-under">${step>0?'<button class="back-link" data-action="prev-scene"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>이전 장면</button>':'<span></span>'}<span class="under-note">인물과 대화는 자료를 바탕으로 꾸민 이야기입니다</span></div>`;
   if(n!==null){
     const o=s.options[n],other=s.options[1-n],talked=ch.log.some(e=>e.k==='me'||e.k==='say');
     const waiting=ch.brief===undefined,b=ch.brief;
